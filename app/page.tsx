@@ -1,9 +1,5 @@
-import CurriculumGenerator from "../components/curriculum-generator"
+import ResumeTemplate from "@/resume-template"
 
-export default function Page() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <CurriculumGenerator />
-    </div>
-  )
+export default function Home() {
+  return <ResumeTemplate />
 }

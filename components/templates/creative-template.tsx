@@ -528,22 +528,24 @@ export default function CreativeTemplate({
                     borderColor: isDarkMode ? colors.primaryColor : undefined, // hover effect
                   }}
                 >
-                  {project.imageUrls && project.imageUrls.length > 0 ? (
-                    project.imageUrls.map((url, imgIndex) => (
+                  <div className="flex flex-wrap justify-center gap-2 p-2">
+                    {project.imageUrls && project.imageUrls.length > 0 ? (
+                      project.imageUrls.map((url, imgIndex) => (
+                        <img
+                          key={imgIndex}
+                          src={url || "/placeholder.svg?height=100&width=100"}
+                          alt={`Proyecto ${project.name} imagen ${imgIndex + 1}`}
+                          className="w-24 h-24 object-cover rounded-md"
+                        />
+                      ))
+                    ) : (
                       <img
-                        key={imgIndex}
-                        src={url || "/placeholder.svg?height=200&width=200"}
-                        alt={`Proyecto ${project.name} imagen ${imgIndex + 1}`}
-                        className="w-full h-32 object-cover"
+                        src="/placeholder.svg?height=100&width=100"
+                        alt={`Proyecto ${project.name} placeholder`}
+                        className="w-24 h-24 object-cover rounded-md"
                       />
-                    ))
-                  ) : (
-                    <img
-                      src="/placeholder.svg?height=200&width=200"
-                      alt={`Proyecto ${project.name} placeholder`}
-                      className="w-full h-32 object-cover"
-                    />
-                  )}
+                    )}
+                  </div>
                   <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
                     {project.name}
                   </p>
@@ -558,11 +560,13 @@ export default function CreativeTemplate({
                     border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
                   }}
                 >
-                  <img
-                    src="/placeholder.svg?height=200&width=200"
-                    alt="Proyecto Placeholder 1"
-                    className="w-full h-32 object-cover"
-                  />
+                  <div className="flex flex-wrap justify-center gap-2 p-2">
+                    <img
+                      src="/placeholder.svg?height=100&width=100"
+                      alt="Proyecto Placeholder 1"
+                      className="w-24 h-24 object-cover rounded-md"
+                    />
+                  </div>
                   <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
                     [Nombre del Proyecto 1]
                   </p>
@@ -574,11 +578,13 @@ export default function CreativeTemplate({
                     border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
                   }}
                 >
-                  <img
-                    src="/placeholder.svg?height=200&width=200"
-                    alt="Proyecto Placeholder 2"
-                    className="w-full h-32 object-cover"
-                  />
+                  <div className="flex flex-wrap justify-center gap-2 p-2">
+                    <img
+                      src="/placeholder.svg?height=100&width=100"
+                      alt="Proyecto Placeholder 2"
+                      className="w-24 h-24 object-cover rounded-md"
+                    />
+                  </div>
                   <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
                     [Nombre del Proyecto 2]
                   </p>
@@ -590,11 +596,13 @@ export default function CreativeTemplate({
                     border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
                   }}
                 >
-                  <img
-                    src="/placeholder.svg?height=200&width=200"
-                    alt="Proyecto Placeholder 3"
-                    className="w-full h-32 object-cover"
-                  />
+                  <div className="flex flex-wrap justify-center gap-2 p-2">
+                    <img
+                      src="/placeholder.svg?height=100&width=100"
+                      alt="Proyecto Placeholder 3"
+                      className="w-24 h-24 object-cover rounded-md"
+                    />
+                  </div>
                   <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
                     [Nombre del Proyecto 3]
                   </p>
@@ -606,11 +614,13 @@ export default function CreativeTemplate({
                     border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
                   }}
                 >
-                  <img
-                    src="/placeholder.svg?height=200&width=200"
-                    alt="Proyecto Placeholder 4"
-                    className="w-full h-32 object-cover"
-                  />
+                  <div className="flex flex-wrap justify-center gap-2 p-2">
+                    <img
+                      src="/placeholder.svg?height=100&width=100"
+                      alt="Proyecto Placeholder 4"
+                      className="w-24 h-24 object-cover rounded-md"
+                    />
+                  </div>
                   <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
                     [Nombre del Proyecto 4]
                   </p>
@@ -649,11 +659,11 @@ export default function CreativeTemplate({
                 <img
                   src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
                   alt="Código QR del Portfolio"
-                  className="w-20 h-20 object-contain"
+                  className="w-32 h-32 object-contain" // Increased size here
                 />
               ) : (
-                <div className="w-20 h-20 bg-gray-200 rounded flex items-center justify-center">
-                  <QrCode className="w-12 h-12 text-gray-500" />
+                <div className="w-32 h-32 bg-gray-200 rounded flex items-center justify-center">
+                  <QrCode className="w-16 h-16 text-gray-500" /> {/* Icon size adjusted */}
                 </div>
               )}
             </div>

@@ -1,431 +1,945 @@
 "use client"
-
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
-import { Download, Edit, Eye, Palette } from "lucide-react"
-import CurriculumPreview from "./curriculum-preview"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { PlusCircle, Trash2 } from "lucide-react"
+import { HexColorPicker, HexColorInput } from "react-colorful"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
+import { v4 as uuidv4 } from "uuid"
 
-interface PersonalInfo {
+// Define the interfaces here
+export interface PersonalInfo {
   name: string
   title: string
   email: string
   phone: string
   location: string
   website: string
+  linkedin: string
+  github: string
+  profilePhoto: string
+  profilePhotoBackgroundColor?: string
+  portfolioTitle: string
+  portfolioDescription: string
+  portfolioWebsite: string
+  qrCodeImage?: string
 }
 
-interface Experience {
+export interface Experience {
+  id: string
   position: string
   company: string
   period: string
   achievements: string[]
+  keywords: string[]
 }
 
-interface Education {
+export interface Education {
+  id: string
   degree: string
   institution: string
   period: string
   details: string
+  gpa?: string
 }
 
-interface CurriculumData {
+export interface Project {
+  id: string
+  name: string
+  description: string
+  technologies: string[]
+  link?: string
+  imageUrls?: string[]
+}
+
+export interface CurriculumData {
   personalInfo: PersonalInfo
   summary: string
   experience: Experience[]
-  education: Education
+  education: Education[]
   technicalSkills: string[]
-  culinarySkills: string[]
-  languages: { language: string; level: string }[]
+  softSkills: string[]
+  languages: { id: string; language: string; level: string }[]
+  projects: Project[]
+  certifications: string[]
   interests: string[]
-  dishNames: string[]
+  keywords: string[]
 }
 
-const initialData: CurriculumData = {
-  personalInfo: {
-    name: "Martín Moore",
-    title: "Cocinero Profesional & Analista de Procesos",
-    email: "martin.alejandro.moore@gmail.com",
-    phone: "+34 607 156 015",
-    location: "Barcelona, España",
-    website: "LinkedIn · GitHub",
-  },
-  summary:
-    "Apasionado de la cocina con experiencia práctica en cocina de bar y organización de eventos gastronómicos para grupos grandes. Profesional administrativo con sólida trayectoria en gestión de procesos, automatización y capacitación de equipos. Busco integrar mi creatividad culinaria con mis habilidades analíticas y de gestión para aportar valor en entornos dinámicos.",
-  experience: [
-    {
-      position: "Analista de Procesos y Formador",
-      company: "Conexión Salud",
-      period: "Septiembre 2021 – Marzo 2025",
-      achievements: [
-        "Gestión administrativa y atención a afiliados, optimizando procesos mediante automatización con Python y Power BI",
-        "Lideré proyectos clave de digitalización como desarrollo de chatbot y creación de dashboards en tiempo real",
-        "Capacité equipos comerciales y otros departamentos, impulsando el uso de nuevas herramientas",
-      ],
-    },
-    {
-      position: "Cocinero y Organizador de Eventos Gastronómicos",
-      company: "Freelance y Bar Runa Avellaneda",
-      period: "Junio 2021 – Sept 2021 (Bar) / Desde entonces (Eventos)",
-      achievements: [
-        "Preparación y servicio de platos con atención a calidad y tiempos",
-        "Diseño y ejecución de menús personalizados para eventos privados, cocinando para grupos de hasta 31 personas",
-        "Gestión integral de logística y coordinación gastronómica",
-      ],
-    },
-  ],
-  education: {
-    degree: "Diploma de Educación Secundaria",
-    institution: "Instituto French — Buenos Aires, Argentina",
-    period: "2012 - 2018",
-    details: "Especialización en Economía",
-  },
-  technicalSkills: ["Python", "Power BI", "Excel Avanzado", "Chatbots", "Automatización", "Análisis de Datos"],
-  culinarySkills: ["Cocina Profesional", "Planificación de Menús", "Eventos Gastronómicos", "Gestión de Logística"],
-  languages: [
-    { language: "Español", level: "Nativo" },
-    { language: "Inglés", level: "Conversacional" },
-  ],
-  interests: [
-    "Gastronomía Creativa",
-    "Desarrollo Web",
-    "Proyectos Culinarios",
-    "Tecnología",
-    "Automatización",
-    "Innovación",
-  ],
-  dishNames: ["Pasta Trufa", "Tarta de Berries", "Pan de Masa Madre", "Ensalada Gourmet"],
-}
-
-const colorThemes = {
-  teal: { primary: "teal", accent: "teal-500", bg: "teal-50" },
-  orange: { primary: "orange", accent: "rgb(242,89,13)", bg: "orange-50" },
-  blue: { primary: "blue", accent: "blue-500", bg: "blue-50" },
-  green: { primary: "green", accent: "green-500", bg: "green-50" },
-  purple: { primary: "purple", accent: "purple-500", bg: "purple-50" },
-}
-
-export default function CurriculumEditor() {
-  const [data, setData] = useState<CurriculumData>(initialData)
-  const [activeTab, setActiveTab] = useState("edit")
-  const [selectedTheme, setSelectedTheme] = useState("teal")
-  const [isDarkMode, setIsDarkMode] = useState(false)
-
+// This component was previously named CurriculumGenerator and contained the full editor logic.
+// It is now renamed to CurriculumEditor to align with its intended role and remove redundancy.
+export default function CurriculumEditor({
+  data,
+  onDataChange,
+  selectedTemplate,
+  onTemplateChange,
+  selectedTheme,
+  onThemeChange,
+  isDarkMode,
+  onDarkModeChange,
+  customBackgroundColor,
+  onCustomBackgroundColorChange,
+  customTextColor,
+  onCustomTextColorChange,
+  customTagPrimaryColor,
+  onCustomTagPrimaryColorChange,
+  customTagSecondaryColor,
+  onCustomTagSecondaryColorChange,
+}: {
+  data: CurriculumData
+  onDataChange: (data: CurriculumData) => void
+  selectedTemplate: string
+  onTemplateChange: (template: string) => void
+  selectedTheme: string
+  onThemeChange: (theme: string) => void
+  isDarkMode: boolean
+  onDarkModeChange: (isDarkMode: boolean) => void
+  customBackgroundColor: string
+  onCustomBackgroundColorChange: (color: string) => void
+  customTextColor: string
+  onCustomTextColorChange: (color: string) => void
+  customTagPrimaryColor: string
+  onCustomTagPrimaryColorChange: (color: string) => void
+  customTagSecondaryColor: string
+  onCustomTagSecondaryColorChange: (color: string) => void
+}) {
   const handlePersonalInfoChange = (field: keyof PersonalInfo, value: string) => {
-    setData((prev) => ({
-      ...prev,
-      personalInfo: { ...prev.personalInfo, [field]: value },
-    }))
+    onDataChange({
+      ...data,
+      personalInfo: {
+        ...data.personalInfo,
+        [field]: value,
+      },
+    })
   }
 
-  const handleExperienceChange = (index: number, field: keyof Experience, value: string | string[]) => {
-    setData((prev) => ({
-      ...prev,
-      experience: prev.experience.map((exp, i) => (i === index ? { ...exp, [field]: value } : exp)),
-    }))
+  const handleExperienceChange = (id: string, field: keyof Experience, value: string | string[]) => {
+    onDataChange({
+      ...data,
+      experience: data.experience.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)),
+    })
   }
 
-  const handleSkillChange = (type: "technicalSkills" | "culinarySkills", skills: string) => {
-    setData((prev) => ({
-      ...prev,
-      [type]: skills
-        .split(",")
-        .map((skill) => skill.trim())
-        .filter((skill) => skill),
-    }))
+  const addExperience = () => {
+    onDataChange({
+      ...data,
+      experience: [
+        ...data.experience,
+        {
+          id: uuidv4(),
+          position: "",
+          company: "",
+          period: "",
+          achievements: [],
+          keywords: [],
+        },
+      ],
+    })
   }
 
-  const handleLanguageChange = (index: number, field: "language" | "level", value: string) => {
-    setData((prev) => ({
-      ...prev,
-      languages: prev.languages.map((lang, i) => (i === index ? { ...lang, [field]: value } : lang)),
-    }))
+  const removeExperience = (id: string) => {
+    onDataChange({
+      ...data,
+      experience: data.experience.filter((exp) => exp.id !== id),
+    })
   }
 
-  const downloadPDF = () => {
-    window.print()
+  const handleEducationChange = (id: string, field: keyof Education, value: string) => {
+    onDataChange({
+      ...data,
+      education: data.education.map((edu) => (edu.id === id ? { ...edu, [field]: value } : edu)),
+    })
+  }
+
+  const addEducation = () => {
+    onDataChange({
+      ...data,
+      education: [
+        ...data.education,
+        {
+          id: uuidv4(),
+          degree: "",
+          institution: "",
+          period: "",
+          details: "",
+        },
+      ],
+    })
+  }
+
+  const removeEducation = (id: string) => {
+    onDataChange({
+      ...data,
+      education: data.education.filter((edu) => edu.id !== id),
+    })
+  }
+
+  const handleProjectChange = (id: string, field: keyof Project, value: string | string[]) => {
+    onDataChange({
+      ...data,
+      projects: data.projects.map((proj) => (proj.id === id ? { ...proj, [field]: value } : proj)),
+    })
+  }
+
+  const addProject = () => {
+    onDataChange({
+      ...data,
+      projects: [
+        ...data.projects,
+        {
+          id: uuidv4(),
+          name: "",
+          description: "",
+          technologies: [],
+          link: "",
+          imageUrls: [],
+        },
+      ],
+    })
+  }
+
+  const removeProject = (id: string) => {
+    onDataChange({
+      ...data,
+      projects: data.projects.filter((proj) => proj.id !== id),
+    })
+  }
+
+  const handleSkillChange = (type: "technicalSkills" | "softSkills", value: string) => {
+    onDataChange({
+      ...data,
+      [type]: value.split(",").map((s) => s.trim()),
+    })
+  }
+
+  const handleLanguageChange = (id: string, field: "language" | "level", value: string) => {
+    onDataChange({
+      ...data,
+      languages: data.languages.map((lang) => (lang.id === id ? { ...lang, [field]: value } : lang)),
+    })
+  }
+
+  const addLanguage = () => {
+    onDataChange({
+      ...data,
+      languages: [...data.languages, { id: uuidv4(), language: "", level: "" }],
+    })
+  }
+
+  const removeLanguage = (id: string) => {
+    onDataChange({
+      ...data,
+      languages: data.languages.filter((lang) => lang.id !== id),
+    })
+  }
+
+  const handleCertificationsChange = (value: string) => {
+    onDataChange({
+      ...data,
+      certifications: value.split(",").map((c) => c.trim()),
+    })
+  }
+
+  const handleInterestsChange = (value: string) => {
+    onDataChange({
+      ...data,
+      interests: value.split(",").map((i) => i.trim()),
+    })
+  }
+
+  const handleAchievementChange = (expId: string, index: number, value: string) => {
+    onDataChange({
+      ...data,
+      experience: data.experience.map((exp) =>
+        exp.id === expId
+          ? {
+              ...exp,
+              achievements: exp.achievements.map((ach, i) => (i === index ? value : ach)),
+            }
+          : exp,
+      ),
+    })
+  }
+
+  const addAchievement = (expId: string) => {
+    onDataChange({
+      ...data,
+      experience: data.experience.map((exp) =>
+        exp.id === expId
+          ? {
+              ...exp,
+              achievements: [...exp.achievements, ""],
+            }
+          : exp,
+      ),
+    })
+  }
+
+  const removeAchievement = (expId: string, index: number) => {
+    onDataChange({
+      ...data,
+      experience: data.experience.map((exp) =>
+        exp.id === expId
+          ? {
+              ...exp,
+              achievements: exp.achievements.filter((_, i) => i !== index),
+            }
+          : exp,
+      ),
+    })
+  }
+
+  const handleProjectTechnologiesChange = (projectId: string, value: string) => {
+    onDataChange({
+      ...data,
+      projects: data.projects.map((proj) =>
+        proj.id === projectId ? { ...proj, technologies: value.split(",").map((t) => t.trim()) } : proj,
+      ),
+    })
+  }
+
+  const handleProjectImageUrlsChange = (projectId: string, value: string) => {
+    onDataChange({
+      ...data,
+      projects: data.projects.map((proj) =>
+        proj.id === projectId ? { ...proj, imageUrls: value.split(",").map((url) => url.trim()) } : proj,
+      ),
+    })
+  }
+
+  const handleKeywordsChange = (value: string) => {
+    onDataChange({ ...data, keywords: value.split(",").map((s) => s.trim()) })
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Editor de Currículum</h1>
-        <p className="text-gray-600">Edita tu información y descarga tu currículum en PDF</p>
-      </div>
+    <div className="w-full max-w-md mx-auto p-4 bg-white shadow-lg rounded-lg overflow-y-auto h-[calc(100vh-80px)]">
+      <h2 className="text-2xl font-bold mb-4 text-center">Editar Información</h2>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs defaultValue="personal" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="edit" className="flex items-center gap-2">
-            <Edit className="w-4 h-4" />
-            Editar
-          </TabsTrigger>
-          <TabsTrigger value="design" className="flex items-center gap-2">
-            <Palette className="w-4 h-4" />
-            Diseño
-          </TabsTrigger>
-          <TabsTrigger value="preview" className="flex items-center gap-2">
-            <Eye className="w-4 h-4" />
-            Vista Previa
-          </TabsTrigger>
+          <TabsTrigger value="personal">Personal</TabsTrigger>
+          <TabsTrigger value="experience">Experiencia</TabsTrigger>
+          <TabsTrigger value="design">Diseño</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="edit" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Información Personal */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Información Personal</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nombre Completo</Label>
-                  <Input
-                    id="name"
-                    value={data.personalInfo.name}
-                    onChange={(e) => handlePersonalInfoChange("name", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="title">Título Profesional</Label>
-                  <Input
-                    id="title"
-                    value={data.personalInfo.title}
-                    onChange={(e) => handlePersonalInfoChange("title", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={data.personalInfo.email}
-                    onChange={(e) => handlePersonalInfoChange("email", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Teléfono</Label>
-                  <Input
-                    id="phone"
-                    value={data.personalInfo.phone}
-                    onChange={(e) => handlePersonalInfoChange("phone", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="location">Ubicación</Label>
-                  <Input
-                    id="location"
-                    value={data.personalInfo.location}
-                    onChange={(e) => handlePersonalInfoChange("location", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="website">Website/LinkedIn</Label>
-                  <Input
-                    id="website"
-                    value={data.personalInfo.website}
-                    onChange={(e) => handlePersonalInfoChange("website", e.target.value)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Resumen Profesional */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumen Profesional</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  value={data.summary}
-                  onChange={(e) => setData((prev) => ({ ...prev, summary: e.target.value }))}
-                  rows={6}
-                  placeholder="Describe tu experiencia y objetivos profesionales..."
-                />
-              </CardContent>
-            </Card>
-
-            {/* Experiencia Laboral */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Experiencia Laboral</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {data.experience.map((exp, index) => (
-                  <div key={index} className="border p-4 rounded-lg space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label>Puesto</Label>
-                        <Input
-                          value={exp.position}
-                          onChange={(e) => handleExperienceChange(index, "position", e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <Label>Empresa</Label>
-                        <Input
-                          value={exp.company}
-                          onChange={(e) => handleExperienceChange(index, "company", e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Período</Label>
-                      <Input
-                        value={exp.period}
-                        onChange={(e) => handleExperienceChange(index, "period", e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label>Logros (uno por línea)</Label>
-                      <Textarea
-                        value={exp.achievements.join("\n")}
-                        onChange={(e) => handleExperienceChange(index, "achievements", e.target.value.split("\n"))}
-                        rows={4}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Educación */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Educación</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label>Título</Label>
-                  <Input
-                    value={data.education.degree}
-                    onChange={(e) =>
-                      setData((prev) => ({
-                        ...prev,
-                        education: { ...prev.education, degree: e.target.value },
-                      }))
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>Institución</Label>
-                  <Input
-                    value={data.education.institution}
-                    onChange={(e) =>
-                      setData((prev) => ({
-                        ...prev,
-                        education: { ...prev.education, institution: e.target.value },
-                      }))
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>Período</Label>
-                  <Input
-                    value={data.education.period}
-                    onChange={(e) =>
-                      setData((prev) => ({
-                        ...prev,
-                        education: { ...prev.education, period: e.target.value },
-                      }))
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>Detalles</Label>
-                  <Input
-                    value={data.education.details}
-                    onChange={(e) =>
-                      setData((prev) => ({
-                        ...prev,
-                        education: { ...prev.education, details: e.target.value },
-                      }))
-                    }
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Habilidades */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Habilidades</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label>Habilidades Técnicas (separadas por comas)</Label>
-                  <Textarea
-                    value={data.technicalSkills.join(", ")}
-                    onChange={(e) => handleSkillChange("technicalSkills", e.target.value)}
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <Label>Habilidades Culinarias (separadas por comas)</Label>
-                  <Textarea
-                    value={data.culinarySkills.join(", ")}
-                    onChange={(e) => handleSkillChange("culinarySkills", e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="design" className="space-y-6">
+        <TabsContent value="personal" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Personalización de Diseño</CardTitle>
+              <CardTitle>Información Personal</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               <div>
-                <Label className="text-base font-medium">Tema de Color</Label>
-                <div className="grid grid-cols-5 gap-4 mt-3">
-                  {Object.entries(colorThemes).map(([key, theme]) => (
-                    <button
-                      key={key}
-                      onClick={() => setSelectedTheme(key)}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        selectedTheme === key ? "border-gray-900 ring-2 ring-gray-300" : "border-gray-200"
-                      }`}
-                    >
-                      <div className={`w-full h-8 rounded bg-${theme.primary}-500 mb-2`}></div>
-                      <span className="text-sm capitalize">{key}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="darkMode"
-                  checked={isDarkMode}
-                  onChange={(e) => setIsDarkMode(e.target.checked)}
-                  className="rounded"
+                <Label htmlFor="name">Nombre Completo</Label>
+                <Input
+                  id="name"
+                  value={data.personalInfo.name}
+                  onChange={(e) => handlePersonalInfoChange("name", e.target.value)}
                 />
-                <Label htmlFor="darkMode">Modo Oscuro</Label>
               </div>
+              <div>
+                <Label htmlFor="title">Título Profesional</Label>
+                <Input
+                  id="title"
+                  value={data.personalInfo.title}
+                  onChange={(e) => handlePersonalInfoChange("title", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={data.personalInfo.email}
+                  onChange={(e) => handlePersonalInfoChange("email", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Teléfono</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={data.personalInfo.phone}
+                  onChange={(e) => handlePersonalInfoChange("phone", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="location">Ubicación</Label>
+                <Input
+                  id="location"
+                  value={data.personalInfo.location}
+                  onChange={(e) => handlePersonalInfoChange("location", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="website">Sitio Web</Label>
+                <Input
+                  id="website"
+                  value={data.personalInfo.website}
+                  onChange={(e) => handlePersonalInfoChange("website", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="linkedin">LinkedIn</Label>
+                <Input
+                  id="linkedin"
+                  value={data.personalInfo.linkedin}
+                  onChange={(e) => handlePersonalInfoChange("linkedin", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="github">GitHub</Label>
+                <Input
+                  id="github"
+                  value={data.personalInfo.github}
+                  onChange={(e) => handlePersonalInfoChange("github", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="profilePhoto">URL Foto de Perfil</Label>
+                <Input
+                  id="profilePhoto"
+                  value={data.personalInfo.profilePhoto}
+                  onChange={(e) => handlePersonalInfoChange("profilePhoto", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="profilePhotoBackgroundColor">Color de Fondo Foto de Perfil</Label>
+                <div className="flex items-center gap-2">
+                  <HexColorInput
+                    id="profilePhotoBackgroundColor"
+                    color={data.personalInfo.profilePhotoBackgroundColor || "#E0E7FF"}
+                    onChange={(color) => handlePersonalInfoChange("profilePhotoBackgroundColor", color)}
+                    className="flex-1 p-2 border rounded-md"
+                  />
+                  <div
+                    className="w-8 h-8 rounded-full border"
+                    style={{ backgroundColor: data.personalInfo.profilePhotoBackgroundColor || "transparent" }}
+                  />
+                </div>
+                <HexColorPicker
+                  color={data.personalInfo.profilePhotoBackgroundColor || "#E0E7FF"}
+                  onChange={(color) => handlePersonalInfoChange("profilePhotoBackgroundColor", color)}
+                  className="mt-2"
+                />
+              </div>
+              <Separator />
+              <div>
+                <Label htmlFor="portfolioTitle">Título del Portfolio/QR</Label>
+                <Input
+                  id="portfolioTitle"
+                  value={data.personalInfo.portfolioTitle}
+                  onChange={(e) => handlePersonalInfoChange("portfolioTitle", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="portfolioDescription">Descripción del Portfolio/QR</Label>
+                <Textarea
+                  id="portfolioDescription"
+                  value={data.personalInfo.portfolioDescription}
+                  onChange={(e) => handlePersonalInfoChange("portfolioDescription", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="portfolioWebsite">Sitio Web del Portfolio</Label>
+                <Input
+                  id="portfolioWebsite"
+                  value={data.personalInfo.portfolioWebsite}
+                  onChange={(e) => handlePersonalInfoChange("portfolioWebsite", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="qrCodeImage">URL o Data URL de Imagen de Código QR</Label>
+                <Input
+                  id="qrCodeImage"
+                  value={data.personalInfo.qrCodeImage || ""}
+                  onChange={(e) => handlePersonalInfoChange("qrCodeImage", e.target.value)}
+                  placeholder="data:image/png;base64,..."
+                />
+                {data.personalInfo.qrCodeImage && (
+                  <img
+                    src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
+                    alt="QR Code Preview"
+                    className="mt-2 w-24 h-24 object-contain border rounded"
+                  />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Resumen Profesional</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={data.summary}
+                onChange={(e) => onDataChange({ ...data, summary: e.target.value })}
+                rows={5}
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Habilidades</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="technicalSkills">Habilidades Técnicas (separadas por comas)</Label>
+                <Input
+                  id="technicalSkills"
+                  value={data.technicalSkills.join(", ")}
+                  onChange={(e) => handleSkillChange("technicalSkills", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="softSkills">Habilidades Interpersonales (separadas por comas)</Label>
+                <Input
+                  id="softSkills"
+                  value={data.softSkills.join(", ")}
+                  onChange={(e) => handleSkillChange("softSkills", e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Idiomas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {data.languages.map((lang) => (
+                <div key={lang.id} className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <Label htmlFor={`language-${lang.id}`}>Idioma</Label>
+                    <Input
+                      id={`language-${lang.id}`}
+                      value={lang.language}
+                      onChange={(e) => handleLanguageChange(lang.id, "language", e.target.value)}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Label htmlFor={`level-${lang.id}`}>Nivel</Label>
+                    <Input
+                      id={`level-${lang.id}`}
+                      value={lang.level}
+                      onChange={(e) => handleLanguageChange(lang.id, "level", e.target.value)}
+                    />
+                  </div>
+                  <Button variant="destructive" size="icon" onClick={() => removeLanguage(lang.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button onClick={addLanguage} className="w-full">
+                <PlusCircle className="h-4 w-4 mr-2" /> Añadir Idioma
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Certificaciones</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={data.certifications.join(", ")}
+                onChange={(e) => handleCertificationsChange(e.target.value)}
+                placeholder="Certificación 1, Certificación 2, ..."
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Intereses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={data.interests.join(", ")}
+                onChange={(e) => handleInterestsChange(e.target.value)}
+                placeholder="Interés 1, Interés 2, ..."
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Palabras Clave (para ATS)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                id="keywords"
+                value={data.keywords.join(", ")}
+                onChange={(e) => handleKeywordsChange(e.target.value)}
+                rows={3}
+                placeholder="Palabras clave relevantes para tu industria o puesto deseado, separadas por comas."
+              />
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="preview" className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Vista Previa del Currículum</h2>
-            <Button onClick={downloadPDF} className="flex items-center gap-2">
-              <Download className="w-4 h-4" />
-              Descargar PDF
-            </Button>
-          </div>
+        <TabsContent value="experience" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Experiencia Laboral</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {data.experience.map((exp) => (
+                <div key={exp.id} className="border p-4 rounded-md space-y-3 relative">
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={() => removeExperience(exp.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <div>
+                    <Label htmlFor={`position-${exp.id}`}>Posición</Label>
+                    <Input
+                      id={`position-${exp.id}`}
+                      value={exp.position}
+                      onChange={(e) => handleExperienceChange(exp.id, "position", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`company-${exp.id}`}>Empresa</Label>
+                    <Input
+                      id={`company-${exp.id}`}
+                      value={exp.company}
+                      onChange={(e) => handleExperienceChange(exp.id, "company", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`period-${exp.id}`}>Período</Label>
+                    <Input
+                      id={`period-${exp.id}`}
+                      value={exp.period}
+                      onChange={(e) => handleExperienceChange(exp.id, "period", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Logros (uno por línea)</Label>
+                    {exp.achievements.map((achievement, index) => (
+                      <div key={index} className="flex items-center gap-2 mb-2">
+                        <Textarea
+                          value={achievement}
+                          onChange={(e) => handleAchievementChange(exp.id, index, e.target.value)}
+                          rows={2}
+                        />
+                        <Button variant="destructive" size="icon" onClick={() => removeAchievement(exp.id, index)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button onClick={() => addAchievement(exp.id)} variant="outline" className="w-full mt-2">
+                      <PlusCircle className="h-4 w-4 mr-2" /> Añadir Logro
+                    </Button>
+                  </div>
+                  <div>
+                    <Label htmlFor={`keywords-${exp.id}`}>Palabras Clave (separadas por comas)</Label>
+                    <Input
+                      id={`keywords-${exp.id}`}
+                      value={exp.keywords.join(", ")}
+                      onChange={(e) =>
+                        handleExperienceChange(
+                          exp.id,
+                          "keywords",
+                          e.target.value.split(",").map((k) => k.trim()),
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+              <Button onClick={addExperience} className="w-full">
+                <PlusCircle className="h-4 w-4 mr-2" /> Añadir Experiencia
+              </Button>
+            </CardContent>
+          </Card>
 
-          <div className="border rounded-lg overflow-hidden">
-            <CurriculumPreview data={data} theme={selectedTheme} isDarkMode={isDarkMode} />
-          </div>
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Educación</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {data.education.map((edu) => (
+                <div key={edu.id} className="border p-4 rounded-md space-y-3 relative">
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={() => removeEducation(edu.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <div>
+                    <Label htmlFor={`degree-${edu.id}`}>Título/Grado</Label>
+                    <Input
+                      id={`degree-${edu.id}`}
+                      value={edu.degree}
+                      onChange={(e) => handleEducationChange(edu.id, "degree", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`institution-${edu.id}`}>Institución</Label>
+                    <Input
+                      id={`institution-${edu.id}`}
+                      value={edu.institution}
+                      onChange={(e) => handleEducationChange(edu.id, "institution", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`edu-period-${edu.id}`}>Período</Label>
+                    <Input
+                      id={`edu-period-${edu.id}`}
+                      value={edu.period}
+                      onChange={(e) => handleEducationChange(edu.id, "period", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`details-${edu.id}`}>Detalles</Label>
+                    <Textarea
+                      id={`details-${edu.id}`}
+                      value={edu.details}
+                      onChange={(e) => handleEducationChange(edu.id, "details", e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`gpa-${edu.id}`}>GPA (Opcional)</Label>
+                    <Input
+                      id={`gpa-${edu.id}`}
+                      value={edu.gpa || ""}
+                      onChange={(e) => handleEducationChange(edu.id, "gpa", e.target.value)}
+                    />
+                  </div>
+                </div>
+              ))}
+              <Button onClick={addEducation} className="w-full">
+                <PlusCircle className="h-4 w-4 mr-2" /> Añadir Educación
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Proyectos Destacados</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {data.projects.map((project) => (
+                <div key={project.id} className="border p-4 rounded-md space-y-3 relative">
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={() => removeProject(project.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <div>
+                    <Label htmlFor={`project-name-${project.id}`}>Nombre del Proyecto</Label>
+                    <Input
+                      id={`project-name-${project.id}`}
+                      value={project.name}
+                      onChange={(e) => handleProjectChange(project.id, "name", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`project-description-${project.id}`}>Descripción</Label>
+                    <Textarea
+                      id={`project-description-${project.id}`}
+                      value={project.description}
+                      onChange={(e) => handleProjectChange(project.id, "description", e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`project-technologies-${project.id}`}>Tecnologías (separadas por comas)</Label>
+                    <Input
+                      id={`project-technologies-${project.id}`}
+                      value={project.technologies.join(", ")}
+                      onChange={(e) => handleProjectTechnologiesChange(project.id, e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`project-link-${project.id}`}>Enlace (URL)</Label>
+                    <Input
+                      id={`project-link-${project.id}`}
+                      value={project.link || ""}
+                      onChange={(e) => handleProjectChange(project.id, "link", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`project-images-${project.id}`}>URLs de Imágenes (separadas por comas)</Label>
+                    <Input
+                      id={`project-images-${project.id}`}
+                      value={project.imageUrls?.join(", ") || ""}
+                      onChange={(e) => handleProjectImageUrlsChange(project.id, e.target.value)}
+                      placeholder="URL1, URL2, URL3..."
+                    />
+                    {project.imageUrls && project.imageUrls.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {project.imageUrls.map((url, index) => (
+                          <img
+                            key={index}
+                            src={url || "/placeholder.svg?height=50&width=50"}
+                            alt={`Imagen ${index + 1}`}
+                            className="w-16 h-16 object-cover rounded-md border"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <Button onClick={addProject} className="w-full">
+                <PlusCircle className="h-4 w-4 mr-2" /> Añadir Proyecto
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="design" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Opciones de Diseño</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <Label htmlFor="template-select">Seleccionar Plantilla</Label>
+                <Select value={selectedTemplate} onValueChange={onTemplateChange}>
+                  <SelectTrigger id="template-select">
+                    <SelectValue placeholder="Selecciona una plantilla" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="socialMedia">Inspirada en Redes Sociales</SelectItem>
+                    <SelectItem value="ats">ATS Friendly</SelectItem>
+                    <SelectItem value="corporate">Corporativa</SelectItem>
+                    <SelectItem value="creative">Creativa</SelectItem>
+                    <SelectItem value="minimal">Minimalista</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="theme-select">Seleccionar Tema de Color</Label>
+                <Select value={selectedTheme} onValueChange={onThemeChange}>
+                  <SelectTrigger id="theme-select">
+                    <SelectValue placeholder="Selecciona un tema" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="orange">Naranja (Predeterminado)</SelectItem>
+                    <SelectItem value="teal">Verde Azulado</SelectItem>
+                    <SelectItem value="blue">Azul</SelectItem>
+                    <SelectItem value="green">Verde</SelectItem>
+                    <SelectItem value="purple">Púrpura</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="darkMode"
+                  checked={isDarkMode}
+                  onCheckedChange={(checked: boolean) => onDarkModeChange(checked)}
+                />
+                <Label htmlFor="darkMode">Modo Oscuro</Label>
+              </div>
+
+              <Separator />
+
+              <h4 className="text-lg font-semibold mt-4">Colores Personalizados</h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Estos colores anularán los colores del tema seleccionado.
+              </p>
+
+              <div>
+                <Label htmlFor="customBackgroundColor">Color de Fondo Personalizado</Label>
+                <div className="flex items-center gap-2">
+                  <HexColorInput
+                    id="customBackgroundColor"
+                    color={customBackgroundColor}
+                    onChange={onCustomBackgroundColorChange}
+                    className="flex-1 p-2 border rounded-md"
+                  />
+                  <div
+                    className="w-8 h-8 rounded-full border"
+                    style={{ backgroundColor: customBackgroundColor || "transparent" }}
+                  />
+                </div>
+                <HexColorPicker
+                  color={customBackgroundColor}
+                  onChange={onCustomBackgroundColorChange}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="customTextColor">Color de Texto Principal Personalizado</Label>
+                <div className="flex items-center gap-2">
+                  <HexColorInput
+                    id="customTextColor"
+                    color={customTextColor}
+                    onChange={onCustomTextColorChange}
+                    className="flex-1 p-2 border rounded-md"
+                  />
+                  <div
+                    className="w-8 h-8 rounded-full border"
+                    style={{ backgroundColor: customTextColor || "transparent" }}
+                  />
+                </div>
+                <HexColorPicker color={customTextColor} onChange={onCustomTextColorChange} className="mt-2" />
+              </div>
+
+              <div>
+                <Label htmlFor="customTagPrimaryColor">Color de Etiqueta Primaria Personalizado</Label>
+                <div className="flex items-center gap-2">
+                  <HexColorInput
+                    id="customTagPrimaryColor"
+                    color={customTagPrimaryColor}
+                    onChange={onCustomTagPrimaryColorChange}
+                    className="flex-1 p-2 border rounded-md"
+                  />
+                  <div
+                    className="w-8 h-8 rounded-full border"
+                    style={{ backgroundColor: customTagPrimaryColor || "transparent" }}
+                  />
+                </div>
+                <HexColorPicker
+                  color={customTagPrimaryColor}
+                  onChange={onCustomTagPrimaryColorChange}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="customTagSecondaryColor">Color de Etiqueta Secundaria Personalizado</Label>
+                <div className="flex items-center gap-2">
+                  <HexColorInput
+                    id="customTagSecondaryColor"
+                    color={customTagSecondaryColor}
+                    onChange={onCustomTagSecondaryColorChange}
+                    className="flex-1 p-2 border rounded-md"
+                  />
+                  <div
+                    className="w-8 h-8 rounded-full border"
+                    style={{ backgroundColor: customTagSecondaryColor || "transparent" }}
+                  />
+                </div>
+                <HexColorPicker
+                  color={customTagSecondaryColor}
+                  onChange={onCustomTagSecondaryColorChange}
+                  className="mt-2"
+                />
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

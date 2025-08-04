@@ -1,10 +1,10 @@
 "use client"
 
+import SocialMediaInspiredTemplate from "./templates/social-media-inspired-template"
 import ATSTemplate from "./templates/ats-template"
 import CorporateTemplate from "./templates/corporate-template"
 import CreativeTemplate from "./templates/creative-template"
 import MinimalTemplate from "./templates/minimal-template"
-import SocialMediaInspiredTemplate from "./templates/social-media-inspired-template"
 
 interface PersonalInfo {
   name: string
@@ -16,7 +16,7 @@ interface PersonalInfo {
   linkedin: string
   github: string
   profilePhoto: string
-  profilePhotoBackgroundColor?: string // Add this line
+  profilePhotoBackgroundColor?: string
   portfolioTitle: string
   portfolioDescription: string
   portfolioWebsite: string
@@ -47,7 +47,7 @@ interface Project {
   description: string
   technologies: string[]
   link?: string
-  imageUrls?: string[] // Changed to array
+  imageUrls?: string[]
 }
 
 interface CurriculumData {
@@ -73,7 +73,7 @@ interface CurriculumPreviewProps {
   customTextColor: string
   customTagPrimaryColor: string
   customTagSecondaryColor: string
-  profilePhotoBackgroundColor?: string // New prop
+  profilePhotoBackgroundColor?: string
 }
 
 export default function CurriculumPreview({
@@ -85,7 +85,7 @@ export default function CurriculumPreview({
   customTextColor,
   customTagPrimaryColor,
   customTagSecondaryColor,
-  profilePhotoBackgroundColor, // Destructure new prop
+  profilePhotoBackgroundColor,
 }: CurriculumPreviewProps) {
   const templateProps = {
     data,
@@ -95,7 +95,7 @@ export default function CurriculumPreview({
     customTextColor,
     customTagPrimaryColor,
     customTagSecondaryColor,
-    profilePhotoBackgroundColor, // Pass new prop
+    profilePhotoBackgroundColor,
   }
 
   switch (selectedTemplate) {
