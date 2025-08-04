@@ -1,11 +1,14 @@
 "use client"
 import { Button } from "@/components/ui/button"
+import type React from "react"
+import { useRef, useEffect } from "react"
+
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusCircle, Trash2 } from "lucide-react"
+import { PlusCircle, Trash2, Eraser } from "lucide-react" // Import Eraser icon
 import { HexColorPicker, HexColorInput } from "react-colorful"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -71,8 +74,6 @@ export interface CurriculumData {
   keywords: string[]
 }
 
-// This component was previously named CurriculumGenerator and contained the full editor logic.
-// It is now renamed to CurriculumEditor to align with its intended role and remove redundancy.
 export default function CurriculumEditor({
   data,
   onDataChange,
@@ -90,6 +91,8 @@ export default function CurriculumEditor({
   onCustomTagPrimaryColorChange,
   customTagSecondaryColor,
   onCustomTagSecondaryColorChange,
+  activeSectionId,
+  onClearData, // New prop for clearing data
 }: {
   data: CurriculumData
   onDataChange: (data: CurriculumData) => void
@@ -107,7 +110,18 @@ export default function CurriculumEditor({
   onCustomTagPrimaryColorChange: (color: string) => void
   customTagSecondaryColor: string
   onCustomTagSecondaryColorChange: (color: string) => void
+  activeSectionId: string | null
+  onClearData: () => void // Type for the new prop
 }) {
+  // Refs for scrolling
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
+
+  useEffect(() => {
+    if (activeSectionId && sectionRefs.current[activeSectionId]) {
+      sectionRefs.current[activeSectionId]?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+  }, [activeSectionId])
+
   const handlePersonalInfoChange = (field: keyof PersonalInfo, value: string) => {
     onDataChange({
       ...data,
@@ -116,6 +130,32 @@ export default function CurriculumEditor({
         [field]: value,
       },
     })
+  }
+
+  const handleSingleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, field: keyof PersonalInfo) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        onDataChange({
+          ...data,
+          personalInfo: {
+            ...data.personalInfo,
+            [field]: reader.result as string,
+          },
+        })
+      }
+      reader.readAsDataURL(file)
+    } else {
+      // Optionally clear the image if no file is selected
+      onDataChange({
+        ...data,
+        personalInfo: {
+          ...data.personalInfo,
+          [field]: "",
+        },
+      })
+    }
   }
 
   const handleExperienceChange = (id: string, field: keyof Experience, value: string | string[]) => {
@@ -303,13 +343,35 @@ export default function CurriculumEditor({
     })
   }
 
-  const handleProjectImageUrlsChange = (projectId: string, value: string) => {
-    onDataChange({
-      ...data,
-      projects: data.projects.map((proj) =>
-        proj.id === projectId ? { ...proj, imageUrls: value.split(",").map((url) => url.trim()) } : proj,
-      ),
-    })
+  const handleProjectImagesUpload = (event: React.ChangeEvent<HTMLInputElement>, projectId: string) => {
+    const files = event.target.files
+    if (files && files.length > 0) {
+      const newImageUrls: string[] = []
+      let filesProcessed = 0
+
+      Array.from(files).forEach((file) => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          newImageUrls.push(reader.result as string)
+          filesProcessed++
+          if (filesProcessed === files.length) {
+            onDataChange({
+              ...data,
+              projects: data.projects.map((proj) =>
+                proj.id === projectId ? { ...proj, imageUrls: newImageUrls } : proj,
+              ),
+            })
+          }
+        }
+        reader.readAsDataURL(file)
+      })
+    } else {
+      // If no files selected, clear existing images for that project
+      onDataChange({
+        ...data,
+        projects: data.projects.map((proj) => (proj.id === projectId ? { ...proj, imageUrls: [] } : proj)),
+      })
+    }
   }
 
   const handleKeywordsChange = (value: string) => {
@@ -317,8 +379,8 @@ export default function CurriculumEditor({
   }
 
   return (
-    <div className="w-full max-w-md mx-auto p-4 bg-white shadow-lg rounded-lg overflow-y-auto h-[calc(100vh-80px)]">
-      <h2 className="text-2xl font-bold mb-4 text-center">Editar Información</h2>
+    <div className="w-full p-6 bg-white dark:bg-gray-900 shadow-lg h-full overflow-y-auto">
+      <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-50">Editor de Currículum</h1>
 
       <Tabs defaultValue="personal" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -327,7 +389,7 @@ export default function CurriculumEditor({
           <TabsTrigger value="design">Diseño</TabsTrigger>
         </TabsList>
         <TabsContent value="personal" className="mt-4">
-          <Card>
+          <Card ref={(el) => (sectionRefs.current["personalInfo"] = el)}>
             <CardHeader>
               <CardTitle>Información Personal</CardTitle>
             </CardHeader>
@@ -399,12 +461,27 @@ export default function CurriculumEditor({
                 />
               </div>
               <div>
-                <Label htmlFor="profilePhoto">URL Foto de Perfil</Label>
+                <Label htmlFor="profilePhoto">Foto de Perfil (URL o Subir Archivo)</Label>
                 <Input
                   id="profilePhoto"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleSingleImageUpload(e, "profilePhoto")}
+                  className="mb-2"
+                />
+                <Input
+                  type="text"
                   value={data.personalInfo.profilePhoto}
                   onChange={(e) => handlePersonalInfoChange("profilePhoto", e.target.value)}
+                  placeholder="O introduce una URL de imagen"
                 />
+                {data.personalInfo.profilePhoto && (
+                  <img
+                    src={data.personalInfo.profilePhoto || "/placeholder.svg"}
+                    alt="Profile Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-full border"
+                  />
+                )}
               </div>
               <div>
                 <Label htmlFor="profilePhotoBackgroundColor">Color de Fondo Foto de Perfil</Label>
@@ -452,12 +529,19 @@ export default function CurriculumEditor({
                 />
               </div>
               <div>
-                <Label htmlFor="qrCodeImage">URL o Data URL de Imagen de Código QR</Label>
+                <Label htmlFor="qrCodeImage">Imagen de Código QR (URL o Subir Archivo)</Label>
                 <Input
-                  id="qrCodeImage"
+                  id="qrCodeImageFile"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleSingleImageUpload(e, "qrCodeImage")}
+                  className="mb-2"
+                />
+                <Input
+                  type="text"
                   value={data.personalInfo.qrCodeImage || ""}
                   onChange={(e) => handlePersonalInfoChange("qrCodeImage", e.target.value)}
-                  placeholder="data:image/png;base64,..."
+                  placeholder="O introduce una URL o Data URL"
                 />
                 {data.personalInfo.qrCodeImage && (
                   <img
@@ -467,10 +551,17 @@ export default function CurriculumEditor({
                   />
                 )}
               </div>
+              <Button
+                onClick={onClearData}
+                variant="outline"
+                className="w-full mt-4 text-red-500 border-red-500 hover:bg-red-50 hover:text-red-600 bg-transparent"
+              >
+                <Eraser className="h-4 w-4 mr-2" /> Borrar Toda la Información
+              </Button>
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card className="mt-6" ref={(el) => (sectionRefs.current["summary"] = el)}>
             <CardHeader>
               <CardTitle>Resumen Profesional</CardTitle>
             </CardHeader>
@@ -483,7 +574,7 @@ export default function CurriculumEditor({
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card className="mt-6" ref={(el) => (sectionRefs.current["skills"] = el)}>
             <CardHeader>
               <CardTitle>Habilidades</CardTitle>
             </CardHeader>
@@ -507,7 +598,7 @@ export default function CurriculumEditor({
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card className="mt-6" ref={(el) => (sectionRefs.current["languages"] = el)}>
             <CardHeader>
               <CardTitle>Idiomas</CardTitle>
             </CardHeader>
@@ -541,7 +632,7 @@ export default function CurriculumEditor({
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card className="mt-6" ref={(el) => (sectionRefs.current["certifications"] = el)}>
             <CardHeader>
               <CardTitle>Certificaciones</CardTitle>
             </CardHeader>
@@ -554,7 +645,7 @@ export default function CurriculumEditor({
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card className="mt-6" ref={(el) => (sectionRefs.current["interests"] = el)}>
             <CardHeader>
               <CardTitle>Intereses</CardTitle>
             </CardHeader>
@@ -567,7 +658,7 @@ export default function CurriculumEditor({
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card className="mt-6" ref={(el) => (sectionRefs.current["keywords"] = el)}>
             <CardHeader>
               <CardTitle>Palabras Clave (para ATS)</CardTitle>
             </CardHeader>
@@ -584,7 +675,7 @@ export default function CurriculumEditor({
         </TabsContent>
 
         <TabsContent value="experience" className="mt-4">
-          <Card>
+          <Card ref={(el) => (sectionRefs.current["experience"] = el)}>
             <CardHeader>
               <CardTitle>Experiencia Laboral</CardTitle>
             </CardHeader>
@@ -663,7 +754,7 @@ export default function CurriculumEditor({
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card className="mt-6" ref={(el) => (sectionRefs.current["education"] = el)}>
             <CardHeader>
               <CardTitle>Educación</CardTitle>
             </CardHeader>
@@ -727,7 +818,7 @@ export default function CurriculumEditor({
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card className="mt-6" ref={(el) => (sectionRefs.current["projects"] = el)}>
             <CardHeader>
               <CardTitle>Proyectos Destacados</CardTitle>
             </CardHeader>
@@ -776,13 +867,18 @@ export default function CurriculumEditor({
                     />
                   </div>
                   <div>
-                    <Label htmlFor={`project-images-${project.id}`}>URLs de Imágenes (separadas por comas)</Label>
+                    <Label htmlFor={`project-images-${project.id}`}>Imágenes del Proyecto (Subir Archivos)</Label>
                     <Input
                       id={`project-images-${project.id}`}
-                      value={project.imageUrls?.join(", ") || ""}
-                      onChange={(e) => handleProjectImageUrlsChange(project.id, e.target.value)}
-                      placeholder="URL1, URL2, URL3..."
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => handleProjectImagesUpload(e, project.id)}
+                      className="mb-2"
                     />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Las imágenes se mostrarán en la vista previa.
+                    </p>
                     {project.imageUrls && project.imageUrls.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
                         {project.imageUrls.map((url, index) => (
@@ -806,7 +902,7 @@ export default function CurriculumEditor({
         </TabsContent>
 
         <TabsContent value="design" className="mt-4">
-          <Card>
+          <Card ref={(el) => (sectionRefs.current["designOptions"] = el)}>
             <CardHeader>
               <CardTitle>Opciones de Diseño</CardTitle>
             </CardHeader>

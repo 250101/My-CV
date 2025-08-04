@@ -1,62 +1,9 @@
-import { Mail, Phone, MapPin, Globe, Code } from "lucide-react"
+"use client"
 
-interface PersonalInfo {
-  name: string
-  title: string
-  email: string
-  phone: string
-  location: string
-  website: string
-  linkedin: string
-  github: string
-  profilePhoto: string
-  profilePhotoBackgroundColor?: string
-  portfolioTitle: string
-  portfolioDescription: string
-  portfolioWebsite: string
-  qrCodeImage?: string
-}
-
-interface Experience {
-  id: string
-  position: string
-  company: string
-  period: string
-  achievements: string[]
-  keywords: string[]
-}
-
-interface Education {
-  id: string
-  degree: string
-  institution: string
-  period: string
-  details: string
-  gpa?: string
-}
-
-interface Project {
-  id: string
-  name: string
-  description: string
-  technologies: string[]
-  link?: string
-  imageUrls?: string[]
-}
-
-interface CurriculumData {
-  personalInfo: PersonalInfo
-  summary: string
-  experience: Experience[]
-  education: Education[]
-  technicalSkills: string[]
-  softSkills: string[]
-  languages: { id: string; language: string; level: string }[]
-  projects: Project[]
-  certifications: string[]
-  interests: string[]
-  keywords: string[]
-}
+import { Separator } from "@/components/ui/separator"
+import { Mail, Phone, MapPin, Globe, Linkedin, Github, Link, QrCode } from "lucide-react"
+import type { CurriculumData } from "../curriculum-editor"
+import type { RefObject } from "react" // Import RefObject
 
 interface MinimalTemplateProps {
   data: CurriculumData
@@ -67,6 +14,16 @@ interface MinimalTemplateProps {
   customTagPrimaryColor: string
   customTagSecondaryColor: string
   profilePhotoBackgroundColor?: string
+  onSectionClick: (sectionId: string) => void
+  previewRef: RefObject<HTMLDivElement> // New prop for the ref
+}
+
+const themeColors: { [key: string]: { primary: string; secondary: string } } = {
+  orange: { primary: "border-orange-500", secondary: "text-orange-500" },
+  teal: { primary: "border-teal-500", secondary: "text-teal-500" },
+  blue: { primary: "border-blue-500", secondary: "text-blue-500" },
+  green: { primary: "border-green-500", secondary: "text-green-500" },
+  purple: { primary: "border-purple-500", secondary: "text-purple-500" },
 }
 
 export default function MinimalTemplate({
@@ -78,411 +35,290 @@ export default function MinimalTemplate({
   customTagPrimaryColor,
   customTagSecondaryColor,
   profilePhotoBackgroundColor,
+  onSectionClick,
+  previewRef, // Destructure the new prop
 }: MinimalTemplateProps) {
-  const getThemeColors = () => {
-    const themes = {
-      teal: {
-        primaryColor: "#10B981",
-        secondaryColor: "#22C55E",
-        lightBg: "#FFFFFF",
-        darkBg: "#1F2937",
-        lightText: "#1F2937",
-        darkText: "#F9FAFB",
-        lightSecondaryText: "#4B5563",
-        darkSecondaryText: "#D1D5DB",
-      },
-      orange: {
-        primaryColor: "rgb(242,89,13)",
-        secondaryColor: "#16A34A",
-        lightBg: "#FFFFFF",
-        darkBg: "#1F2937",
-        lightText: "#1F2937",
-        darkText: "#F9FAFB",
-        lightSecondaryText: "#4B5563",
-        darkSecondaryText: "#D1D5DB",
-      },
-      blue: {
-        primaryColor: "#3B82F6",
-        secondaryColor: "#9333EA",
-        lightBg: "#FFFFFF",
-        darkBg: "#1F2937",
-        lightText: "#1F2937",
-        darkText: "#F9FAFB",
-        lightSecondaryText: "#4B5563",
-        darkSecondaryText: "#D1D5DB",
-      },
-      green: {
-        primaryColor: "#22C55E",
-        secondaryColor: "#3B82F6",
-        lightBg: "#FFFFFF",
-        darkBg: "#1F2937",
-        lightText: "#1F2937",
-        darkText: "#F9FAFB",
-        lightSecondaryText: "#4B5563",
-        darkSecondaryText: "#D1D5DB",
-      },
-      purple: {
-        primaryColor: "#9333EA",
-        secondaryColor: "#EC4899",
-        lightBg: "#FFFFFF",
-        darkBg: "#1F2937",
-        lightText: "#1F2937",
-        darkText: "#F9FAFB",
-        lightSecondaryText: "#4B5563",
-        darkSecondaryText: "#D1D5DB",
-      },
-    }
-    return themes[selectedTheme as keyof typeof themes] || themes.orange
-  }
+  const currentTheme = themeColors[selectedTheme] || themeColors.orange
+  const borderColorClass = customBackgroundColor ? "" : currentTheme.primary
+  const textColorClass = customTextColor ? "" : currentTheme.secondary
 
-  const colors = getThemeColors()
-
-  const finalBgColor = customBackgroundColor || (isDarkMode ? colors.darkBg : colors.lightBg)
-  const finalTextColor = customTextColor === "white" ? colors.darkText : colors.lightText
-  const finalSecondaryTextColor = customTextColor === "white" ? colors.darkSecondaryText : colors.lightSecondaryText
-
-  const getTagStyle = (isPrimaryTag: boolean) => {
-    const customColor = isPrimaryTag ? customTagPrimaryColor : customTagSecondaryColor
-    const defaultBg = isPrimaryTag
-      ? isDarkMode
-        ? "rgba(255, 255, 255, 0.1)"
-        : "rgb(243, 244, 246)" // gray-100
-      : isDarkMode
-        ? "rgba(255, 255, 255, 0.05)"
-        : "rgb(243, 244, 246)" // gray-100
-    const defaultText = isPrimaryTag
-      ? isDarkMode
-        ? colors.darkText
-        : colors.lightText
-      : isDarkMode
-        ? colors.darkSecondaryText
-        : colors.lightSecondaryText
-
-    return {
-      backgroundColor: customColor || defaultBg,
-      color: customColor ? (customTextColor === "white" ? "white" : "black") : defaultText,
-      border: "1px solid transparent", // Add a subtle border
-      borderColor: isDarkMode ? "rgba(255,255,255,0.2)" : "rgb(209, 213, 219)", // gray-300
-    }
-  }
+  const dynamicBorderStyle = customBackgroundColor ? { borderColor: customBackgroundColor } : {}
+  const dynamicTextStyle = customTextColor ? { color: customTextColor } : {}
+  const dynamicTagPrimaryStyle = customTagPrimaryColor ? { backgroundColor: customTagPrimaryColor } : {}
+  const dynamicTagSecondaryStyle = customTagSecondaryColor ? { color: customTagSecondaryColor } : {}
 
   return (
     <div
-      className={`max-w-4xl mx-auto p-8 shadow-2xl print:shadow-none`}
-      style={{
-        backgroundColor: finalBgColor,
-        color: finalTextColor,
-        fontFamily: "sans-serif", // Minimalist font
-      }}
+      ref={previewRef} // Apply the ref here
+      className={`font-sans p-8 shadow-lg mx-auto my-8 max-w-3xl border-t-8 ${borderColorClass} ${
+        isDarkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-800"
+      }`}
+      style={dynamicBorderStyle}
     >
-      {/* Header */}
-      <header className="mb-8 text-center">
-        <h1 className={`text-4xl font-bold mb-1`} style={{ color: finalTextColor }}>
+      {/* Header Section */}
+      <header className="text-center mb-8" onClick={() => onSectionClick("personalInfo")}>
+        <h1 className="text-4xl font-bold mb-2" style={dynamicTextStyle}>
           {data.personalInfo.name}
         </h1>
-        <h2 className={`text-xl font-medium`} style={{ color: finalSecondaryTextColor }}>
-          {data.personalInfo.title}
-        </h2>
-        <div
-          className={`flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 text-sm`}
-          style={{ color: finalSecondaryTextColor }}
-        >
+        <h2 className="text-2xl font-semibold text-gray-600 dark:text-gray-300 mb-4">{data.personalInfo.title}</h2>
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-gray-700 dark:text-gray-200">
           {data.personalInfo.email && (
-            <span className="flex items-center gap-1">
-              <Mail className="w-3 h-3" />
-              {data.personalInfo.email}
-            </span>
+            <div className="flex items-center gap-1">
+              <Mail className="w-4 h-4" style={dynamicTextStyle} />
+              <span>{data.personalInfo.email}</span>
+            </div>
           )}
           {data.personalInfo.phone && (
-            <span className="flex items-center gap-1">
-              <Phone className="w-3 h-3" />
-              {data.personalInfo.phone}
-            </span>
+            <div className="flex items-center gap-1">
+              <Phone className="w-4 h-4" style={dynamicTextStyle} />
+              <span>{data.personalInfo.phone}</span>
+            </div>
           )}
           {data.personalInfo.location && (
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              {data.personalInfo.location}
-            </span>
-          )}
-          {data.personalInfo.linkedin && (
-            <span className="flex items-center gap-1">
-              <Globe className="w-3 h-3" />
-              {data.personalInfo.linkedin}
-            </span>
+            <div className="flex items-center gap-1">
+              <MapPin className="w-4 h-4" style={dynamicTextStyle} />
+              <span>{data.personalInfo.location}</span>
+            </div>
           )}
           {data.personalInfo.website && (
-            <span className="flex items-center gap-1">
-              <Globe className="w-3 h-3" />
-              {data.personalInfo.website}
-            </span>
+            <a
+              href={data.personalInfo.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:underline"
+            >
+              <Globe className="w-4 h-4" style={dynamicTextStyle} />
+              <span>{data.personalInfo.website}</span>
+            </a>
+          )}
+          {data.personalInfo.linkedin && (
+            <a
+              href={data.personalInfo.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:underline"
+            >
+              <Linkedin className="w-4 h-4" style={dynamicTextStyle} />
+              <span>LinkedIn</span>
+            </a>
           )}
           {data.personalInfo.github && (
-            <span className="flex items-center gap-1">
-              <Code className="w-3 h-3" />
-              {data.personalInfo.github}
-            </span>
+            <a
+              href={data.personalInfo.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:underline"
+            >
+              <Github className="w-4 h-4" style={dynamicTextStyle} />
+              <span>GitHub</span>
+            </a>
           )}
         </div>
       </header>
 
+      <Separator className="mb-8" />
+
       {/* Summary */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalSecondaryTextColor }}>
-          Resumen Profesional
-        </h3>
-        <p className={`text-sm leading-relaxed`} style={{ color: finalSecondaryTextColor }}>
-          {data.summary}
-        </p>
-      </section>
+      {data.summary && (
+        <section className="mb-8" onClick={() => onSectionClick("summary")}>
+          <h3 className="text-2xl font-bold mb-4" style={dynamicTextStyle}>
+            Resumen Profesional
+          </h3>
+          <p className="text-gray-700 dark:text-gray-200 leading-relaxed">{data.summary}</p>
+        </section>
+      )}
 
       {/* Experience */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalSecondaryTextColor }}>
-          Experiencia Laboral
-        </h3>
-        <div className="space-y-4">
-          {data.experience.map((exp, index) => (
-            <div key={exp.id} className="text-sm">
-              <div className="flex justify-between items-baseline mb-1">
-                <h4 className={`font-semibold`} style={{ color: finalTextColor }}>
-                  {exp.position} - {exp.company}
+      {data.experience && data.experience.length > 0 && (
+        <section className="mb-8" onClick={() => onSectionClick("experience")}>
+          <h3 className="text-2xl font-bold mb-4" style={dynamicTextStyle}>
+            Experiencia Laboral
+          </h3>
+          <div className="space-y-6">
+            {data.experience.map((exp, index) => (
+              <div key={index}>
+                <h4 className="text-xl font-semibold" style={dynamicTextStyle}>
+                  {exp.position}
                 </h4>
-                <span style={{ color: finalSecondaryTextColor }}>{exp.period}</span>
-              </div>
-              <ul className={`list-disc list-inside space-y-0.5`} style={{ color: finalSecondaryTextColor }}>
-                {exp.achievements.map((achievement, i) => (
-                  <li key={i}>{achievement}</li>
-                ))}
-              </ul>
-              {exp.keywords && exp.keywords.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {exp.keywords.map((keyword, i) => (
-                    <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(true)}>
-                      {keyword}
-                    </span>
+                <p className="text-gray-600 dark:text-gray-300 flex justify-between items-center text-sm mb-1">
+                  <span>{exp.company}</span>
+                  <span>{exp.period}</span>
+                </p>
+                <ul className="list-disc pl-5 text-gray-700 dark:text-gray-200 text-sm space-y-1">
+                  {exp.achievements.map((achievement, i) => (
+                    <li key={i}>{achievement}</li>
                   ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Education */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalSecondaryTextColor }}>
-          Educación
-        </h3>
-        <div className="space-y-4">
-          {data.education.map((edu) => (
-            <div key={edu.id} className="text-sm">
-              <div className="flex justify-between items-baseline mb-1">
-                <h4 className={`font-semibold`} style={{ color: finalTextColor }}>
+      {data.education && data.education.length > 0 && (
+        <section className="mb-8" onClick={() => onSectionClick("education")}>
+          <h3 className="text-2xl font-bold mb-4" style={dynamicTextStyle}>
+            Educación
+          </h3>
+          <div className="space-y-6">
+            {data.education.map((edu, index) => (
+              <div key={index}>
+                <h4 className="text-xl font-semibold" style={dynamicTextStyle}>
                   {edu.degree}
                 </h4>
-                <span style={{ color: finalSecondaryTextColor }}>{edu.period}</span>
+                <p className="text-gray-600 dark:text-gray-300 flex justify-between items-center text-sm mb-1">
+                  <span>{edu.institution}</span>
+                  <span>{edu.period}</span>
+                </p>
+                <p className="text-gray-700 dark:text-gray-200 text-sm">{edu.details}</p>
+                {edu.gpa && <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">GPA: {edu.gpa}</p>}
               </div>
-              <p style={{ color: finalSecondaryTextColor }}>{edu.institution}</p>
-              {edu.details && <p style={{ color: finalSecondaryTextColor }}>{edu.details}</p>}
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Skills */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalSecondaryTextColor }}>
-          Habilidades
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <h4 className={`font-semibold mb-1`} style={{ color: finalTextColor }}>
-              Técnicas:
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {data.technicalSkills.map((skill, i) => (
-                <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(true)}>
-                  {skill}
-                </span>
-              ))}
+      {(data.technicalSkills.length > 0 || data.softSkills.length > 0) && (
+        <section className="mb-8" onClick={() => onSectionClick("skills")}>
+          <h3 className="text-2xl font-bold mb-4" style={dynamicTextStyle}>
+            Habilidades
+          </h3>
+          {data.technicalSkills.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-lg font-semibold mb-2">Técnicas</h4>
+              <p className="text-gray-700 dark:text-gray-200 text-sm">{data.technicalSkills.join(", ")}</p>
             </div>
-          </div>
-          <div>
-            <h4 className={`font-semibold mb-1`} style={{ color: finalTextColor }}>
-              Interpersonales:
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {data.softSkills.map((skill, i) => (
-                <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(false)}>
-                  {skill}
-                </span>
-              ))}
+          )}
+          {data.softSkills.length > 0 && (
+            <div>
+              <h4 className="text-lg font-semibold mb-2">Interpersonales</h4>
+              <p className="text-gray-700 dark:text-gray-200 text-sm">{data.softSkills.join(", ")}</p>
             </div>
-          </div>
-        </div>
-      </section>
+          )}
+        </section>
+      )}
 
-      {/* Languages and Interests */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <section>
-          <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalSecondaryTextColor }}>
+      {/* Projects */}
+      {data.projects && data.projects.length > 0 && (
+        <section className="mb-8" onClick={() => onSectionClick("projects")}>
+          <h3 className="text-2xl font-bold mb-4" style={dynamicTextStyle}>
+            Proyectos Destacados
+          </h3>
+          <div className="space-y-6">
+            {data.projects.map((project, index) => (
+              <div key={index}>
+                <h4 className="text-xl font-semibold" style={dynamicTextStyle}>
+                  {project.name}
+                </h4>
+                {project.link && (
+                  <a
+                    href={project.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mb-1"
+                  >
+                    <Link className="w-4 h-4" />
+                    {project.link}
+                  </a>
+                )}
+                <p className="text-gray-700 dark:text-gray-200 text-sm mb-2">{project.description}</p>
+                {project.technologies && project.technologies.length > 0 && (
+                  <p className="text-gray-600 dark:text-gray-300 text-xs">
+                    Tecnologías: {project.technologies.join(", ")}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Languages */}
+      {data.languages.length > 0 && (
+        <section className="mb-8" onClick={() => onSectionClick("languages")}>
+          <h3 className="text-2xl font-bold mb-4" style={dynamicTextStyle}>
             Idiomas
           </h3>
-          <ul className="text-sm space-y-1">
-            {data.languages.map((lang) => (
-              <li key={lang.id} className="flex justify-between">
-                <span style={{ color: finalTextColor }}>{lang.language}</span>
-                <span style={{ color: finalSecondaryTextColor }}>{lang.level}</span>
+          <ul className="list-disc pl-5 text-gray-700 dark:text-gray-200 text-sm space-y-1">
+            {data.languages.map((lang, index) => (
+              <li key={index}>
+                <span className="font-semibold">{lang.language}:</span> {lang.level}
               </li>
             ))}
           </ul>
         </section>
-        <section>
-          <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalSecondaryTextColor }}>
-            Intereses
-          </h3>
-          <div className="flex flex-wrap gap-1 text-sm">
-            {data.interests.map((interest, i) => (
-              <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(false)}>
-                {interest}
-              </span>
-            ))}
-          </div>
-        </section>
-      </div>
+      )}
 
       {/* Certifications */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalSecondaryTextColor }}>
-          Certificaciones
-        </h3>
-        <div className="flex flex-wrap gap-1 text-sm">
-          {data.certifications.map((cert, i) => (
-            <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(true)}>
-              {cert}
-            </span>
-          ))}
-        </div>
-      </section>
+      {data.certifications.length > 0 && (
+        <section className="mb-8" onClick={() => onSectionClick("certifications")}>
+          <h3 className="text-2xl font-bold mb-4" style={dynamicTextStyle}>
+            Certificaciones
+          </h3>
+          <ul className="list-disc pl-5 text-gray-700 dark:text-gray-200 text-sm space-y-1">
+            {data.certifications.map((cert, index) => (
+              <li key={index}>{cert}</li>
+            ))}
+          </ul>
+        </section>
+      )}
 
-      {/* Proyectos Destacados */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalSecondaryTextColor }}>
-          Proyectos Destacados
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {data.projects.length > 0 ? (
-            data.projects.map((project) => (
-              <div
-                key={project.id}
-                className={`rounded-lg overflow-hidden shadow-md transition-colors`}
-                style={{
-                  backgroundColor: isDarkMode ? "rgb(31, 41, 55)" : "rgb(249, 250, 251)", // gray-900 or gray-100
-                  border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
-                }}
-              >
-                <div className="flex flex-wrap justify-center gap-2 p-2">
-                  {project.imageUrls && project.imageUrls.length > 0 ? (
-                    project.imageUrls.map((url, imgIndex) => (
-                      <img
-                        key={imgIndex}
-                        src={url || "/placeholder.svg?height=100&width=100"}
-                        alt={`Proyecto ${project.name} imagen ${imgIndex + 1}`}
-                        className="w-24 h-24 object-cover rounded-md"
-                      />
-                    ))
-                  ) : (
-                    <img
-                      src="/placeholder.svg?height=100&width=100"
-                      alt={`Proyecto ${project.name} placeholder`}
-                      className="w-24 h-24 object-cover rounded-md"
-                    />
-                  )}
-                </div>
-                <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
-                  {project.name}
-                </p>
-              </div>
-            ))
-          ) : (
-            <>
-              <div
-                className={`rounded-lg overflow-hidden shadow-md transition-colors`}
-                style={{
-                  backgroundColor: isDarkMode ? "rgb(31, 41, 55)" : "rgb(249, 250, 251)",
-                  border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
-                }}
-              >
-                <div className="flex flex-wrap justify-center gap-2 p-2">
-                  <img
-                    src="/placeholder.svg?height=100&width=100"
-                    alt="Proyecto Placeholder 1"
-                    className="w-24 h-24 object-cover rounded-md"
-                  />
-                </div>
-                <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
-                  [Nombre del Proyecto 1]
-                </p>
-              </div>
-              <div
-                className={`rounded-lg overflow-hidden shadow-md transition-colors`}
-                style={{
-                  backgroundColor: isDarkMode ? "rgb(31, 41, 55)" : "rgb(249, 250, 251)",
-                  border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
-                }}
-              >
-                <div className="flex flex-wrap justify-center gap-2 p-2">
-                  <img
-                    src="/placeholder.svg?height=100&width=100"
-                    alt="Proyecto Placeholder 2"
-                    className="w-24 h-24 object-cover rounded-md"
-                  />
-                </div>
-                <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
-                  [Nombre del Proyecto 2]
-                </p>
-              </div>
-              <div
-                className={`rounded-lg overflow-hidden shadow-md transition-colors`}
-                style={{
-                  backgroundColor: isDarkMode ? "rgb(31, 41, 55)" : "rgb(249, 250, 251)",
-                  border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
-                }}
-              >
-                <div className="flex flex-wrap justify-center gap-2 p-2">
-                  <img
-                    src="/placeholder.svg?height=100&width=100"
-                    alt="Proyecto Placeholder 3"
-                    className="w-24 h-24 object-cover rounded-md"
-                  />
-                </div>
-                <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
-                  [Nombre del Proyecto 3]
-                </p>
-              </div>
-              <div
-                className={`rounded-lg overflow-hidden shadow-md transition-colors`}
-                style={{
-                  backgroundColor: isDarkMode ? "rgb(31, 41, 55)" : "rgb(249, 250, 251)",
-                  border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
-                }}
-              >
-                <div className="flex flex-wrap justify-center gap-2 p-2">
-                  <img
-                    src="/placeholder.svg?height=100&width=100"
-                    alt="Proyecto Placeholder 4"
-                    className="w-24 h-24 object-cover rounded-md"
-                  />
-                </div>
-                <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
-                  [Nombre del Proyecto 4]
-                </p>
-              </div>
-            </>
+      {/* Interests */}
+      {data.interests.length > 0 && (
+        <section className="mb-8" onClick={() => onSectionClick("interests")}>
+          <h3 className="text-2xl font-bold mb-4" style={dynamicTextStyle}>
+            Intereses
+          </h3>
+          <p className="text-gray-700 dark:text-gray-200 text-sm">{data.interests.join(", ")}</p>
+        </section>
+      )}
+
+      {/* Keywords (ATS specific) */}
+      {data.keywords.length > 0 && (
+        <section className="mb-8" onClick={() => onSectionClick("keywords")}>
+          <h3 className="text-2xl font-bold mb-4" style={dynamicTextStyle}>
+            Palabras Clave (ATS)
+          </h3>
+          <p className="text-gray-700 dark:text-gray-200 text-sm">{data.keywords.join(", ")}</p>
+        </section>
+      )}
+
+      {/* Portfolio/QR Code Section (Optional for Minimal, but included if data exists) */}
+      {(data.personalInfo.portfolioTitle || data.personalInfo.qrCodeImage) && (
+        <section className="text-center mt-8" onClick={() => onSectionClick("personalInfo")}>
+          <h3 className="text-2xl font-bold mb-4 flex items-center justify-center gap-2" style={dynamicTextStyle}>
+            <QrCode className="w-6 h-6" /> {data.personalInfo.portfolioTitle || "Mi Portfolio"}
+          </h3>
+          {data.personalInfo.portfolioDescription && (
+            <p className="text-gray-700 dark:text-gray-200 mb-4">{data.personalInfo.portfolioDescription}</p>
           )}
-        </div>
-      </section>
+          {data.personalInfo.qrCodeImage && (
+            <div className="flex justify-center mb-4">
+              <img
+                src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
+                alt="QR Code"
+                className="w-32 h-32 object-contain border border-gray-200 dark:border-gray-700 rounded-md"
+              />
+            </div>
+          )}
+          {data.personalInfo.portfolioWebsite && (
+            <a
+              href={data.personalInfo.portfolioWebsite}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-colors ${
+                customTagPrimaryColor ? "" : currentTheme.primary
+              } text-white hover:opacity-90`}
+              style={customTagPrimaryColor ? { backgroundColor: customTagPrimaryColor } : {}}
+            >
+              <Link className="w-5 h-5" />
+              Visitar Portfolio
+            </a>
+          )}
+        </section>
+      )}
     </div>
   )
 }

@@ -1,62 +1,11 @@
-import { Mail, Phone, MapPin, Globe, Code } from "lucide-react"
+"use client"
 
-interface PersonalInfo {
-  name: string
-  title: string
-  email: string
-  phone: string
-  location: string
-  website: string
-  linkedin: string
-  github: string
-  profilePhoto: string
-  profilePhotoBackgroundColor?: string
-  portfolioTitle: string
-  portfolioDescription: string
-  portfolioWebsite: string
-  qrCodeImage?: string
-}
-
-interface Experience {
-  id: string
-  position: string
-  company: string
-  period: string
-  achievements: string[]
-  keywords: string[]
-}
-
-interface Education {
-  id: string
-  degree: string
-  institution: string
-  period: string
-  details: string
-  gpa?: string
-}
-
-interface Project {
-  id: string
-  name: string
-  description: string
-  technologies: string[]
-  link?: string
-  imageUrls?: string[]
-}
-
-interface CurriculumData {
-  personalInfo: PersonalInfo
-  summary: string
-  experience: Experience[]
-  education: Education[]
-  technicalSkills: string[]
-  softSkills: string[]
-  languages: { id: string; language: string; level: string }[]
-  projects: Project[]
-  certifications: string[]
-  interests: string[]
-  keywords: string[]
-}
+import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Mail, Globe, Code, Heart, Link, QrCode } from "lucide-react"
+import type { CurriculumData } from "../curriculum-editor"
+import type { RefObject } from "react" // Import RefObject
 
 interface CorporateTemplateProps {
   data: CurriculumData
@@ -67,6 +16,16 @@ interface CorporateTemplateProps {
   customTagPrimaryColor: string
   customTagSecondaryColor: string
   profilePhotoBackgroundColor?: string
+  onSectionClick: (sectionId: string) => void
+  previewRef: RefObject<HTMLDivElement> // New prop for the ref
+}
+
+const themeColors: { [key: string]: { primary: string; secondary: string } } = {
+  orange: { primary: "bg-orange-700", secondary: "text-orange-700" },
+  teal: { primary: "bg-teal-700", secondary: "text-teal-700" },
+  blue: { primary: "bg-blue-700", secondary: "text-blue-700" },
+  green: { primary: "bg-green-700", secondary: "text-green-700" },
+  purple: { primary: "bg-purple-700", secondary: "text-purple-700" },
 }
 
 export default function CorporateTemplate({
@@ -78,358 +37,328 @@ export default function CorporateTemplate({
   customTagPrimaryColor,
   customTagSecondaryColor,
   profilePhotoBackgroundColor,
+  onSectionClick,
+  previewRef, // Destructure the new prop
 }: CorporateTemplateProps) {
-  const getThemeColors = () => {
-    const themes = {
-      teal: {
-        primaryColor: "#10B981",
-        secondaryColor: "#22C55E",
-        lightBg: "#FFFFFF",
-        darkBg: "#1F2937",
-        lightText: "#1F2937",
-        darkText: "#F9FAFB",
-        lightSecondaryText: "#4B5563",
-        darkSecondaryText: "#D1D5DB",
-      },
-      orange: {
-        primaryColor: "rgb(242,89,13)",
-        secondaryColor: "#16A34A",
-        lightBg: "#FFFFFF",
-        darkBg: "#1F2937",
-        lightText: "#1F2937",
-        darkText: "#F9FAFB",
-        lightSecondaryText: "#4B5563",
-        darkSecondaryText: "#D1D5DB",
-      },
-      blue: {
-        primaryColor: "#3B82F6",
-        secondaryColor: "#9333EA",
-        lightBg: "#FFFFFF",
-        darkBg: "#1F2937",
-        lightText: "#1F2937",
-        darkText: "#F9FAFB",
-        lightSecondaryText: "#4B5563",
-        darkSecondaryText: "#D1D5DB",
-      },
-      green: {
-        primaryColor: "#22C55E",
-        secondaryColor: "#3B82F6",
-        lightBg: "#FFFFFF",
-        darkBg: "#1F2937",
-        lightText: "#1F2937",
-        darkText: "#F9FAFB",
-        lightSecondaryText: "#4B5563",
-        darkSecondaryText: "#D1D5DB",
-      },
-      purple: {
-        primaryColor: "#9333EA",
-        secondaryColor: "#EC4899",
-        lightBg: "#FFFFFF",
-        darkBg: "#1F2937",
-        lightText: "#1F2937",
-        darkText: "#F9FAFB",
-        lightSecondaryText: "#4B5563",
-        darkSecondaryText: "#D1D5DB",
-      },
-    }
-    return themes[selectedTheme as keyof typeof themes] || themes.orange
-  }
+  const currentTheme = themeColors[selectedTheme] || themeColors.orange
+  const primaryColorClass = customBackgroundColor ? "" : currentTheme.primary
+  const secondaryTextColorClass = customTextColor ? "" : currentTheme.secondary
 
-  const colors = getThemeColors()
-
-  const finalBgColor = customBackgroundColor || (isDarkMode ? colors.darkBg : colors.lightBg)
-  const finalTextColor = customTextColor === "white" ? colors.darkText : colors.lightText
-  const finalSecondaryTextColor = customTextColor === "white" ? colors.darkSecondaryText : colors.lightSecondaryText
-
-  // Corporate template typically uses more subdued tags or no tags at all.
-  const getTagStyle = (isPrimaryTag: boolean) => {
-    const customColor = isPrimaryTag ? customTagPrimaryColor : customTagSecondaryColor
-    const defaultBg = isPrimaryTag
-      ? isDarkMode
-        ? "rgba(255, 255, 255, 0.1)"
-        : "rgb(243, 244, 246)" // gray-100
-      : isDarkMode
-        ? "rgba(255,255,255,0.05)"
-        : "rgb(243, 244, 246)" // gray-100
-    const defaultText = isPrimaryTag
-      ? isDarkMode
-        ? colors.darkText
-        : colors.lightText
-      : isDarkMode
-        ? colors.darkSecondaryText
-        : colors.lightSecondaryText
-
-    return {
-      backgroundColor: customColor || defaultBg,
-      color: customColor ? (customTextColor === "white" ? "white" : "black") : defaultText,
-      border: "1px solid transparent", // Add a subtle border
-      borderColor: isDarkMode ? "rgba(255,255,255,0.2)" : "rgb(209, 213, 219)", // gray-300
-    }
-  }
+  const dynamicPrimaryBgStyle = customBackgroundColor ? { backgroundColor: customBackgroundColor } : {}
+  const dynamicSecondaryTextStyle = customTextColor ? { color: customTextColor } : {}
+  const dynamicTagPrimaryStyle = customTagPrimaryColor ? { backgroundColor: customTagPrimaryColor } : {}
+  const dynamicTagSecondaryStyle = customTagSecondaryColor ? { color: customTagSecondaryColor } : {}
 
   return (
     <div
-      className={`max-w-4xl mx-auto p-8 shadow-2xl print:shadow-none`}
-      style={{
-        backgroundColor: finalBgColor,
-        color: finalTextColor,
-        fontFamily: "serif", // More traditional font
-      }}
+      ref={previewRef} // Apply the ref here
+      className={`font-sans shadow-lg mx-auto my-8 max-w-4xl grid grid-cols-3 ${
+        isDarkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-800"
+      }`}
     >
-      {/* Header */}
-      <header className="mb-8 border-b pb-4" style={{ borderColor: colors.primaryColor }}>
-        <h1 className={`text-4xl font-bold mb-1`} style={{ color: finalTextColor }}>
-          {data.personalInfo.name}
-        </h1>
-        <h2 className={`text-xl font-medium`} style={{ color: colors.primaryColor }}>
-          {data.personalInfo.title}
-        </h2>
-        <div className={`flex flex-wrap gap-x-4 gap-y-1 mt-3 text-sm`} style={{ color: finalSecondaryTextColor }}>
-          {data.personalInfo.email && (
-            <span className="flex items-center gap-1">
-              <Mail className="w-3 h-3" style={{ color: colors.primaryColor }} />
-              {data.personalInfo.email}
-            </span>
-          )}
-          {data.personalInfo.phone && (
-            <span className="flex items-center gap-1">
-              <Phone className="w-3 h-3" style={{ color: colors.primaryColor }} />
-              {data.personalInfo.phone}
-            </span>
-          )}
-          {data.personalInfo.location && (
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" style={{ color: colors.primaryColor }} />
-              {data.personalInfo.location}
-            </span>
-          )}
-          {data.personalInfo.linkedin && (
-            <span className="flex items-center gap-1">
-              <Globe className="w-3 h-3" style={{ color: colors.primaryColor }} />
-              {data.personalInfo.linkedin}
-            </span>
-          )}
-          {data.personalInfo.website && (
-            <span className="flex items-center gap-1">
-              <Globe className="w-3 h-3" style={{ color: colors.primaryColor }} />
-              {data.personalInfo.website}
-            </span>
-          )}
-          {data.personalInfo.github && (
-            <span className="flex items-center gap-1">
-              <Code className="w-3 h-3" style={{ color: colors.primaryColor }} />
-              {data.personalInfo.github}
-            </span>
-          )}
-        </div>
-      </header>
-
-      {/* Summary */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: colors.primaryColor }}>
-          Resumen Profesional
-        </h3>
-        <p className={`text-sm leading-relaxed`} style={{ color: finalSecondaryTextColor }}>
-          {data.summary}
-        </p>
-      </section>
-
-      {/* Experience */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: colors.primaryColor }}>
-          Experiencia Laboral
-        </h3>
-        <div className="space-y-4">
-          {data.experience.map((exp, index) => (
-            <div key={exp.id} className="text-sm">
-              <div className="flex justify-between items-baseline mb-1">
-                <h4 className={`font-semibold`} style={{ color: finalTextColor }}>
-                  {exp.position} - {exp.company}
-                </h4>
-                <span style={{ color: finalSecondaryTextColor }}>{exp.period}</span>
-              </div>
-              <ul className={`list-disc list-inside space-y-0.5`} style={{ color: finalSecondaryTextColor }}>
-                {exp.achievements.map((achievement, i) => (
-                  <li key={i}>{achievement}</li>
-                ))}
-              </ul>
-              {exp.keywords && exp.keywords.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {exp.keywords.map((keyword, i) => (
-                    <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(true)}>
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Education */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: colors.primaryColor }}>
-          Educación
-        </h3>
-        <div className="space-y-4">
-          {data.education.map((edu) => (
-            <div key={edu.id} className="text-sm">
-              <div className="flex justify-between items-baseline mb-1">
-                <h4 className={`font-semibold`} style={{ color: finalTextColor }}>
-                  {edu.degree}
-                </h4>
-                <span style={{ color: finalSecondaryTextColor }}>{edu.period}</span>
-              </div>
-              <p style={{ color: finalSecondaryTextColor }}>{edu.institution}</p>
-              {edu.details && <p style={{ color: finalSecondaryTextColor }}>{edu.details}</p>}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Skills */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: colors.primaryColor }}>
-          Habilidades
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <h4 className={`font-semibold mb-1`} style={{ color: finalTextColor }}>
-              Técnicas:
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {data.technicalSkills.map((skill, i) => (
-                <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(true)}>
-                  {skill}
-                </span>
-              ))}
-            </div>
+      {/* Left Sidebar */}
+      <aside
+        className={`col-span-1 p-6 ${primaryColorClass} text-white flex flex-col items-center`}
+        style={dynamicPrimaryBgStyle}
+      >
+        <div className="mb-6" onClick={() => onSectionClick("personalInfo")}>
+          <div
+            className="relative p-1 rounded-full"
+            style={{ backgroundColor: profilePhotoBackgroundColor || "transparent" }}
+          >
+            <Avatar className="w-28 h-28 border-4 border-white shadow-md">
+              <AvatarImage src={data.personalInfo.profilePhoto || "/placeholder.svg?height=112&width=112"} />
+              <AvatarFallback>{data.personalInfo.name.charAt(0)}</AvatarFallback>
+            </Avatar>
           </div>
-          <div>
-            <h4 className={`font-semibold mb-1`} style={{ color: finalTextColor }}>
-              Interpersonales:
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {data.softSkills.map((skill, i) => (
-                <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(false)}>
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
+          <h2 className="text-2xl font-bold mt-4 text-center">{data.personalInfo.name}</h2>
+          <p className="text-center text-sm opacity-90">{data.personalInfo.title}</p>
         </div>
-      </section>
 
-      {/* Languages and Interests */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <section>
-          <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: colors.primaryColor }}>
-            Idiomas
+        <Separator className="bg-white/30 mb-6 w-full" />
+
+        <section className="mb-6 w-full" onClick={() => onSectionClick("personalInfo")}>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <Mail className="w-5 h-5" /> Contacto
           </h3>
-          <ul className="text-sm space-y-1">
-            {data.languages.map((lang) => (
-              <li key={lang.id} className="flex justify-between">
-                <span style={{ color: finalTextColor }}>{lang.language}</span>
-                <span style={{ color: finalSecondaryTextColor }}>{lang.level}</span>
+          <ul className="text-sm space-y-2">
+            {data.personalInfo.email && (
+              <li>
+                <a href={`mailto:${data.personalInfo.email}`} className="hover:underline">
+                  {data.personalInfo.email}
+                </a>
               </li>
-            ))}
+            )}
+            {data.personalInfo.phone && <li>{data.personalInfo.phone}</li>}
+            {data.personalInfo.location && <li>{data.personalInfo.location}</li>}
+            {data.personalInfo.website && (
+              <li>
+                <a
+                  href={data.personalInfo.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  {data.personalInfo.website}
+                </a>
+              </li>
+            )}
+            {data.personalInfo.linkedin && (
+              <li>
+                <a
+                  href={data.personalInfo.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  LinkedIn
+                </a>
+              </li>
+            )}
+            {data.personalInfo.github && (
+              <li>
+                <a
+                  href={data.personalInfo.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  GitHub
+                </a>
+              </li>
+            )}
           </ul>
         </section>
-        <section>
-          <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: colors.primaryColor }}>
-            Intereses
-          </h3>
-          <div className="flex flex-wrap gap-1 text-sm">
-            {data.interests.map((interest, i) => (
-              <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(false)}>
-                {interest}
-              </span>
-            ))}
-          </div>
-        </section>
-      </div>
 
-      {/* Certifications */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: colors.primaryColor }}>
-          Certificaciones
-        </h3>
-        <div className="flex flex-wrap gap-1 text-sm">
-          {data.certifications.map((cert, i) => (
-            <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(true)}>
-              {cert}
-            </span>
-          ))}
-        </div>
-      </section>
+        {data.technicalSkills.length > 0 && (
+          <section className="mb-6 w-full" onClick={() => onSectionClick("skills")}>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Code className="w-5 h-5" /> Habilidades Técnicas
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {data.technicalSkills.map((skill, index) => (
+                <Badge
+                  key={index}
+                  className={`px-2 py-0.5 rounded-full text-xs bg-white text-gray-800`}
+                  style={dynamicTagPrimaryStyle}
+                >
+                  {skill}
+                </Badge>
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* Projects (Corporate friendly - no images) */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: colors.primaryColor }}>
-          Proyectos
-        </h3>
-        <div className="space-y-4 text-sm">
-          {data.projects.length > 0 ? (
-            data.projects.map((project) => (
-              <div key={project.id}>
-                <h4 className={`font-semibold`} style={{ color: finalTextColor }}>
-                  {project.name}
-                  {project.link && (
-                    <span className="ml-2 text-blue-600 hover:underline">
-                      (
-                      <a href={project.link} target="_blank" rel="noopener noreferrer">
-                        Link
-                      </a>
-                      )
-                    </span>
-                  )}
-                </h4>
-                <p style={{ color: finalSecondaryTextColor }}>{project.description}</p>
-                {project.technologies && project.technologies.length > 0 && (
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {project.technologies.map((tech, i) => (
-                      <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(true)}>
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                )}
+        {data.softSkills.length > 0 && (
+          <section className="mb-6 w-full" onClick={() => onSectionClick("skills")}>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Heart className="w-5 h-5" /> Habilidades Interpersonales
+            </h3>
+            <ul className="text-sm space-y-1">
+              {data.softSkills.map((skill, index) => (
+                <li key={index}>{skill}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {data.languages.length > 0 && (
+          <section className="mb-6 w-full" onClick={() => onSectionClick("languages")}>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Globe className="w-5 h-5" /> Idiomas
+            </h3>
+            <ul className="text-sm space-y-1">
+              {data.languages.map((lang, index) => (
+                <li key={index}>
+                  <span className="font-semibold">{lang.language}:</span> {lang.level}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {data.interests.length > 0 && (
+          <section className="mb-6 w-full" onClick={() => onSectionClick("interests")}>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Heart className="w-5 h-5" /> Intereses
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {data.interests.map((interest, index) => (
+                <Badge
+                  key={index}
+                  className={`px-2 py-0.5 rounded-full text-xs bg-white text-gray-800`}
+                  style={dynamicTagSecondaryStyle}
+                >
+                  {interest}
+                </Badge>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {(data.personalInfo.portfolioTitle || data.personalInfo.qrCodeImage) && (
+          <section className="w-full text-center mt-auto" onClick={() => onSectionClick("personalInfo")}>
+            <h3 className="text-lg font-semibold mb-3 flex items-center justify-center gap-2">
+              <QrCode className="w-5 h-5" /> {data.personalInfo.portfolioTitle || "Portfolio"}
+            </h3>
+            {data.personalInfo.qrCodeImage && (
+              <div className="flex justify-center mb-3">
+                <img
+                  src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
+                  alt="QR Code"
+                  className="w-24 h-24 object-contain bg-white p-1 rounded-md"
+                />
               </div>
-            ))
-          ) : (
-            <p className={`text-sm`} style={{ color: finalSecondaryTextColor }}>
-              No hay proyectos destacados.
-            </p>
-          )}
-        </div>
-      </section>
+            )}
+            {data.personalInfo.portfolioWebsite && (
+              <a
+                href={data.personalInfo.portfolioWebsite}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm hover:underline"
+              >
+                <Link className="w-4 h-4" />
+                Visitar Sitio
+              </a>
+            )}
+          </section>
+        )}
+      </aside>
 
-      {/* QR Code Section (Corporate friendly - text-based link) */}
-      <section className="text-center mt-8">
-        <h3 className={`text-lg font-bold mb-2`} style={{ color: finalTextColor }}>
-          {data.personalInfo.portfolioTitle}
-        </h3>
-        <p className={`text-sm`} style={{ color: finalSecondaryTextColor }}>
-          {data.personalInfo.portfolioDescription}
-        </p>
-        {data.personalInfo.portfolioWebsite && (
-          <p className={`text-sm text-blue-600 hover:underline mt-1`}>
-            <a href={`https://${data.personalInfo.portfolioWebsite}`} target="_blank" rel="noopener noreferrer">
-              {data.personalInfo.portfolioWebsite}
-            </a>
-          </p>
+      {/* Right Content */}
+      <div className="col-span-2 p-8">
+        {/* Summary */}
+        {data.summary && (
+          <section className="mb-8" onClick={() => onSectionClick("summary")}>
+            <h3 className="text-2xl font-bold mb-4" style={dynamicSecondaryTextStyle}>
+              Resumen Profesional
+            </h3>
+            <p className="text-gray-700 dark:text-gray-200 leading-relaxed">{data.summary}</p>
+          </section>
         )}
-        {data.personalInfo.qrCodeImage && (
-          <div className="mt-4 flex justify-center">
-            <img
-              src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
-              alt="QR Code del Portfolio"
-              className="w-24 h-24 object-contain border border-gray-300"
-            />
-          </div>
+
+        {/* Experience */}
+        {data.experience && data.experience.length > 0 && (
+          <section className="mb-8" onClick={() => onSectionClick("experience")}>
+            <h3 className="text-2xl font-bold mb-4" style={dynamicSecondaryTextStyle}>
+              Experiencia Laboral
+            </h3>
+            <div className="space-y-6">
+              {data.experience.map((exp, index) => (
+                <div key={index}>
+                  <h4 className="text-xl font-semibold" style={dynamicSecondaryTextStyle}>
+                    {exp.position}
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-300 flex justify-between items-center text-sm mb-1">
+                    <span>{exp.company}</span>
+                    <span>{exp.period}</span>
+                  </p>
+                  <ul className="list-disc pl-5 text-gray-700 dark:text-gray-200 text-sm space-y-1">
+                    {exp.achievements.map((achievement, i) => (
+                      <li key={i}>{achievement}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
-      </section>
+
+        {/* Education */}
+        {data.education && data.education.length > 0 && (
+          <section className="mb-8" onClick={() => onSectionClick("education")}>
+            <h3 className="text-2xl font-bold mb-4" style={dynamicSecondaryTextStyle}>
+              Educación
+            </h3>
+            <div className="space-y-6">
+              {data.education.map((edu, index) => (
+                <div key={index}>
+                  <h4 className="text-xl font-semibold" style={dynamicSecondaryTextStyle}>
+                    {edu.degree}
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-300 flex justify-between items-center text-sm mb-1">
+                    <span>{edu.institution}</span>
+                    <span>{edu.period}</span>
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-200 text-sm">{edu.details}</p>
+                  {edu.gpa && <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">GPA: {edu.gpa}</p>}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Projects */}
+        {data.projects && data.projects.length > 0 && (
+          <section className="mb-8" onClick={() => onSectionClick("projects")}>
+            <h3 className="text-2xl font-bold mb-4" style={dynamicSecondaryTextStyle}>
+              Proyectos Destacados
+            </h3>
+            <div className="space-y-6">
+              {data.projects.map((project, index) => (
+                <div key={index}>
+                  <h4 className="text-xl font-semibold" style={dynamicSecondaryTextStyle}>
+                    {project.name}
+                  </h4>
+                  {project.link && (
+                    <a
+                      href={project.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mb-1"
+                    >
+                      <Link className="w-4 h-4" />
+                      {project.link}
+                    </a>
+                  )}
+                  <p className="text-gray-700 dark:text-gray-200 text-sm mb-2">{project.description}</p>
+                  {project.technologies && project.technologies.length > 0 && (
+                    <p className="text-gray-600 dark:text-gray-300 text-xs">
+                      Tecnologías: {project.technologies.join(", ")}
+                    </p>
+                  )}
+                  {project.imageUrls && project.imageUrls.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {project.imageUrls.map((url, i) => (
+                        <img
+                          key={i}
+                          src={url || "/placeholder.svg?height=80&width=80"}
+                          alt={`Project Image ${i + 1}`}
+                          className="w-20 h-20 object-cover rounded-md border border-gray-200 dark:border-gray-700"
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Certifications */}
+        {data.certifications.length > 0 && (
+          <section className="mb-8" onClick={() => onSectionClick("certifications")}>
+            <h3 className="text-2xl font-bold mb-4" style={dynamicSecondaryTextStyle}>
+              Certificaciones
+            </h3>
+            <ul className="list-disc pl-5 text-gray-700 dark:text-gray-200 text-sm space-y-1">
+              {data.certifications.map((cert, index) => (
+                <li key={index}>{cert}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Keywords (ATS specific) */}
+        {data.keywords.length > 0 && (
+          <section className="mb-8" onClick={() => onSectionClick("keywords")}>
+            <h3 className="text-2xl font-bold mb-4" style={dynamicSecondaryTextStyle}>
+              Palabras Clave (ATS)
+            </h3>
+            <p className="text-gray-700 dark:text-gray-200 text-sm">{data.keywords.join(", ")}</p>
+          </section>
+        )}
+      </div>
     </div>
   )
 }

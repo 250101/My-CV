@@ -1,62 +1,11 @@
-import { Mail, Phone, MapPin, Globe, Calendar, Award, Code, Languages, Heart, QrCode } from "lucide-react"
+"use client"
 
-interface PersonalInfo {
-  name: string
-  title: string
-  email: string
-  phone: string
-  location: string
-  website: string
-  linkedin: string
-  github: string
-  profilePhoto: string
-  profilePhotoBackgroundColor?: string // Add this line
-  portfolioTitle: string
-  portfolioDescription: string
-  portfolioWebsite: string
-  qrCodeImage?: string
-}
-
-interface Experience {
-  id: string
-  position: string
-  company: string
-  period: string
-  achievements: string[]
-  keywords: string[]
-}
-
-interface Education {
-  id: string
-  degree: string
-  institution: string
-  period: string
-  details: string
-  gpa?: string
-}
-
-interface Project {
-  id: string
-  name: string
-  description: string
-  technologies: string[]
-  link?: string
-  imageUrls?: string[] // Changed to array
-}
-
-interface CurriculumData {
-  personalInfo: PersonalInfo
-  summary: string
-  experience: Experience[]
-  education: Education[]
-  technicalSkills: string[]
-  softSkills: string[]
-  languages: { id: string; language: string; level: string }[]
-  projects: Project[]
-  certifications: string[]
-  interests: string[]
-  keywords: string[]
-}
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Mail, Phone, MapPin, Globe, Linkedin, Github, Link, QrCode } from "lucide-react"
+import type { CurriculumData } from "../curriculum-editor"
+import type { RefObject } from "react" // Import RefObject
 
 interface SocialMediaInspiredTemplateProps {
   data: CurriculumData
@@ -66,7 +15,17 @@ interface SocialMediaInspiredTemplateProps {
   customTextColor: string
   customTagPrimaryColor: string
   customTagSecondaryColor: string
-  profilePhotoBackgroundColor?: string // New prop
+  profilePhotoBackgroundColor?: string
+  onSectionClick: (sectionId: string) => void
+  previewRef: RefObject<HTMLDivElement> // New prop for the ref
+}
+
+const themeColors: { [key: string]: { primary: string; secondary: string } } = {
+  orange: { primary: "bg-orange-500", secondary: "text-orange-500" },
+  teal: { primary: "bg-teal-500", secondary: "text-teal-500" },
+  blue: { primary: "bg-blue-500", secondary: "text-blue-500" },
+  green: { primary: "bg-green-500", secondary: "text-green-500" },
+  purple: { primary: "bg-purple-500", secondary: "text-purple-500" },
 }
 
 export default function SocialMediaInspiredTemplate({
@@ -77,531 +36,360 @@ export default function SocialMediaInspiredTemplate({
   customTextColor,
   customTagPrimaryColor,
   customTagSecondaryColor,
-  profilePhotoBackgroundColor, // Destructure new prop
+  profilePhotoBackgroundColor,
+  onSectionClick,
+  previewRef, // Destructure the new prop
 }: SocialMediaInspiredTemplateProps) {
-  const getThemeColors = () => {
-    const themes = {
-      teal: {
-        primaryColor: "#10B981", // Hex for direct use
-        secondaryColor: "#22C55E", // Hex for direct use
-        lightBg: "#F0FDF4", // teal-50
-        darkBg: "#29303d",
-        lightCardBg: "#F9FAFB", // gray-50
-        darkCardBg: "#3a4250",
-        lightAccentBg: "#CCFBF1", // teal-100
-        lightAccentText: "#0D9488", // teal-800
-      },
-      orange: {
-        primaryColor: "rgb(242,89,13)",
-        secondaryColor: "#16A34A", // green-600
-        lightBg: "#FFF7ED", // orange-50
-        darkBg: "#29303d",
-        lightCardBg: "#F9FAFB", // gray-50
-        darkCardBg: "#3a4250",
-        lightAccentBg: "#FFEDD5", // orange-100
-        lightAccentText: "#9A3412", // orange-800
-      },
-      blue: {
-        primaryColor: "#3B82F6", // blue-500
-        secondaryColor: "#9333EA", // purple-500
-        lightBg: "#EFF6FF", // blue-50
-        darkBg: "#1a202c",
-        lightCardBg: "#F9FAFB", // gray-50
-        darkCardBg: "#2d3748",
-        lightAccentBg: "#DBEAFE", // blue-100
-        lightAccentText: "#1E40AF", // blue-800
-      },
-      green: {
-        primaryColor: "#22C55E", // green-500
-        secondaryColor: "#3B82F6", // blue-500
-        lightBg: "#F0FDF4", // green-50
-        darkBg: "#1f2937",
-        lightCardBg: "#F9FAFB", // gray-50
-        darkCardBg: "#374151",
-        lightAccentBg: "#D1FAE5", // green-100
-        lightAccentText: "#065F46", // green-800
-      },
-      purple: {
-        primaryColor: "#9333EA", // purple-500
-        secondaryColor: "#EC4899", // pink-500
-        lightBg: "#F5F3FF", // purple-50
-        darkBg: "#2d2640",
-        lightCardBg: "#F9FAFB", // gray-50
-        darkCardBg: "#4a3f6b",
-        lightAccentBg: "#EDE9FE", // purple-100
-        lightAccentText: "#5B21B6", // purple-800
-      },
-    }
-    return themes[selectedTheme as keyof typeof themes] || themes.orange // Default to orange
-  }
+  const currentTheme = themeColors[selectedTheme] || themeColors.orange
+  const bgColorClass = customBackgroundColor ? "" : currentTheme.primary
+  const textColorClass = customTextColor ? "" : currentTheme.secondary
+  const tagPrimaryColorClass = customTagPrimaryColor ? "" : "bg-blue-500"
+  const tagSecondaryColorClass = customTagSecondaryColor ? "" : "bg-green-500"
 
-  const colors = getThemeColors()
-
-  // Determine background color
-  const finalBgColor = customBackgroundColor || (isDarkMode ? colors.darkBg : colors.lightBg)
-  // Determine text color
-  const finalTextColor = customTextColor === "white" ? "white" : "black"
-  const finalSecondaryTextColor = customTextColor === "white" ? colors.darkSecondaryText : "rgb(75, 85, 99)" // gray-700
-
-  const cardBgColor = isDarkMode ? colors.darkCardBg : colors.lightCardBg
-
-  // Tag colors logic
-  const getTagStyle = (isPrimaryTag: boolean) => {
-    const customColor = isPrimaryTag ? customTagPrimaryColor : customTagSecondaryColor
-    const defaultBg = isPrimaryTag
-      ? isDarkMode
-        ? `rgba(${colors.primaryColor.replace("rgb(", "").replace(")", "")}, 0.2)`
-        : colors.lightAccentBg
-      : isDarkMode
-        ? `rgba(${colors.secondaryColor.replace("rgb(", "").replace(")", "")}, 0.2)`
-        : "rgb(220, 252, 231)" // Fallback to a light green for secondary in light mode
-    const defaultText = isPrimaryTag
-      ? isDarkMode
-        ? colors.primaryColor
-        : colors.lightAccentText
-      : isDarkMode
-        ? "white"
-        : "rgb(22, 101, 52)" // Fallback to a dark green for secondary in light mode
-
-    return {
-      backgroundColor: customColor || defaultBg,
-      color: customColor ? (customTextColor === "white" ? "white" : "black") : defaultText,
-    }
-  }
+  const dynamicBgStyle = customBackgroundColor ? { backgroundColor: customBackgroundColor } : {}
+  const dynamicTextStyle = customTextColor ? { color: customTextColor } : {}
+  const dynamicTagPrimaryStyle = customTagPrimaryColor ? { backgroundColor: customTagPrimaryColor } : {}
+  const dynamicTagSecondaryStyle = customTagSecondaryColor ? { color: customTagSecondaryColor } : {}
 
   return (
     <div
-      className={`max-w-4xl mx-auto shadow-2xl print:shadow-none`}
-      style={{
-        backgroundColor: finalBgColor,
-        color: finalTextColor,
-      }}
+      ref={previewRef} // Apply the ref here
+      className={`font-sans p-6 shadow-lg mx-auto my-4 max-w-2xl rounded-lg ${
+        isDarkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-800"
+      }`}
+      style={dynamicBgStyle}
     >
-      {/* Sección Header */}
+      {/* Header / Profile Card */}
       <div
-        className={`p-8 border-b-2`}
-        style={{
-          backgroundColor: finalBgColor,
-          borderColor: colors.primaryColor,
-        }}
+        className={`relative ${bgColorClass} h-32 rounded-t-lg`}
+        style={dynamicBgStyle}
+        onClick={() => onSectionClick("personalInfo")}
       >
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* Foto de Perfil */}
-          <div className="flex-shrink-0">
-            <div
-              className={`w-32 h-32 rounded-lg overflow-hidden border-4 shadow-xl`}
-              style={{
-                backgroundColor: profilePhotoBackgroundColor || cardBgColor,
-                borderColor: colors.primaryColor,
-              }}
-            >
-              <img
-                src={data.personalInfo.profilePhoto || "/placeholder.svg?height=300&width=300"}
-                alt="Foto de Perfil"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-
-          {/* Nombre e Información de Contacto */}
-          <div className="flex-1">
-            <h1 className={`text-4xl font-bold mb-2`} style={{ color: finalTextColor }}>
-              {data.personalInfo.name}
-            </h1>
-            <h2 className={`text-xl font-medium mb-4`} style={{ color: colors.primaryColor }}>
-              {data.personalInfo.title}
-            </h2>
-
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-3`} style={{ color: finalSecondaryTextColor }}>
-              <div className="flex items-center gap-2">
-                <Mail className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
-                <span className="text-sm">{data.personalInfo.email}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
-                <span className="text-sm">{data.personalInfo.phone}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
-                <span className="text-sm">{data.personalInfo.location}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Globe className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
-                <span className="text-sm">{data.personalInfo.linkedin}</span>
-              </div>
-            </div>
+        <div className="absolute -bottom-16 left-4">
+          <div className="p-1 rounded-full" style={{ backgroundColor: profilePhotoBackgroundColor || "transparent" }}>
+            <Avatar className="w-28 h-28 border-4 border-white dark:border-gray-800 shadow-md">
+              <AvatarImage src={data.personalInfo.profilePhoto || "/placeholder.svg?height=112&width=112"} />
+              <AvatarFallback>{data.personalInfo.name.charAt(0)}</AvatarFallback>
+            </Avatar>
           </div>
         </div>
       </div>
+      <div className="pt-20 px-4 pb-4">
+        <h1 className="text-3xl font-bold" style={dynamicTextStyle}>
+          {data.personalInfo.name}
+        </h1>
+        <h2 className="text-xl text-gray-600 dark:text-gray-300 mb-4">{data.personalInfo.title}</h2>
 
-      <div className="p-8">
-        {/* Resumen Profesional */}
-        <section className="mb-8">
-          <h3
-            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-          >
-            Resumen Profesional
+        <div className="flex flex-wrap gap-3 text-sm text-gray-700 dark:text-gray-200 mb-4">
+          {data.personalInfo.email && (
+            <div className="flex items-center gap-1">
+              <Mail className="w-4 h-4" style={dynamicTextStyle} />
+              <span>{data.personalInfo.email}</span>
+            </div>
+          )}
+          {data.personalInfo.phone && (
+            <div className="flex items-center gap-1">
+              <Phone className="w-4 h-4" style={dynamicTextStyle} />
+              <span>{data.personalInfo.phone}</span>
+            </div>
+          )}
+          {data.personalInfo.location && (
+            <div className="flex items-center gap-1">
+              <MapPin className="w-4 h-4" style={dynamicTextStyle} />
+              <span>{data.personalInfo.location}</span>
+            </div>
+          )}
+          {data.personalInfo.website && (
+            <a
+              href={data.personalInfo.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:underline"
+            >
+              <Globe className="w-4 h-4" style={dynamicTextStyle} />
+              <span>{data.personalInfo.website}</span>
+            </a>
+          )}
+          {data.personalInfo.linkedin && (
+            <a
+              href={data.personalInfo.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:underline"
+            >
+              <Linkedin className="w-4 h-4" style={dynamicTextStyle} />
+              <span>LinkedIn</span>
+            </a>
+          )}
+          {data.personalInfo.github && (
+            <a
+              href={data.personalInfo.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:underline"
+            >
+              <Github className="w-4 h-4" style={dynamicTextStyle} />
+              <span>GitHub</span>
+            </a>
+          )}
+        </div>
+      </div>
+
+      <Separator className="mb-6" />
+
+      {/* Summary */}
+      {data.summary && (
+        <section className="mb-6 px-4" onClick={() => onSectionClick("summary")}>
+          <h3 className="text-2xl font-bold mb-3" style={dynamicTextStyle}>
+            Resumen
           </h3>
-          <p className={`leading-relaxed`} style={{ color: finalSecondaryTextColor }}>
-            {data.summary}
-          </p>
+          <p className="text-gray-700 dark:text-gray-200 leading-relaxed">{data.summary}</p>
         </section>
+      )}
 
-        {/* Experiencia Laboral */}
-        <section className="mb-8">
-          <h3
-            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-          >
-            Experiencia Laboral
+      {/* Experience */}
+      {data.experience && data.experience.length > 0 && (
+        <section className="mb-6 px-4" onClick={() => onSectionClick("experience")}>
+          <h3 className="text-2xl font-bold mb-3" style={dynamicTextStyle}>
+            Experiencia
           </h3>
-
-          <div className="space-y-6">
+          <div className="space-y-5">
             {data.experience.map((exp, index) => (
-              <div
-                key={exp.id}
-                className={`p-6 rounded-lg border-l-4 shadow-lg`}
-                style={{
-                  backgroundColor: cardBgColor,
-                  borderColor: colors.primaryColor,
-                }}
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h4 className={`text-lg font-semibold`} style={{ color: finalTextColor }}>
-                      {exp.position}
-                    </h4>
-                    <p className={`font-medium`} style={{ color: colors.primaryColor }}>
-                      {exp.company}
-                    </p>
-                  </div>
-                  <div className={`flex items-center text-sm`} style={{ color: finalSecondaryTextColor }}>
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {exp.period}
-                  </div>
-                </div>
-                <ul className={`list-disc list-inside space-y-1`} style={{ color: finalSecondaryTextColor }}>
+              <div key={index} className="border-l-4 border-gray-300 pl-4">
+                <h4 className="text-lg font-semibold" style={dynamicTextStyle}>
+                  {exp.position}
+                </h4>
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-1">
+                  {exp.company} | {exp.period}
+                </p>
+                <ul className="list-disc pl-5 text-gray-700 dark:text-gray-200 text-sm space-y-0.5">
                   {exp.achievements.map((achievement, i) => (
                     <li key={i}>{achievement}</li>
                   ))}
                 </ul>
+                {exp.keywords && exp.keywords.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {exp.keywords.map((keyword, i) => (
+                      <Badge
+                        key={i}
+                        className={`px-2 py-0.5 rounded-full text-xs ${tagPrimaryColorClass}`}
+                        style={dynamicTagPrimaryStyle}
+                      >
+                        {keyword}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </section>
+      )}
 
-        {/* Layout de Dos Columnas para Educación, Habilidades, Idiomas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Educación */}
-          <section>
-            <h3
-              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-            >
-              Educación
-            </h3>
-            <div className="space-y-6">
-              {data.education.map((edu) => (
-                <div
-                  key={edu.id}
-                  className={`p-6 rounded-lg border-l-4 shadow-lg`}
-                  style={{
-                    backgroundColor: cardBgColor,
-                    borderColor: colors.primaryColor,
-                  }}
-                >
-                  <h4 className={`text-lg font-semibold`} style={{ color: finalTextColor }}>
-                    {edu.degree}
-                  </h4>
-                  <p className={`font-medium`} style={{ color: colors.primaryColor }}>
-                    {edu.institution}
-                  </p>
-                  <p className={`text-sm`} style={{ color: finalSecondaryTextColor }}>
-                    {edu.period}
-                  </p>
-                  <p className={`mt-2`} style={{ color: finalSecondaryTextColor }}>
-                    {edu.details}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
+      {/* Education */}
+      {data.education && data.education.length > 0 && (
+        <section className="mb-6 px-4" onClick={() => onSectionClick("education")}>
+          <h3 className="text-2xl font-bold mb-3" style={dynamicTextStyle}>
+            Educación
+          </h3>
+          <div className="space-y-5">
+            {data.education.map((edu, index) => (
+              <div key={index} className="border-l-4 border-gray-300 pl-4">
+                <h4 className="text-lg font-semibold" style={dynamicTextStyle}>
+                  {edu.degree}
+                </h4>
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-1">
+                  {edu.institution} | {edu.period}
+                </p>
+                <p className="text-gray-700 dark:text-gray-200 text-sm">{edu.details}</p>
+                {edu.gpa && <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">GPA: {edu.gpa}</p>}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-          {/* Habilidades */}
-          <section>
-            <h3
-              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-            >
-              <Code className="inline w-6 h-6 mr-2" />
+      {/* Projects */}
+      {data.projects && data.projects.length > 0 && (
+        <section className="mb-6 px-4" onClick={() => onSectionClick("projects")}>
+          <h3 className="text-2xl font-bold mb-3" style={dynamicTextStyle}>
+            Proyectos
+          </h3>
+          <div className="space-y-5">
+            {data.projects.map((project, index) => (
+              <div key={index} className="border-l-4 border-gray-300 pl-4">
+                <h4 className="text-lg font-semibold" style={dynamicTextStyle}>
+                  {project.name}
+                </h4>
+                {project.link && (
+                  <a
+                    href={project.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mb-1"
+                  >
+                    <Link className="w-3 h-3" />
+                    {project.link}
+                  </a>
+                )}
+                <p className="text-gray-700 dark:text-gray-200 text-sm mb-2">{project.description}</p>
+                {project.technologies && project.technologies.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {project.technologies.map((tech, i) => (
+                      <Badge
+                        key={i}
+                        className={`px-2 py-0.5 rounded-full text-xs ${tagSecondaryColorClass}`}
+                        style={dynamicTagSecondaryStyle}
+                      >
+                        {tech}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                {project.imageUrls && project.imageUrls.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {project.imageUrls.map((url, i) => (
+                      <img
+                        key={i}
+                        src={url || "/placeholder.svg?height=80&width=80"}
+                        alt={`Project Image ${i + 1}`}
+                        className="w-20 h-20 object-cover rounded-md border border-gray-200 dark:border-gray-700"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
+        {/* Skills */}
+        {(data.technicalSkills.length > 0 || data.softSkills.length > 0) && (
+          <section onClick={() => onSectionClick("skills")}>
+            <h3 className="text-2xl font-bold mb-3" style={dynamicTextStyle}>
               Habilidades
             </h3>
-            <div className="space-y-4">
-              <div>
-                <h4 className={`font-semibold mb-2`} style={{ color: finalTextColor }}>
-                  Habilidades Técnicas
-                </h4>
+            {data.technicalSkills.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-lg font-semibold mb-2">Técnicas</h4>
                 <div className="flex flex-wrap gap-2">
-                  {data.technicalSkills.map((skill) => (
-                    <span
-                      key={skill}
-                      className={`px-3 py-1 rounded-full text-sm font-medium`}
-                      style={getTagStyle(true)}
+                  {data.technicalSkills.map((skill, index) => (
+                    <Badge
+                      key={index}
+                      className={`px-3 py-1 rounded-full ${tagPrimaryColorClass}`}
+                      style={dynamicTagPrimaryStyle}
                     >
                       {skill}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </div>
+            )}
+            {data.softSkills.length > 0 && (
               <div>
-                <h4 className={`font-semibold mb-2`} style={{ color: finalTextColor }}>
-                  Habilidades Interpersonales
-                </h4>
+                <h4 className="text-lg font-semibold mb-2">Interpersonales</h4>
                 <div className="flex flex-wrap gap-2">
-                  {data.softSkills.map((skill) => (
-                    <span
-                      key={skill}
-                      className={`px-3 py-1 rounded-full text-sm font-medium`}
-                      style={getTagStyle(false)}
+                  {data.softSkills.map((skill, index) => (
+                    <Badge
+                      key={index}
+                      className={`px-3 py-1 rounded-full ${tagSecondaryColorClass}`}
+                      style={dynamicTagSecondaryStyle}
                     >
                       {skill}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </div>
-            </div>
+            )}
           </section>
-        </div>
+        )}
 
-        {/* Idiomas e Intereses */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <section>
-            <h3
-              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-            >
-              <Languages className="inline w-6 h-6 mr-2" />
+        {/* Languages */}
+        {data.languages.length > 0 && (
+          <section onClick={() => onSectionClick("languages")}>
+            <h3 className="text-2xl font-bold mb-3" style={dynamicTextStyle}>
               Idiomas
             </h3>
-            <div className="space-y-3">
-              {data.languages.map((lang) => (
-                <div key={lang.id} className="flex justify-between items-center">
-                  <span className={`font-medium`} style={{ color: finalTextColor }}>
-                    {lang.language}
-                  </span>
-                  <span style={{ color: finalSecondaryTextColor }}>{lang.level}</span>
-                </div>
+            <ul className="space-y-1 text-gray-700 dark:text-gray-200 text-sm">
+              {data.languages.map((lang, index) => (
+                <li key={index}>
+                  <span className="font-semibold">{lang.language}:</span> {lang.level}
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
+        )}
 
-          <section>
-            <h3
-              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-            >
-              <Heart className="inline w-6 h-6 mr-2" />
+        {/* Certifications */}
+        {data.certifications.length > 0 && (
+          <section onClick={() => onSectionClick("certifications")}>
+            <h3 className="text-2xl font-bold mb-3" style={dynamicTextStyle}>
+              Certificaciones
+            </h3>
+            <ul className="list-disc pl-5 text-gray-700 dark:text-gray-200 text-sm space-y-0.5">
+              {data.certifications.map((cert, index) => (
+                <li key={index}>{cert}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Interests */}
+        {data.interests.length > 0 && (
+          <section onClick={() => onSectionClick("interests")}>
+            <h3 className="text-2xl font-bold mb-3" style={dynamicTextStyle}>
               Intereses
             </h3>
             <div className="flex flex-wrap gap-2">
-              {data.interests.map((interest) => (
-                <span
-                  key={interest}
-                  className={`px-3 py-1 rounded-full text-sm font-medium`}
-                  style={getTagStyle(false)} // Interests use secondary tag style
+              {data.interests.map((interest, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    isDarkMode ? "border-gray-600 text-gray-300" : "border-gray-300 text-gray-700"
+                  }`}
                 >
                   {interest}
-                </span>
+                </Badge>
               ))}
             </div>
           </section>
-        </div>
+        )}
 
-        {/* Certificaciones */}
-        <section className="mb-8">
-          <h3
-            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-          >
-            <Award className="inline w-6 h-6 mr-2" />
-            Certificaciones
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {data.certifications.map((cert) => (
-              <span
-                key={cert}
-                className={`px-3 py-1 rounded-full text-sm font-medium`}
-                style={getTagStyle(true)} // Certifications use primary tag style
-              >
-                {cert}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* Proyectos Destacados */}
-        <section className="mb-8">
-          <h3
-            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-          >
-            <Award className="inline w-6 h-6 mr-2" />
-            Proyectos Destacados
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {data.projects.length > 0 ? (
-              data.projects.map((project) => (
-                <div
-                  key={project.id}
-                  className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
-                  style={{
-                    backgroundColor: cardBgColor,
-                    border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined, // gray-600
-                    borderColor: isDarkMode ? colors.primaryColor : undefined, // hover effect
-                  }}
-                >
-                  <div className="flex flex-wrap justify-center gap-2 p-2">
-                    {project.imageUrls && project.imageUrls.length > 0 ? (
-                      project.imageUrls.map((url, imgIndex) => (
-                        <img
-                          key={imgIndex}
-                          src={url || "/placeholder.svg?height=100&width=100"}
-                          alt={`Proyecto ${project.name} imagen ${imgIndex + 1}`}
-                          className="w-24 h-24 object-cover rounded-md"
-                        />
-                      ))
-                    ) : (
-                      <img
-                        src="/placeholder.svg?height=100&width=100"
-                        alt={`Proyecto ${project.name} placeholder`}
-                        className="w-24 h-24 object-cover rounded-md"
-                      />
-                    )}
-                  </div>
-                  <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
-                    {project.name}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <>
-                <div
-                  className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
-                  style={{
-                    backgroundColor: cardBgColor,
-                    border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
-                  }}
-                >
-                  <div className="flex flex-wrap justify-center gap-2 p-2">
-                    <img
-                      src="/placeholder.svg?height=100&width=100"
-                      alt="Proyecto Placeholder 1"
-                      className="w-24 h-24 object-cover rounded-md"
-                    />
-                  </div>
-                  <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
-                    [Nombre del Proyecto 1]
-                  </p>
-                </div>
-                <div
-                  className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
-                  style={{
-                    backgroundColor: cardBgColor,
-                    border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
-                  }}
-                >
-                  <div className="flex flex-wrap justify-center gap-2 p-2">
-                    <img
-                      src="/placeholder.svg?height=100&width=100"
-                      alt="Proyecto Placeholder 2"
-                      className="w-24 h-24 object-cover rounded-md"
-                    />
-                  </div>
-                  <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
-                    [Nombre del Proyecto 2]
-                  </p>
-                </div>
-                <div
-                  className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
-                  style={{
-                    backgroundColor: cardBgColor,
-                    border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
-                  }}
-                >
-                  <div className="flex flex-wrap justify-center gap-2 p-2">
-                    <img
-                      src="/placeholder.svg?height=100&width=100"
-                      alt="Proyecto Placeholder 3"
-                      className="w-24 h-24 object-cover rounded-md"
-                    />
-                  </div>
-                  <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
-                    [Nombre del Proyecto 3]
-                  </p>
-                </div>
-                <div
-                  className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
-                  style={{
-                    backgroundColor: cardBgColor,
-                    border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
-                  }}
-                >
-                  <div className="flex flex-wrap justify-center gap-2 p-2">
-                    <img
-                      src="/placeholder.svg?height=100&width=100"
-                      alt="Proyecto Placeholder 4"
-                      className="w-24 h-24 object-cover rounded-md"
-                    />
-                  </div>
-                  <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
-                    [Nombre del Proyecto 4]
-                  </p>
-                </div>
-              </>
+        {/* Portfolio/QR Code Section */}
+        {(data.personalInfo.portfolioTitle || data.personalInfo.qrCodeImage) && (
+          <section className="md:col-span-2 text-center mt-6" onClick={() => onSectionClick("personalInfo")}>
+            <h3 className="text-2xl font-bold mb-3" style={dynamicTextStyle}>
+              <QrCode className="inline-block w-6 h-6 mr-2" /> {data.personalInfo.portfolioTitle || "Mi Portfolio"}
+            </h3>
+            {data.personalInfo.portfolioDescription && (
+              <p className="text-gray-700 dark:text-gray-200 mb-3">{data.personalInfo.portfolioDescription}</p>
             )}
-          </div>
-        </section>
-
-        {/* Sección Código QR */}
-        <section
-          className={`p-6 rounded-lg border-2 shadow-lg`}
-          style={{
-            backgroundColor: cardBgColor,
-            borderColor: colors.primaryColor,
-          }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className={`text-xl font-bold mb-2`} style={{ color: finalTextColor }}>
-                {data.personalInfo.portfolioTitle}
-              </h3>
-              <p style={{ color: finalSecondaryTextColor }}>{data.personalInfo.portfolioDescription}</p>
-              <p className={`text-sm mt-1`} style={{ color: colors.primaryColor }}>
-                {data.personalInfo.portfolioWebsite}
-              </p>
-            </div>
-            <div
-              className={`p-4 rounded-lg shadow-lg border-2`}
-              style={{
-                backgroundColor: "white", // QR code background is always white for readability
-                borderColor: colors.primaryColor,
-              }}
-            >
-              {data.personalInfo.qrCodeImage ? (
+            {data.personalInfo.qrCodeImage && (
+              <div className="flex justify-center mb-3">
                 <img
                   src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
-                  alt="Código QR del Portfolio"
-                  className="w-32 h-32 object-contain" // Increased size here
+                  alt="QR Code"
+                  className="w-28 h-28 object-contain border border-gray-200 dark:border-gray-700 rounded-md"
                 />
-              ) : (
-                <div className="w-32 h-32 bg-gray-200 rounded flex items-center justify-center">
-                  <QrCode className="w-16 h-16 text-gray-500" /> {/* Icon size adjusted */}
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
+              </div>
+            )}
+            {data.personalInfo.portfolioWebsite && (
+              <a
+                href={data.personalInfo.portfolioWebsite}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-colors ${bgColorClass} text-white hover:opacity-90 text-sm`}
+                style={dynamicBgStyle}
+              >
+                <Link className="w-4 h-4" />
+                Visitar Portfolio
+              </a>
+            )}
+          </section>
+        )}
       </div>
     </div>
   )

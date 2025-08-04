@@ -122,36 +122,73 @@
   }
 }
 
-/* Estilos para impresión/PDF */
+/* Print styles */
 @media print {
   body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    background-color: white !important; /* Ensure white background for printing */
+    background-color: white !important;
+    color: black !important;
   }
 
-  .print\:shadow-none {
-    box-shadow: none !important;
+  /* Hide elements not needed for print */
+  .print\\:hidden {
+    display: none !important;
   }
 
-  .print\:bg-gray-50 {
-    background-color: #f9fafb !important; /* Tailwind gray-50 */
-  }
-
-  .print\:w-full {
+  /* Adjust width for print */
+  .print\\:w-full {
     width: 100% !important;
   }
 
-  .print\:p-0 {
+  /* Remove padding for print */
+  .print\\:p-0 {
     padding: 0 !important;
   }
 
-  .print\:block {
+  /* Ensure block display for print */
+  .print\\:block {
     display: block !important;
   }
 
-  .print\:hidden {
-    display: none !important;
+  /* Remove shadows for print */
+  .print\\:shadow-none {
+    box-shadow: none !important;
+  }
+
+  /* Ensure text colors are readable on print */
+  .dark .text-gray-500 {
+    color: #6b7280 !important; /* Tailwind gray-500 */
+  }
+  .dark .text-gray-400 {
+    color: #9ca3af !important; /* Tailwind gray-400 */
+  }
+  .dark .text-gray-900 {
+    color: #111827 !important; /* Tailwind gray-900 */
+  }
+  .dark .text-gray-50 {
+    color: #f9fafb !important; /* Tailwind gray-50 */
+  }
+  .dark .bg-gray-900 {
+    background-color: white !important;
+  }
+  .dark .bg-gray-950 {
+    background-color: white !important;
+  }
+  .dark .bg-white {
+    background-color: white !important;
+  }
+  .dark .border {
+    border-color: #e5e7eb !important; /* Tailwind gray-200 */
+  }
+  .dark .shadow-lg {
+    box-shadow: none !important;
+  }
+  .dark .text-white {
+    color: black !important;
+  }
+  .dark .text-blue-600 {
+    color: #2563eb !important;
   }
 
   .bg-clip-text {
@@ -195,81 +232,30 @@
     padding: 0 !important;
     box-shadow: none !important;
   }
+}
 
-  /* Ensure text is readable */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p,
-  span,
-  li {
-    color: black !important;
-  }
+/* Custom styles for react-colorful */
+.react-colorful {
+  width: 100% !important;
+  height: 150px !important;
+  box-shadow: none !important;
+}
 
-  /* Specific adjustments for dark mode elements when printing */
-  .dark-mode-print .text-white {
-    color: black !important;
-  }
-  .dark-mode-print .text-gray-300 {
-    color: rgb(75, 85, 99) !important; /* gray-700 */
-  }
-  .dark-mode-print .bg-\[\#29303d\],
-  .dark-mode-print .bg-\[\#3a4250\],
-  .dark-mode-print .bg-\[\#1a202c\],
-  .dark-mode-print .bg-\[\#2d3748\],
-  .dark-mode-print .bg-\[\#1f2937\],
-  .dark-mode-print .bg-\[\#374151\],
-  .dark-mode-print .bg-\[\#2d2640\],
-  .dark-mode-print .bg-\[\#4a3f6b\] {
-    background-color: white !important;
-  }
+.react-colorful__saturation {
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+}
 
-  /* Ensure borders and accents are visible but not too dark */
-  .dark-mode-print .border-\[\#10B981\],
-  \
-  .dark-mode-print .border-\[rgb(242, 89, 13)\],
-  .dark-mode-print .border-\[\#3B82F6\],
-  .dark-mode-print .border-\[\#22C55E\],
-  .dark-mode-print .border-\[\#9333EA\] {
-    border-color: rgb(209, 213, 219) !important; /* gray-300 */
-  }
+.react-colorful__hue,
+.react-colorful__alpha {
+  border-radius: 0 0 0.5rem 0.5rem !important;
+  height: 10px !important;
+  margin-top: 8px !important;
+}
 
-  /* Adjust tag colors for print */
-  .dark-mode-print .px-3.py-1.rounded-full.text-sm.font-medium {
-    background-color: rgb(243, 244, 246) !important; /* light gray */
-    color: rgb(75, 85, 99) !important; /* dark gray text */
-  }
-
-  /* Ensure images are printed */
-  img {
-    display: block !important;
-    max-width: 100% !important;
-    height: auto !important;
-  }
-
-  /* Specific adjustments for text colors if needed */
-  .dark .text-gray-50 {
-    color: #000000 !important; /* Force black text in dark mode for print */
-  }
-  .dark .text-gray-900 {
-    color: #000000 !important;
-  }
-  .dark .text-gray-400 {
-    color: #333333 !important;
-  }
-  .dark .text-gray-500 {
-    color: #555555 !important;
-  }
-  .dark .text-gray-700 {
-    color: #777777 !important;
-  }
-  .dark .text-gray-800 {
-    color: #999999 !important;
-  }
-  .dark .text-gray-950 {
-    color: #bbbbbb !important;
-  }
+.react-colorful__pointer {
+  border-radius: 50% !important;
+  width: 20px !important;
+  height: 20px !important;
+  border: 2px solid white !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) !important;
 }
