@@ -37,10 +37,11 @@ interface PersonalInfo {
   linkedin: string
   github: string
   profilePhoto: string
+  profilePhotoBackgroundColor?: string // New field for profile photo background
   portfolioTitle: string
   portfolioDescription: string
   portfolioWebsite: string
-  qrCodeImage?: string // Add this line for QR code image
+  qrCodeImage?: string
 }
 
 interface Experience {
@@ -67,7 +68,7 @@ interface Project {
   description: string
   technologies: string[]
   link?: string
-  imageUrl?: string
+  imageUrls?: string[] // Changed to array for multiple images
 }
 
 interface CurriculumData {
@@ -128,10 +129,11 @@ const initialData: CurriculumData = {
     linkedin: "linkedin.com/in/martin-moore",
     github: "github.com/martin-moore",
     profilePhoto: "",
+    profilePhotoBackgroundColor: "", // Initial value
     portfolioTitle: "Portfolio y Más",
     portfolioDescription: "Escanea para ver mi portfolio completo y blog culinario",
     portfolioWebsite: "tu-web-portfolio.com",
-    qrCodeImage: "", // Add initial value for QR code image
+    qrCodeImage: "",
   },
   summary:
     "Apasionado de la cocina con experiencia práctica en cocina de bar y organización de eventos gastronómicos para grupos grandes. Profesional administrativo con sólida trayectoria en gestión de procesos, automatización y capacitación de equipos. Busco integrar mi creatividad culinaria con mis habilidades analíticas y de gestión para aportar valor en entornos dinámicos.",
@@ -199,7 +201,7 @@ const initialData: CurriculumData = {
       description: "Desarrollo de aplicación web para gestión integral de eventos gastronómicos",
       technologies: ["React", "Node.js", "MongoDB"],
       link: "github.com/martin-moore/event-management",
-      imageUrl: "",
+      imageUrls: [], // Initialize as empty array
     },
   ],
   certifications: ["Certificación en Power BI", "Curso de Python Avanzado", "Manipulador de Alimentos"],
@@ -256,6 +258,7 @@ export default function CurriculumGenerator() {
   const [customTextColor, setCustomTextColor] = useState("black") // New state for custom text color (black/white)
   const [customTagPrimaryColor, setCustomTagPrimaryColor] = useState("") // New state for custom primary tag color
   const [customTagSecondaryColor, setCustomTagSecondaryColor] = useState("") // New state for custom secondary tag color
+  const [profilePhotoBackgroundColor, setProfilePhotoBackgroundColor] = useState("") // New state for profile photo background
   const fileInputRef = useRef<HTMLInputElement>(null)
   const qrCodeInputRef = useRef<HTMLInputElement>(null) // Ref for QR code file input
 
@@ -355,7 +358,7 @@ export default function CurriculumGenerator() {
     }))
   }
 
-  const handleProjectChange = (id: string, field: keyof Project, value: string | string[]) => {
+  const handleProjectChange = (id: string, field: keyof Project, value: string | string[] | undefined) => {
     setData((prev) => ({
       ...prev,
       projects: prev.projects.map((proj) => (proj.id === id ? { ...proj, [field]: value } : proj)),
@@ -369,7 +372,7 @@ export default function CurriculumGenerator() {
       description: "",
       technologies: [],
       link: "",
-      imageUrl: "",
+      imageUrls: [], // Initialize as empty array
     }
     setData((prev) => ({
       ...prev,
@@ -410,7 +413,6 @@ export default function CurriculumGenerator() {
       const reader = new FileReader()
       reader.onload = (e) => {
         const result = e.target?.result as string
-        console.log("Uploaded image data URL:", result.substring(0, 50) + "...") // Log first 50 chars
         handlePersonalInfoChange("profilePhoto", result)
       }
       reader.readAsDataURL(file)
@@ -423,10 +425,26 @@ export default function CurriculumGenerator() {
       const reader = new FileReader()
       reader.onload = (e) => {
         const result = e.target?.result as string
-        handleProjectChange(projectId, "imageUrl", result)
+        setData((prev) => ({
+          ...prev,
+          projects: prev.projects.map((proj) =>
+            proj.id === projectId ? { ...proj, imageUrls: [...(proj.imageUrls || []), result] } : proj,
+          ),
+        }))
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  const removeProjectImage = (projectId: string, imageUrlToRemove: string) => {
+    setData((prev) => ({
+      ...prev,
+      projects: prev.projects.map((proj) =>
+        proj.id === projectId
+          ? { ...proj, imageUrls: (proj.imageUrls || []).filter((url) => url !== imageUrlToRemove) }
+          : proj,
+      ),
+    }))
   }
 
   const handleQrCodeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -545,6 +563,26 @@ export default function CurriculumGenerator() {
                     onChange={(e) => handlePersonalInfoChange("profilePhoto", e.target.value)}
                     className="mt-2"
                   />
+                </div>
+                {/* Profile Photo Background Color */}
+                <div>
+                  <Label htmlFor="profilePhotoBackgroundColor" className="text-base font-medium">
+                    Color de Fondo de Foto de Perfil
+                  </Label>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Input
+                      id="profilePhotoBackgroundColor"
+                      type="text"
+                      placeholder="Ej: rgb(200, 200, 200) o #C8C8C8"
+                      value={profilePhotoBackgroundColor}
+                      onChange={(e) => setProfilePhotoBackgroundColor(e.target.value)}
+                    />
+                    <div
+                      className="w-8 h-8 rounded-md border"
+                      style={{ backgroundColor: profilePhotoBackgroundColor || "transparent" }}
+                    />
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Color de fondo para la tarjeta de la foto de perfil.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -966,40 +1004,61 @@ export default function CurriculumGenerator() {
                       />
                     </div>
                     <div>
-                      <Label>Imagen del Proyecto (URL o Subir)</Label>
-                      <div className="flex items-center gap-4 mt-2">
-                        {proj.imageUrl ? (
-                          <img
-                            src={proj.imageUrl || "/placeholder.svg"}
-                            alt={`Imagen de ${proj.name}`}
-                            className="w-16 h-16 rounded-lg object-cover border"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                            <Upload className="w-6 h-6 text-gray-400" />
+                      <Label>Imágenes del Proyecto</Label>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {(proj.imageUrls || []).map((url, imgIndex) => (
+                          <div key={imgIndex} className="relative group">
+                            <img
+                              src={url || "/placeholder.svg"}
+                              alt={`Imagen de ${proj.name} ${imgIndex + 1}`}
+                              className="w-20 h-20 rounded-lg object-cover border"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => removeProjectImage(proj.id, url)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
-                        )}
-                        <Button
-                          variant="outline"
-                          onClick={() => document.getElementById(`project-image-upload-${proj.id}`)?.click()}
-                          className="flex items-center gap-2"
-                        >
-                          <Upload className="w-4 h-4" />
-                          Subir Imagen
-                        </Button>
-                        <input
-                          id={`project-image-upload-${proj.id}`}
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleProjectImageUpload(proj.id, e)}
-                          className="hidden"
-                        />
+                        ))}
                       </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => document.getElementById(`project-image-upload-${proj.id}`)?.click()}
+                        className="flex items-center gap-2 mt-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Añadir Imagen
+                      </Button>
+                      <input
+                        id={`project-image-upload-${proj.id}`}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleProjectImageUpload(proj.id, e)}
+                        className="hidden"
+                      />
                       <Input
                         type="text"
                         placeholder="O pega una URL de imagen aquí"
-                        value={proj.imageUrl || ""}
-                        onChange={(e) => handleProjectChange(proj.id, "imageUrl", e.target.value)}
+                        value={""} // This input will be for adding one by one, clear after adding
+                        onChange={(e) => {
+                          const url = e.target.value
+                          if (url) {
+                            setData((prev) => ({
+                              ...prev,
+                              projects: prev.projects.map((p) =>
+                                p.id === proj.id ? { ...p, imageUrls: [...(p.imageUrls || []), url] } : p,
+                              ),
+                            }))
+                            e.target.value = "" // Clear input after adding
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Clear on blur if not added
+                          e.target.value = ""
+                        }}
                         className="mt-2"
                       />
                     </div>
@@ -1360,6 +1419,7 @@ export default function CurriculumGenerator() {
               customTextColor={customTextColor}
               customTagPrimaryColor={customTagPrimaryColor}
               customTagSecondaryColor={customTagSecondaryColor}
+              profilePhotoBackgroundColor={profilePhotoBackgroundColor} // Pass new prop
             />
           </div>
         </TabsContent>

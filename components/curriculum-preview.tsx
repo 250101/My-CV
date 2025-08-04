@@ -16,10 +16,11 @@ interface PersonalInfo {
   linkedin: string
   github: string
   profilePhoto: string
+  profilePhotoBackgroundColor?: string // Add this line
   portfolioTitle: string
   portfolioDescription: string
   portfolioWebsite: string
-  qrCodeImage?: string // Add this line
+  qrCodeImage?: string
 }
 
 interface Experience {
@@ -46,7 +47,7 @@ interface Project {
   description: string
   technologies: string[]
   link?: string
-  imageUrl?: string
+  imageUrls?: string[] // Changed to array
 }
 
 interface CurriculumData {
@@ -72,6 +73,7 @@ interface CurriculumPreviewProps {
   customTextColor: string
   customTagPrimaryColor: string
   customTagSecondaryColor: string
+  profilePhotoBackgroundColor?: string // New prop
 }
 
 export default function CurriculumPreview({
@@ -83,6 +85,7 @@ export default function CurriculumPreview({
   customTextColor,
   customTagPrimaryColor,
   customTagSecondaryColor,
+  profilePhotoBackgroundColor, // Destructure new prop
 }: CurriculumPreviewProps) {
   const templateProps = {
     data,
@@ -92,6 +95,7 @@ export default function CurriculumPreview({
     customTextColor,
     customTagPrimaryColor,
     customTagSecondaryColor,
+    profilePhotoBackgroundColor, // Pass new prop
   }
 
   switch (selectedTemplate) {

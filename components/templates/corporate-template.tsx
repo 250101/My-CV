@@ -8,6 +8,7 @@ interface PersonalInfo {
   location: string
   linkedin: string
   profilePhoto: string
+  profilePhotoBackgroundColor?: string // Add this line
   portfolioTitle: string
   portfolioDescription: string
   portfolioWebsite: string
@@ -35,7 +36,7 @@ interface Project {
   description: string
   technologies: string[]
   link?: string
-  imageUrl?: string // Add this line
+  imageUrls?: string[] // Changed to array
 }
 
 interface CurriculumData {
@@ -58,6 +59,7 @@ interface CorporateTemplateProps {
   customTextColor: string // Not used, but passed for consistency
   customTagPrimaryColor: string // Not used, but passed for consistency
   customTagSecondaryColor: string // Not used, but passed for consistency
+  profilePhotoBackgroundColor?: string // New prop
 }
 
 export default function CorporateTemplate({ data }: CorporateTemplateProps) {
@@ -72,6 +74,7 @@ export default function CorporateTemplate({ data }: CorporateTemplateProps) {
                 src={data.personalInfo.profilePhoto || "/placeholder.svg"}
                 alt="Profile"
                 className="w-24 h-24 rounded-full border-4 border-gray-300 object-cover"
+                style={{ backgroundColor: data.personalInfo.profilePhotoBackgroundColor }}
               />
             </div>
           )}
@@ -220,13 +223,16 @@ export default function CorporateTemplate({ data }: CorporateTemplateProps) {
               <div key={project.id} className="bg-white p-6 rounded-lg border-l-4 border-gray-300">
                 <h4 className="text-lg font-semibold text-black">{project.name}</h4>
                 <p className="text-gray-700 leading-relaxed text-justify">{project.description}</p>
-                {project.imageUrl && (
-                  <div className="mt-2">
-                    <img
-                      src={project.imageUrl || "/placeholder.svg"}
-                      alt="Project Image"
-                      className="w-full h-auto rounded-lg"
-                    />
+                {project.imageUrls && project.imageUrls.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {project.imageUrls.map((url, imgIndex) => (
+                      <img
+                        key={imgIndex}
+                        src={url || "/placeholder.svg"}
+                        alt={`Project Image ${imgIndex + 1}`}
+                        className="w-full h-auto rounded-lg"
+                      />
+                    ))}
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2 mt-2">

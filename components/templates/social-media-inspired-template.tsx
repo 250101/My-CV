@@ -10,10 +10,11 @@ interface PersonalInfo {
   linkedin: string
   github: string
   profilePhoto: string
+  profilePhotoBackgroundColor?: string // Add this line
   portfolioTitle: string
   portfolioDescription: string
   portfolioWebsite: string
-  qrCodeImage?: string // Add this line
+  qrCodeImage?: string
 }
 
 interface Experience {
@@ -40,7 +41,7 @@ interface Project {
   description: string
   technologies: string[]
   link?: string
-  imageUrl?: string // Add this line
+  imageUrls?: string[] // Changed to array
 }
 
 interface CurriculumData {
@@ -65,6 +66,7 @@ interface SocialMediaInspiredTemplateProps {
   customTextColor: string
   customTagPrimaryColor: string
   customTagSecondaryColor: string
+  profilePhotoBackgroundColor?: string // New prop
 }
 
 export default function SocialMediaInspiredTemplate({
@@ -75,78 +77,59 @@ export default function SocialMediaInspiredTemplate({
   customTextColor,
   customTagPrimaryColor,
   customTagSecondaryColor,
+  profilePhotoBackgroundColor, // Destructure new prop
 }: SocialMediaInspiredTemplateProps) {
   const getThemeColors = () => {
     const themes = {
       teal: {
-        primaryColor: "teal-500",
-        secondaryColor: "green-500",
-        lightBg: "bg-teal-50",
-        darkBg: "bg-[#29303d]",
-        lightCardBg: "bg-gray-50",
-        darkCardBg: "bg-[#3a4250]",
-        lightText: "text-gray-900",
-        darkText: "text-white",
-        lightSecondaryText: "text-gray-700",
-        darkSecondaryText: "text-gray-300",
-        lightAccentBg: "bg-teal-100",
-        lightAccentText: "text-teal-800",
+        primaryColor: "#10B981", // Hex for direct use
+        secondaryColor: "#22C55E", // Hex for direct use
+        lightBg: "#F0FDF4", // teal-50
+        darkBg: "#29303d",
+        lightCardBg: "#F9FAFB", // gray-50
+        darkCardBg: "#3a4250",
+        lightAccentBg: "#CCFBF1", // teal-100
+        lightAccentText: "#0D9488", // teal-800
       },
       orange: {
         primaryColor: "rgb(242,89,13)",
-        secondaryColor: "green-600",
-        lightBg: "bg-orange-50",
-        darkBg: "bg-[#29303d]",
-        lightCardBg: "bg-gray-50",
-        darkCardBg: "bg-[#3a4250]",
-        lightText: "text-gray-900",
-        darkText: "text-white",
-        lightSecondaryText: "text-gray-700",
-        darkSecondaryText: "text-gray-300",
-        lightAccentBg: "bg-orange-100",
-        lightAccentText: "text-orange-800",
+        secondaryColor: "#16A34A", // green-600
+        lightBg: "#FFF7ED", // orange-50
+        darkBg: "#29303d",
+        lightCardBg: "#F9FAFB", // gray-50
+        darkCardBg: "#3a4250",
+        lightAccentBg: "#FFEDD5", // orange-100
+        lightAccentText: "#9A3412", // orange-800
       },
       blue: {
-        primaryColor: "blue-500",
-        secondaryColor: "purple-500",
-        lightBg: "bg-blue-50",
-        darkBg: "bg-[#1a202c]",
-        lightCardBg: "bg-gray-50",
-        darkCardBg: "bg-[#2d3748]",
-        lightText: "text-gray-900",
-        darkText: "text-white",
-        lightSecondaryText: "text-gray-700",
-        darkSecondaryText: "text-gray-300",
-        lightAccentBg: "bg-blue-100",
-        lightAccentText: "text-blue-800",
+        primaryColor: "#3B82F6", // blue-500
+        secondaryColor: "#9333EA", // purple-500
+        lightBg: "#EFF6FF", // blue-50
+        darkBg: "#1a202c",
+        lightCardBg: "#F9FAFB", // gray-50
+        darkCardBg: "#2d3748",
+        lightAccentBg: "#DBEAFE", // blue-100
+        lightAccentText: "#1E40AF", // blue-800
       },
       green: {
-        primaryColor: "green-500",
-        secondaryColor: "blue-500",
-        lightBg: "bg-green-50",
-        darkBg: "bg-[#1f2937]",
-        lightCardBg: "bg-gray-50",
-        darkCardBg: "bg-[#374151]",
-        lightText: "text-gray-900",
-        darkText: "text-white",
-        lightSecondaryText: "text-gray-700",
-        darkSecondaryText: "text-gray-300",
-        lightAccentBg: "bg-green-100",
-        lightAccentText: "text-green-800",
+        primaryColor: "#22C55E", // green-500
+        secondaryColor: "#3B82F6", // blue-500
+        lightBg: "#F0FDF4", // green-50
+        darkBg: "#1f2937",
+        lightCardBg: "#F9FAFB", // gray-50
+        darkCardBg: "#374151",
+        lightAccentBg: "#D1FAE5", // green-100
+        lightAccentText: "#065F46", // green-800
       },
       purple: {
-        primaryColor: "purple-500",
-        secondaryColor: "pink-500",
-        lightBg: "bg-purple-50",
-        darkBg: "bg-[#2d2640]",
-        lightCardBg: "bg-gray-50",
-        darkCardBg: "bg-[#4a3f6b]",
-        lightText: "text-gray-900",
-        darkText: "text-white",
-        lightSecondaryText: "text-gray-700",
-        darkSecondaryText: "text-gray-300",
-        lightAccentBg: "bg-purple-100",
-        lightAccentText: "text-purple-800",
+        primaryColor: "#9333EA", // purple-500
+        secondaryColor: "#EC4899", // pink-500
+        lightBg: "#F5F3FF", // purple-50
+        darkBg: "#2d2640",
+        lightCardBg: "#F9FAFB", // gray-50
+        darkCardBg: "#4a3f6b",
+        lightAccentBg: "#EDE9FE", // purple-100
+        lightAccentText: "#5B21B6", // purple-800
       },
     }
     return themes[selectedTheme as keyof typeof themes] || themes.orange // Default to orange
@@ -157,13 +140,10 @@ export default function SocialMediaInspiredTemplate({
   // Determine background color
   const finalBgColor = customBackgroundColor || (isDarkMode ? colors.darkBg : colors.lightBg)
   // Determine text color
-  const finalTextColorClass = customTextColor === "white" ? "text-white" : "text-black"
-  const finalSecondaryTextColorClass =
-    customTextColor === "white" ? colors.darkSecondaryText : colors.lightSecondaryText
+  const finalTextColor = customTextColor === "white" ? "white" : "black"
+  const finalSecondaryTextColor = customTextColor === "white" ? colors.darkSecondaryText : "rgb(75, 85, 99)" // gray-700
 
-  const cardBgColorClass = isDarkMode ? colors.darkCardBg : colors.lightCardBg
-  const primaryAccentColorClass = `text-[${colors.primaryColor}]`
-  const secondaryAccentColorClass = `text-[${colors.secondaryColor}]`
+  const cardBgColor = isDarkMode ? colors.darkCardBg : colors.lightCardBg
 
   // Tag colors logic
   const getTagStyle = (isPrimaryTag: boolean) => {
@@ -171,14 +151,14 @@ export default function SocialMediaInspiredTemplate({
     const defaultBg = isPrimaryTag
       ? isDarkMode
         ? `rgba(${colors.primaryColor.replace("rgb(", "").replace(")", "")}, 0.2)`
-        : colors.lightAccentBg.replace("bg-", "")
+        : colors.lightAccentBg
       : isDarkMode
         ? `rgba(${colors.secondaryColor.replace("rgb(", "").replace(")", "")}, 0.2)`
         : "rgb(220, 252, 231)" // Fallback to a light green for secondary in light mode
     const defaultText = isPrimaryTag
       ? isDarkMode
         ? colors.primaryColor
-        : colors.lightAccentText.replace("text-", "")
+        : colors.lightAccentText
       : isDarkMode
         ? "white"
         : "rgb(22, 101, 52)" // Fallback to a dark green for secondary in light mode
@@ -191,23 +171,29 @@ export default function SocialMediaInspiredTemplate({
 
   return (
     <div
-      className={`max-w-4xl mx-auto shadow-2xl print:shadow-none ${finalTextColorClass}`}
+      className={`max-w-4xl mx-auto shadow-2xl print:shadow-none`}
       style={{
-        backgroundColor: finalBgColor.startsWith("rgb") || finalBgColor.startsWith("#") ? finalBgColor : undefined,
+        backgroundColor: finalBgColor,
+        color: finalTextColor,
       }}
     >
       {/* Sección Header */}
       <div
-        className={`${finalBgColor.startsWith("rgb") || finalBgColor.startsWith("#") ? "" : finalBgColor} p-8 border-b-2 border-[${colors.primaryColor}]`}
+        className={`p-8 border-b-2`}
         style={{
-          backgroundColor: finalBgColor.startsWith("rgb") || finalBgColor.startsWith("#") ? finalBgColor : undefined,
+          backgroundColor: finalBgColor,
+          borderColor: colors.primaryColor,
         }}
       >
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Foto de Perfil */}
           <div className="flex-shrink-0">
             <div
-              className={`w-32 h-32 ${cardBgColorClass} rounded-lg overflow-hidden border-4 border-[${colors.primaryColor}] shadow-xl`}
+              className={`w-32 h-32 rounded-lg overflow-hidden border-4 shadow-xl`}
+              style={{
+                backgroundColor: profilePhotoBackgroundColor || cardBgColor,
+                borderColor: colors.primaryColor,
+              }}
             >
               <img
                 src={data.personalInfo.profilePhoto || "/placeholder.svg?height=300&width=300"}
@@ -219,24 +205,28 @@ export default function SocialMediaInspiredTemplate({
 
           {/* Nombre e Información de Contacto */}
           <div className="flex-1">
-            <h1 className={`text-4xl font-bold ${finalTextColorClass} mb-2`}>{data.personalInfo.name}</h1>
-            <h2 className={`text-xl ${primaryAccentColorClass} font-medium mb-4`}>{data.personalInfo.title}</h2>
+            <h1 className={`text-4xl font-bold mb-2`} style={{ color: finalTextColor }}>
+              {data.personalInfo.name}
+            </h1>
+            <h2 className={`text-xl font-medium mb-4`} style={{ color: colors.primaryColor }}>
+              {data.personalInfo.title}
+            </h2>
 
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${finalSecondaryTextColorClass}`}>
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-3`} style={{ color: finalSecondaryTextColor }}>
               <div className="flex items-center gap-2">
-                <Mail className={`w-4 h-4 ${primaryAccentColorClass}`} />
+                <Mail className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
                 <span className="text-sm">{data.personalInfo.email}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className={`w-4 h-4 ${primaryAccentColorClass}`} />
+                <Phone className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
                 <span className="text-sm">{data.personalInfo.phone}</span>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className={`w-4 h-4 ${primaryAccentColorClass}`} />
+                <MapPin className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
                 <span className="text-sm">{data.personalInfo.location}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Globe className={`w-4 h-4 ${primaryAccentColorClass}`} />
+                <Globe className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
                 <span className="text-sm">{data.personalInfo.linkedin}</span>
               </div>
             </div>
@@ -248,17 +238,21 @@ export default function SocialMediaInspiredTemplate({
         {/* Resumen Profesional */}
         <section className="mb-8">
           <h3
-            className={`text-2xl font-bold ${finalTextColorClass} mb-4 pb-2 border-b-2 border-[${colors.primaryColor}]`}
+            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
+            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
           >
             Resumen Profesional
           </h3>
-          <p className={`${finalSecondaryTextColorClass} leading-relaxed`}>{data.summary}</p>
+          <p className={`leading-relaxed`} style={{ color: finalSecondaryTextColor }}>
+            {data.summary}
+          </p>
         </section>
 
         {/* Experiencia Laboral */}
         <section className="mb-8">
           <h3
-            className={`text-2xl font-bold ${finalTextColorClass} mb-4 pb-2 border-b-2 border-[${colors.primaryColor}]`}
+            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
+            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
           >
             Experiencia Laboral
           </h3>
@@ -267,19 +261,27 @@ export default function SocialMediaInspiredTemplate({
             {data.experience.map((exp, index) => (
               <div
                 key={exp.id}
-                className={`${cardBgColorClass} p-6 rounded-lg border-l-4 border-[${colors.primaryColor}] shadow-lg`}
+                className={`p-6 rounded-lg border-l-4 shadow-lg`}
+                style={{
+                  backgroundColor: cardBgColor,
+                  borderColor: colors.primaryColor,
+                }}
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h4 className={`text-lg font-semibold ${finalTextColorClass}`}>{exp.position}</h4>
-                    <p className={`${primaryAccentColorClass} font-medium`}>{exp.company}</p>
+                    <h4 className={`text-lg font-semibold`} style={{ color: finalTextColor }}>
+                      {exp.position}
+                    </h4>
+                    <p className={`font-medium`} style={{ color: colors.primaryColor }}>
+                      {exp.company}
+                    </p>
                   </div>
-                  <div className={`${finalSecondaryTextColorClass} flex items-center text-sm`}>
+                  <div className={`flex items-center text-sm`} style={{ color: finalSecondaryTextColor }}>
                     <Calendar className="w-4 h-4 mr-1" />
                     {exp.period}
                   </div>
                 </div>
-                <ul className={`list-disc list-inside ${finalSecondaryTextColorClass} space-y-1`}>
+                <ul className={`list-disc list-inside space-y-1`} style={{ color: finalSecondaryTextColor }}>
                   {exp.achievements.map((achievement, i) => (
                     <li key={i}>{achievement}</li>
                   ))}
@@ -294,7 +296,8 @@ export default function SocialMediaInspiredTemplate({
           {/* Educación */}
           <section>
             <h3
-              className={`text-2xl font-bold ${finalTextColorClass} mb-4 pb-2 border-b-2 border-[${colors.primaryColor}]`}
+              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
+              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
             >
               Educación
             </h3>
@@ -302,12 +305,24 @@ export default function SocialMediaInspiredTemplate({
               {data.education.map((edu) => (
                 <div
                   key={edu.id}
-                  className={`${cardBgColorClass} p-6 rounded-lg border-l-4 border-[${colors.primaryColor}] shadow-lg`}
+                  className={`p-6 rounded-lg border-l-4 shadow-lg`}
+                  style={{
+                    backgroundColor: cardBgColor,
+                    borderColor: colors.primaryColor,
+                  }}
                 >
-                  <h4 className={`text-lg font-semibold ${finalTextColorClass}`}>{edu.degree}</h4>
-                  <p className={`${primaryAccentColorClass} font-medium`}>{edu.institution}</p>
-                  <p className={`${finalSecondaryTextColorClass} text-sm`}>{edu.period}</p>
-                  <p className={`${finalSecondaryTextColorClass} mt-2`}>{edu.details}</p>
+                  <h4 className={`text-lg font-semibold`} style={{ color: finalTextColor }}>
+                    {edu.degree}
+                  </h4>
+                  <p className={`font-medium`} style={{ color: colors.primaryColor }}>
+                    {edu.institution}
+                  </p>
+                  <p className={`text-sm`} style={{ color: finalSecondaryTextColor }}>
+                    {edu.period}
+                  </p>
+                  <p className={`mt-2`} style={{ color: finalSecondaryTextColor }}>
+                    {edu.details}
+                  </p>
                 </div>
               ))}
             </div>
@@ -316,14 +331,17 @@ export default function SocialMediaInspiredTemplate({
           {/* Habilidades */}
           <section>
             <h3
-              className={`text-2xl font-bold ${finalTextColorClass} mb-4 pb-2 border-b-2 border-[${colors.primaryColor}]`}
+              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
+              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
             >
               <Code className="inline w-6 h-6 mr-2" />
               Habilidades
             </h3>
             <div className="space-y-4">
               <div>
-                <h4 className={`font-semibold ${finalTextColorClass} mb-2`}>Habilidades Técnicas</h4>
+                <h4 className={`font-semibold mb-2`} style={{ color: finalTextColor }}>
+                  Habilidades Técnicas
+                </h4>
                 <div className="flex flex-wrap gap-2">
                   {data.technicalSkills.map((skill) => (
                     <span
@@ -337,7 +355,9 @@ export default function SocialMediaInspiredTemplate({
                 </div>
               </div>
               <div>
-                <h4 className={`font-semibold ${finalTextColorClass} mb-2`}>Habilidades Interpersonales</h4>
+                <h4 className={`font-semibold mb-2`} style={{ color: finalTextColor }}>
+                  Habilidades Interpersonales
+                </h4>
                 <div className="flex flex-wrap gap-2">
                   {data.softSkills.map((skill) => (
                     <span
@@ -358,7 +378,8 @@ export default function SocialMediaInspiredTemplate({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <section>
             <h3
-              className={`text-2xl font-bold ${finalTextColorClass} mb-4 pb-2 border-b-2 border-[${colors.primaryColor}]`}
+              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
+              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
             >
               <Languages className="inline w-6 h-6 mr-2" />
               Idiomas
@@ -366,8 +387,10 @@ export default function SocialMediaInspiredTemplate({
             <div className="space-y-3">
               {data.languages.map((lang) => (
                 <div key={lang.id} className="flex justify-between items-center">
-                  <span className={`${finalTextColorClass} font-medium`}>{lang.language}</span>
-                  <span className={finalSecondaryTextColorClass}>{lang.level}</span>
+                  <span className={`font-medium`} style={{ color: finalTextColor }}>
+                    {lang.language}
+                  </span>
+                  <span style={{ color: finalSecondaryTextColor }}>{lang.level}</span>
                 </div>
               ))}
             </div>
@@ -375,7 +398,8 @@ export default function SocialMediaInspiredTemplate({
 
           <section>
             <h3
-              className={`text-2xl font-bold ${finalTextColorClass} mb-4 pb-2 border-b-2 border-[${colors.primaryColor}]`}
+              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
+              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
             >
               <Heart className="inline w-6 h-6 mr-2" />
               Intereses
@@ -397,7 +421,8 @@ export default function SocialMediaInspiredTemplate({
         {/* Certificaciones */}
         <section className="mb-8">
           <h3
-            className={`text-2xl font-bold ${finalTextColorClass} mb-4 pb-2 border-b-2 border-[${colors.primaryColor}]`}
+            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
+            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
           >
             <Award className="inline w-6 h-6 mr-2" />
             Certificaciones
@@ -418,7 +443,8 @@ export default function SocialMediaInspiredTemplate({
         {/* Proyectos Destacados */}
         <section className="mb-8">
           <h3
-            className={`text-2xl font-bold ${finalTextColorClass} mb-4 pb-2 border-b-2 border-[${colors.primaryColor}]`}
+            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
+            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
           >
             <Award className="inline w-6 h-6 mr-2" />
             Proyectos Destacados
@@ -428,57 +454,99 @@ export default function SocialMediaInspiredTemplate({
               data.projects.map((project) => (
                 <div
                   key={project.id}
-                  className={`${cardBgColorClass} rounded-lg overflow-hidden shadow-lg ${isDarkMode ? `border-2 border-gray-600 hover:border-[${colors.primaryColor}]` : ""} transition-colors`}
+                  className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
+                  style={{
+                    backgroundColor: cardBgColor,
+                    border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined, // gray-600
+                    borderColor: isDarkMode ? colors.primaryColor : undefined, // hover effect
+                  }}
                 >
-                  <img
-                    src={project.imageUrl || "/placeholder.svg?height=200&width=200"}
-                    alt={`Proyecto ${project.name}`}
-                    className="w-full h-32 object-cover"
-                  />
-                  <p className={`p-2 text-sm ${finalSecondaryTextColorClass} text-center`}>{project.name}</p>
+                  {project.imageUrls && project.imageUrls.length > 0 ? (
+                    project.imageUrls.map((url, imgIndex) => (
+                      <img
+                        key={imgIndex}
+                        src={url || "/placeholder.svg?height=200&width=200"}
+                        alt={`Proyecto ${project.name} imagen ${imgIndex + 1}`}
+                        className="w-full h-32 object-cover"
+                      />
+                    ))
+                  ) : (
+                    <img
+                      src="/placeholder.svg?height=200&width=200"
+                      alt={`Proyecto ${project.name} placeholder`}
+                      className="w-full h-32 object-cover"
+                    />
+                  )}
+                  <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
+                    {project.name}
+                  </p>
                 </div>
               ))
             ) : (
               <>
                 <div
-                  className={`${cardBgColorClass} rounded-lg overflow-hidden shadow-lg ${isDarkMode ? `border-2 border-gray-600 hover:border-[${colors.primaryColor}]` : ""} transition-colors`}
+                  className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
+                  style={{
+                    backgroundColor: cardBgColor,
+                    border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
+                  }}
                 >
                   <img
                     src="/placeholder.svg?height=200&width=200"
                     alt="Proyecto Placeholder 1"
                     className="w-full h-32 object-cover"
                   />
-                  <p className={`p-2 text-sm ${finalSecondaryTextColorClass} text-center`}>[Nombre del Proyecto 1]</p>
+                  <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
+                    [Nombre del Proyecto 1]
+                  </p>
                 </div>
                 <div
-                  className={`${cardBgColorClass} rounded-lg overflow-hidden shadow-lg ${isDarkMode ? `border-2 border-gray-600 hover:border-[${colors.primaryColor}]` : ""} transition-colors`}
+                  className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
+                  style={{
+                    backgroundColor: cardBgColor,
+                    border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
+                  }}
                 >
                   <img
                     src="/placeholder.svg?height=200&width=200"
                     alt="Proyecto Placeholder 2"
                     className="w-full h-32 object-cover"
                   />
-                  <p className={`p-2 text-sm ${finalSecondaryTextColorClass} text-center`}>[Nombre del Proyecto 2]</p>
+                  <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
+                    [Nombre del Proyecto 2]
+                  </p>
                 </div>
                 <div
-                  className={`${cardBgColorClass} rounded-lg overflow-hidden shadow-lg ${isDarkMode ? `border-2 border-gray-600 hover:border-[${colors.primaryColor}]` : ""} transition-colors`}
+                  className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
+                  style={{
+                    backgroundColor: cardBgColor,
+                    border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
+                  }}
                 >
                   <img
                     src="/placeholder.svg?height=200&width=200"
                     alt="Proyecto Placeholder 3"
                     className="w-full h-32 object-cover"
                   />
-                  <p className={`p-2 text-sm ${finalSecondaryTextColorClass} text-center`}>[Nombre del Proyecto 3]</p>
+                  <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
+                    [Nombre del Proyecto 3]
+                  </p>
                 </div>
                 <div
-                  className={`${cardBgColorClass} rounded-lg overflow-hidden shadow-lg ${isDarkMode ? `border-2 border-gray-600 hover:border-[${colors.primaryColor}]` : ""} transition-colors`}
+                  className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
+                  style={{
+                    backgroundColor: cardBgColor,
+                    border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
+                  }}
                 >
                   <img
                     src="/placeholder.svg?height=200&width=200"
                     alt="Proyecto Placeholder 4"
                     className="w-full h-32 object-cover"
                   />
-                  <p className={`p-2 text-sm ${finalSecondaryTextColorClass} text-center`}>[Nombre del Proyecto 4]</p>
+                  <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
+                    [Nombre del Proyecto 4]
+                  </p>
                 </div>
               </>
             )}
@@ -486,14 +554,30 @@ export default function SocialMediaInspiredTemplate({
         </section>
 
         {/* Sección Código QR */}
-        <section className={`${cardBgColorClass} p-6 rounded-lg border-2 border-[${colors.primaryColor}] shadow-lg`}>
+        <section
+          className={`p-6 rounded-lg border-2 shadow-lg`}
+          style={{
+            backgroundColor: cardBgColor,
+            borderColor: colors.primaryColor,
+          }}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <h3 className={`text-xl font-bold ${finalTextColorClass} mb-2`}>{data.personalInfo.portfolioTitle}</h3>
-              <p className={finalSecondaryTextColorClass}>{data.personalInfo.portfolioDescription}</p>
-              <p className={`text-sm ${primaryAccentColorClass} mt-1`}>{data.personalInfo.portfolioWebsite}</p>
+              <h3 className={`text-xl font-bold mb-2`} style={{ color: finalTextColor }}>
+                {data.personalInfo.portfolioTitle}
+              </h3>
+              <p style={{ color: finalSecondaryTextColor }}>{data.personalInfo.portfolioDescription}</p>
+              <p className={`text-sm mt-1`} style={{ color: colors.primaryColor }}>
+                {data.personalInfo.portfolioWebsite}
+              </p>
             </div>
-            <div className={`bg-white p-4 rounded-lg shadow-lg border-2 border-[${colors.primaryColor}]`}>
+            <div
+              className={`p-4 rounded-lg shadow-lg border-2`}
+              style={{
+                backgroundColor: "white", // QR code background is always white for readability
+                borderColor: colors.primaryColor,
+              }}
+            >
               {data.personalInfo.qrCodeImage ? (
                 <img
                   src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
