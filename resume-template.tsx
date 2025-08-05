@@ -1,70 +1,129 @@
 "use client"
 
 import { useState } from "react"
-import CurriculumEditor, { type CurriculumData } from "@/components/curriculum-editor"
+import { CurriculumEditor } from "@/components/curriculum-editor"
 import CurriculumPreview from "@/components/curriculum-preview"
 
+// Define las interfaces para la estructura de los datos del currículum
+interface PersonalInfo {
+  name: string
+  title: string
+  email: string
+  phone: string
+  location: string
+  website: string
+  linkedin: string
+  github: string
+  profilePhoto: string
+  profilePhotoBackgroundColor?: string
+  portfolioTitle: string
+  portfolioDescription: string
+  portfolioWebsite: string
+  qrCodeImage?: string
+}
+
+interface Experience {
+  id: string
+  position: string
+  company: string
+  period: string
+  achievements: string[]
+  keywords: string[]
+}
+
+interface Education {
+  id: string
+  degree: string
+  institution: string
+  period: string
+  details: string
+  gpa?: string
+}
+
+interface Project {
+  id: string
+  name: string
+  description: string
+  technologies: string[]
+  link?: string
+  imageUrls?: string[]
+}
+
+interface CurriculumData {
+  personalInfo: PersonalInfo
+  summary: string
+  experience: Experience[]
+  education: Education[]
+  technicalSkills: string[]
+  softSkills: string[]
+  languages: { id: string; language: string; level: string }[]
+  projects: Project[]
+  certifications: string[]
+  interests: string[]
+  keywords: string[]
+}
+
 export default function ResumeTemplate() {
-  const initialCurriculumData: CurriculumData = {
+  const [curriculumData, setCurriculumData] = useState<CurriculumData>({
     personalInfo: {
       name: "John Doe",
       title: "Desarrollador Full Stack",
       email: "john.doe@example.com",
       phone: "+1 (123) 456-7890",
-      location: "Ciudad de México, México",
-      website: "https://johndoe.dev",
-      linkedin: "https://linkedin.com/in/johndoe",
-      github: "https://github.com/johndoe",
-      profilePhoto: "/placeholder.svg?height=128&width=128",
-      profilePhotoBackgroundColor: "#E0E7FF",
-      portfolioTitle: "Mi Portfolio de Proyectos",
-      portfolioDescription: "Explora mis proyectos más recientes y mis contribuciones.",
-      portfolioWebsite: "https://johndoe.dev/portfolio",
+      location: "San Francisco, CA",
+      website: "www.johndoe.com",
+      linkedin: "linkedin.com/in/johndoe",
+      github: "github.com/johndoe",
+      profilePhoto: "/placeholder.svg?height=300&width=300",
+      profilePhotoBackgroundColor: "#E0F2F7", // Light blue for profile photo background
+      portfolioTitle: "Visita mi Portfolio",
+      portfolioDescription: "Explora mis proyectos y soluciones innovadoras.",
+      portfolioWebsite: "www.johndoeportfolio.com",
       qrCodeImage: "/placeholder.svg?height=100&width=100",
     },
     summary:
-      "Desarrollador Full Stack con 5 años de experiencia en la creación de aplicaciones web robustas y escalables. Experto en React, Node.js y bases de datos NoSQL. Apasionado por la resolución de problemas y la entrega de soluciones de alta calidad.",
+      "Desarrollador Full Stack con 5 años de experiencia en la creación de aplicaciones web robustas y escalables. Experto en React, Node.js y bases de datos SQL/NoSQL. Apasionado por la resolución de problemas y la creación de experiencias de usuario excepcionales.",
     experience: [
       {
-        id: "exp1",
-        position: "Desarrollador Senior de Software",
+        id: "1",
+        position: "Ingeniero de Software Senior",
         company: "Tech Solutions Inc.",
         period: "Enero 2022 - Presente",
         achievements: [
-          "Lideré el desarrollo de una nueva plataforma de e-commerce, resultando en un aumento del 30% en las ventas.",
-          "Implementé microservicios utilizando Node.js y Docker, mejorando la escalabilidad del sistema en un 50%.",
-          "Mentoricé a un equipo de 3 desarrolladores junior, mejorando la productividad del equipo en un 20%.",
+          "Lideré el desarrollo de una nueva plataforma de e-commerce, aumentando las ventas en un 30%.",
+          "Implementé microservicios utilizando Node.js y Docker, mejorando la escalabilidad en un 50%.",
+          "Optimicé la base de datos PostgreSQL, reduciendo los tiempos de respuesta de las consultas en un 25%.",
         ],
-        keywords: ["React", "Node.js", "MongoDB", "Docker", "AWS", "Microservicios"],
+        keywords: ["React", "Node.js", "PostgreSQL", "Docker", "AWS"],
       },
       {
-        id: "exp2",
-        position: "Desarrollador de Software",
-        company: "Innovatech",
-        period: "Marzo 2019 - Diciembre 2021",
+        id: "2",
+        position: "Desarrollador Web",
+        company: "Creative Agency",
+        period: "Julio 2019 - Diciembre 2021",
         achievements: [
-          "Desarrollé y mantuve componentes de interfaz de usuario utilizando React y Redux.",
-          "Colaboré en el diseño de APIs RESTful para la integración de servicios de terceros.",
-          "Optimicé el rendimiento de la base de datos, reduciendo los tiempos de carga en un 15%.",
+          "Desarrollé y mantuve sitios web responsivos utilizando React y Next.js.",
+          "Colaboré con diseñadores para traducir wireframes y maquetas en código de alta calidad.",
+          "Implementé APIs RESTful para integrar servicios de terceros.",
         ],
-        keywords: ["JavaScript", "React", "Redux", "Express.js", "PostgreSQL"],
+        keywords: ["React", "Next.js", "JavaScript", "REST APIs", "UI/UX"],
       },
     ],
     education: [
       {
-        id: "edu1",
-        degree: "Maestría en Ciencias de la Computación",
-        institution: "Universidad Nacional Autónoma de México (UNAM)",
-        period: "2017 - 2019",
-        details: "Especialización en Inteligencia Artificial y Aprendizaje Automático.",
+        id: "1",
+        degree: "Máster en Ciencias de la Computación",
+        institution: "Universidad Tecnológica",
+        period: "2018 - 2020",
+        details: "Especialización en Inteligencia Artificial y Machine Learning.",
         gpa: "3.9/4.0",
       },
       {
-        id: "edu2",
-        degree: "Licenciatura en Ingeniería en Sistemas Computacionales",
-        institution: "Instituto Tecnológico de Monterrey (ITESM)",
-        period: "2013 - 2017",
-        details: "Proyecto final: Sistema de gestión de inventario basado en la nube.",
+        id: "2",
+        degree: "Grado en Ingeniería Informática",
+        institution: "Universidad Nacional",
+        period: "2014 - 2018",
+        details: "Proyecto final sobre sistemas distribuidos.",
       },
     ],
     technicalSkills: [
@@ -73,17 +132,13 @@ export default function ResumeTemplate() {
       "React",
       "Next.js",
       "Node.js",
-      "Express.js",
-      "MongoDB",
-      "PostgreSQL",
+      "Python",
       "SQL",
-      "GraphQL",
-      "Docker",
+      "NoSQL",
       "AWS",
+      "Docker",
       "Git",
-      "RESTful APIs",
-      "HTML",
-      "CSS",
+      "GraphQL",
       "Tailwind CSS",
     ],
     softSkills: [
@@ -92,154 +147,101 @@ export default function ResumeTemplate() {
       "Resolución de problemas",
       "Adaptabilidad",
       "Liderazgo",
-      "Pensamiento crítico",
+      "Creatividad",
     ],
     languages: [
-      { id: "lang1", language: "Español", level: "Nativo" },
-      { id: "lang2", language: "Inglés", level: "Fluido" },
+      { id: "1", language: "Español", level: "Nativo" },
+      { id: "2", language: "Inglés", level: "Fluido" },
+      { id: "3", language: "Francés", level: "Básico" },
     ],
     projects: [
       {
-        id: "proj1",
+        id: "1",
         name: "Plataforma de Gestión de Proyectos",
-        description:
-          "Una aplicación web para la gestión de tareas y proyectos en equipo, con funcionalidades de seguimiento de progreso y colaboración en tiempo real.",
-        technologies: ["React", "Node.js", "Socket.io", "MongoDB"],
-        link: "https://project-manager.example.com",
-        imageUrls: ["/placeholder.svg?height=100&width=100", "/placeholder.svg?height=100&width=100"],
+        description: "Aplicación web para la gestión de tareas y proyectos en equipo.",
+        technologies: ["React", "Node.js", "MongoDB", "Socket.io"],
+        link: "https://project-manager.com",
+        imageUrls: ["/placeholder.svg?height=100&width=100"],
       },
       {
-        id: "proj2",
-        name: "Blog Personal con CMS",
-        description:
-          "Un blog personal desarrollado con Next.js y un CMS headless para la creación y publicación de contenido.",
-        technologies: ["Next.js", "GraphQL", "Strapi", "Tailwind CSS"],
-        link: "https://myblog.example.com",
-        imageUrls: ["/placeholder.svg?height=100&width=100", "/placeholder.svg?height=100&width=100"],
+        id: "2",
+        name: "Aplicación de Recetas Saludables",
+        description: "App móvil con recetas personalizadas y seguimiento nutricional.",
+        technologies: ["React Native", "Firebase", "Redux"],
+        link: "https://healthy-recipes.app",
+        imageUrls: ["/placeholder.svg?height=100&width=100"],
+      },
+      {
+        id: "3",
+        name: "Sistema de Recomendación de Películas",
+        description: "Algoritmo de recomendación basado en el historial de visualización del usuario.",
+        technologies: ["Python", "Pandas", "Scikit-learn", "Flask"],
+        link: "https://movie-recommender.ai",
+        imageUrls: ["/placeholder.svg?height=100&width=100"],
       },
     ],
-    certifications: [
-      "AWS Certified Solutions Architect - Associate",
-      "Certified Kubernetes Administrator (CKA)",
-      "Scrum Master Certified (SMC)",
-    ],
+    certifications: ["Certificación AWS Certified Developer", "Scrum Master Certified (SMC)"],
     interests: ["Senderismo", "Fotografía", "Cocina", "Lectura", "Videojuegos"],
     keywords: [
       "Desarrollo Web",
-      "Frontend",
-      "Backend",
-      "Bases de Datos",
+      "Ingeniería de Software",
+      "React",
+      "Node.js",
       "Cloud Computing",
       "Metodologías Ágiles",
-      "DevOps",
-      "Inteligencia Artificial",
     ],
-  }
+  })
 
-  const emptyCurriculumData: CurriculumData = {
-    personalInfo: {
-      name: "",
-      title: "",
-      email: "",
-      phone: "",
-      location: "",
-      website: "",
-      linkedin: "",
-      github: "",
-      profilePhoto: "",
-      profilePhotoBackgroundColor: "",
-      portfolioTitle: "",
-      portfolioDescription: "",
-      portfolioWebsite: "",
-      qrCodeImage: "",
-    },
-    summary: "",
-    experience: [],
-    education: [],
-    technicalSkills: [],
-    softSkills: [],
-    languages: [],
-    projects: [],
-    certifications: [],
-    interests: [],
-    keywords: [],
-  }
-
-  const [curriculumData, setCurriculumData] = useState<CurriculumData>(initialCurriculumData)
   const [selectedTemplate, setSelectedTemplate] = useState("socialMedia")
   const [selectedTheme, setSelectedTheme] = useState("orange")
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [customBackgroundColor, setCustomBackgroundColor] = useState("")
-  const [customTextColor, setCustomTextColor] = useState("")
+  const [customTextColor, setCustomTextColor] = useState("black") // Default to black
   const [customTagPrimaryColor, setCustomTagPrimaryColor] = useState("")
   const [customTagSecondaryColor, setCustomTagSecondaryColor] = useState("")
 
-  // State to control scrolling in the editor
-  const [activeEditorSectionId, setActiveEditorSectionId] = useState<string | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
 
-  const handleSectionClick = (sectionId: string) => {
-    setActiveEditorSectionId(sectionId)
-  }
-
-  const handleClearData = () => {
-    setCurriculumData(emptyCurriculumData)
-    setCustomBackgroundColor("")
-    setCustomTextColor("")
-    setCustomTagPrimaryColor("")
-    setCustomTagSecondaryColor("")
-    setSelectedTemplate("socialMedia")
-    setSelectedTheme("orange")
-    setIsDarkMode(false)
-  }
+  const handleDownloadStart = () => setIsDownloading(true)
+  const handleDownloadEnd = () => setIsDownloading(false)
 
   return (
-    <div className="container mx-auto p-4 max-w-7xl h-screen flex flex-col">
-      <header className="mb-4">
-        <h1 className="text-3xl font-bold text-center">Generador de Currículums</h1>
-      </header>
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 pr-4 overflow-y-auto">
-          <CurriculumEditor
-            data={curriculumData}
-            onDataChange={setCurriculumData}
-            selectedTemplate={selectedTemplate}
-            onTemplateChange={setSelectedTemplate}
-            selectedTheme={selectedTheme}
-            onThemeChange={setSelectedTheme}
-            isDarkMode={isDarkMode}
-            onDarkModeChange={setIsDarkMode}
-            customBackgroundColor={customBackgroundColor}
-            onCustomBackgroundColorChange={setCustomBackgroundColor}
-            customTextColor={customTextColor}
-            onCustomTextColorChange={setCustomTextColor}
-            customTagPrimaryColor={customTagPrimaryColor}
-            onCustomTagPrimaryColorChange={setCustomTagPrimaryColor}
-            customTagSecondaryColor={customTagSecondaryColor}
-            onCustomTagSecondaryColorChange={setCustomTagSecondaryColor}
-            activeSectionId={activeEditorSectionId}
-            onClearData={handleClearData} // Pass the clear data function
-          />
-        </div>
-        <div className="w-1/2 pl-4 overflow-y-auto border-l">
-          <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-md">
-            <CurriculumPreview
-              data={curriculumData}
-              selectedTemplate={selectedTemplate}
-              selectedTheme={selectedTheme}
-              isDarkMode={isDarkMode}
-              customBackgroundColor={customBackgroundColor}
-              customTextColor={customTextColor}
-              customTagPrimaryColor={customTagPrimaryColor}
-              customTagSecondaryColor={customTagSecondaryColor}
-              profilePhotoBackgroundColor={curriculumData.personalInfo.profilePhotoBackgroundColor}
-              onSectionClick={handleSectionClick}
-              onDownloadStart={() => setIsDownloading(true)}
-              onDownloadEnd={() => setIsDownloading(false)}
-              isDownloading={isDownloading}
-            />
-          </div>
-        </div>
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="w-full lg:w-1/2 p-6 lg:p-8 overflow-y-auto">
+        <CurriculumEditor
+          data={curriculumData}
+          onDataChange={setCurriculumData}
+          selectedTemplate={selectedTemplate}
+          onTemplateChange={setSelectedTemplate}
+          selectedTheme={selectedTheme}
+          onThemeChange={setSelectedTheme}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={setIsDarkMode}
+          customBackgroundColor={customBackgroundColor}
+          onCustomBackgroundColorChange={setCustomBackgroundColor}
+          customTextColor={customTextColor}
+          onCustomTextColorChange={setCustomTextColor}
+          customTagPrimaryColor={customTagPrimaryColor}
+          onCustomTagPrimaryColorChange={setCustomTagPrimaryColor}
+          customTagSecondaryColor={customTagSecondaryColor}
+          onCustomTagSecondaryColorChange={setCustomTagSecondaryColor}
+        />
+      </div>
+      <div className="w-full lg:w-1/2 p-6 lg:p-8 flex justify-center items-start overflow-y-auto">
+        <CurriculumPreview
+          data={curriculumData}
+          selectedTemplate={selectedTemplate}
+          selectedTheme={selectedTheme}
+          isDarkMode={isDarkMode}
+          customBackgroundColor={customBackgroundColor}
+          customTextColor={customTextColor}
+          customTagPrimaryColor={customTagPrimaryColor}
+          customTagSecondaryColor={customTagSecondaryColor}
+          profilePhotoBackgroundColor={curriculumData.personalInfo.profilePhotoBackgroundColor}
+          onDownloadStart={handleDownloadStart}
+          onDownloadEnd={handleDownloadEnd}
+          isDownloading={isDownloading}
+        />
       </div>
     </div>
   )

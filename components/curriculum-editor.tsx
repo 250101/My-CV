@@ -1,22 +1,32 @@
 "use client"
-import { Button } from "@/components/ui/button"
-import type React from "react"
-import { useRef, useEffect } from "react"
 
+import type React from "react"
+
+import { useState, useRef, useEffect } from "react"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusCircle, Trash2, Eraser } from "lucide-react" // Import Eraser icon
-import { HexColorPicker, HexColorInput } from "react-colorful"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
-import { v4 as uuidv4 } from "uuid"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import {
+  Edit,
+  Palette,
+  Upload,
+  FileText,
+  Briefcase,
+  Target,
+  Share2,
+  Eraser,
+  PlusCircle,
+  MinusCircle,
+} from "lucide-react"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
-// Define the interfaces here
-export interface PersonalInfo {
+// Define las interfaces para la estructura de los datos del currículum
+interface PersonalInfo {
   name: string
   title: string
   email: string
@@ -33,7 +43,7 @@ export interface PersonalInfo {
   qrCodeImage?: string
 }
 
-export interface Experience {
+interface Experience {
   id: string
   position: string
   company: string
@@ -42,7 +52,7 @@ export interface Experience {
   keywords: string[]
 }
 
-export interface Education {
+interface Education {
   id: string
   degree: string
   institution: string
@@ -51,7 +61,7 @@ export interface Education {
   gpa?: string
 }
 
-export interface Project {
+interface Project {
   id: string
   name: string
   description: string
@@ -60,7 +70,7 @@ export interface Project {
   imageUrls?: string[]
 }
 
-export interface CurriculumData {
+interface CurriculumData {
   personalInfo: PersonalInfo
   summary: string
   experience: Experience[]
@@ -74,26 +84,78 @@ export interface CurriculumData {
   keywords: string[]
 }
 
-export default function CurriculumEditor({
-  data,
-  onDataChange,
-  selectedTemplate,
-  onTemplateChange,
-  selectedTheme,
-  onThemeChange,
-  isDarkMode,
-  onDarkModeChange,
-  customBackgroundColor,
-  onCustomBackgroundColorChange,
-  customTextColor,
-  onCustomTextColorChange,
-  customTagPrimaryColor,
-  onCustomTagPrimaryColorChange,
-  customTagSecondaryColor,
-  onCustomTagSecondaryColorChange,
-  activeSectionId,
-  onClearData, // New prop for clearing data
-}: {
+const templateTypes = {
+  socialMedia: {
+    name: "Inspirado en Redes Sociales",
+    description: "Moderno y visual, con un toque fresco y personal.",
+    icon: Share2,
+    features: ["Diseño moderno", "Colores personalizables", "Espacio para foto", "Ideal para perfiles creativos"],
+  },
+  ats: {
+    name: "ATS Optimizado",
+    description: "Formato simple, optimizado para sistemas de filtrado automático.",
+    icon: Target,
+    features: ["Sin gráficos", "Palabras clave destacadas", "Formato estándar", "Fácil lectura por bots"],
+  },
+  corporate: {
+    name: "Corporativo",
+    description: "Profesional y conservador, ideal para empresas tradicionales.",
+    icon: Briefcase,
+    features: ["Diseño clásico", "Colores neutros", "Estructura formal", "Información completa"],
+  },
+  creative: {
+    name: "Creativo/Diseño",
+    description: "Moderno y visual, perfecto para roles creativos y startups.",
+    icon: Palette,
+    features: ["Diseño moderno", "Colores vibrantes", "Elementos visuales", "Sección de portfolio"],
+  },
+  minimal: {
+    name: "Minimalista",
+    description: "Limpio y directo, enfocado en el contenido esencial.",
+    icon: FileText,
+    features: ["Diseño limpio", "Espacios amplios", "Tipografía clara", "Información concisa"],
+  },
+}
+
+const colorThemes = {
+  teal: {
+    name: "Teal",
+    primary: "teal-500",
+    secondary: "green-500",
+    previewPrimary: "#10B981", // Hex for direct use
+    previewSecondary: "#22C55E", // Hex for direct use
+  },
+  orange: {
+    name: "Naranja",
+    primary: "rgb(242,89,13)",
+    secondary: "green-600",
+    previewPrimary: "rgb(242,89,13)", // RGB for direct use
+    previewSecondary: "#16A34A", // Hex for direct use
+  },
+  blue: {
+    name: "Azul",
+    primary: "blue-500",
+    secondary: "purple-500",
+    previewPrimary: "#3B82F6", // Hex for direct use
+    previewSecondary: "#9333EA", // Hex for direct use
+  },
+  green: {
+    name: "Verde",
+    primary: "green-500",
+    secondary: "blue-500",
+    previewPrimary: "#22C55E", // Hex for direct use
+    previewSecondary: "#3B82F6", // Hex for direct use
+  },
+  purple: {
+    name: "Púrpura",
+    primary: "purple-500",
+    secondary: "pink-500",
+    previewPrimary: "#9333EA", // Hex for direct use
+    previewSecondary: "#EC4899", // Hex for direct use
+  },
+}
+
+interface CurriculumEditorProps {
   data: CurriculumData
   onDataChange: (data: CurriculumData) => void
   selectedTemplate: string
@@ -101,7 +163,7 @@ export default function CurriculumEditor({
   selectedTheme: string
   onThemeChange: (theme: string) => void
   isDarkMode: boolean
-  onDarkModeChange: (isDarkMode: boolean) => void
+  onToggleDarkMode: (isDarkMode: boolean) => void
   customBackgroundColor: string
   onCustomBackgroundColorChange: (color: string) => void
   customTextColor: string
@@ -110,17 +172,38 @@ export default function CurriculumEditor({
   onCustomTagPrimaryColorChange: (color: string) => void
   customTagSecondaryColor: string
   onCustomTagSecondaryColorChange: (color: string) => void
-  activeSectionId: string | null
-  onClearData: () => void // Type for the new prop
-}) {
-  // Refs for scrolling
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
+  profilePhotoBackgroundColor?: string
+  onProfilePhotoBackgroundColorChange: (color: string) => void
+  initialData: CurriculumData // For reset functionality
+}
 
-  useEffect(() => {
-    if (activeSectionId && sectionRefs.current[activeSectionId]) {
-      sectionRefs.current[activeSectionId]?.scrollIntoView({ behavior: "smooth", block: "start" })
-    }
-  }, [activeSectionId])
+export function CurriculumEditor({
+  data,
+  onDataChange,
+  selectedTemplate,
+  onTemplateChange,
+  selectedTheme,
+  onThemeChange,
+  isDarkMode,
+  onToggleDarkMode,
+  customBackgroundColor,
+  onCustomBackgroundColorChange,
+  customTextColor,
+  onCustomTextColorChange,
+  customTagPrimaryColor,
+  onCustomTagPrimaryColorChange,
+  customTagSecondaryColor,
+  onCustomTagSecondaryColorChange,
+  profilePhotoBackgroundColor,
+  onProfilePhotoBackgroundColorChange,
+  initialData,
+}: CurriculumEditorProps) {
+  const [activeTab, setActiveTab] = useState("edit")
+  const [activeSection, setActiveSection] = useState<string | null>("personalInfo")
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const qrCodeInputRef = useRef<HTMLInputElement>(null)
+  const projectImageInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
 
   const handlePersonalInfoChange = (field: keyof PersonalInfo, value: string) => {
     onDataChange({
@@ -132,30 +215,8 @@ export default function CurriculumEditor({
     })
   }
 
-  const handleSingleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, field: keyof PersonalInfo) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        onDataChange({
-          ...data,
-          personalInfo: {
-            ...data.personalInfo,
-            [field]: reader.result as string,
-          },
-        })
-      }
-      reader.readAsDataURL(file)
-    } else {
-      // Optionally clear the image if no file is selected
-      onDataChange({
-        ...data,
-        personalInfo: {
-          ...data.personalInfo,
-          [field]: "",
-        },
-      })
-    }
+  const handleSummaryChange = (value: string) => {
+    onDataChange({ ...data, summary: value })
   }
 
   const handleExperienceChange = (id: string, field: keyof Experience, value: string | string[]) => {
@@ -171,12 +232,12 @@ export default function CurriculumEditor({
       experience: [
         ...data.experience,
         {
-          id: uuidv4(),
+          id: Date.now().toString(),
           position: "",
           company: "",
           period: "",
-          achievements: [],
-          keywords: [],
+          achievements: [""],
+          keywords: [""],
         },
       ],
     })
@@ -186,109 +247,6 @@ export default function CurriculumEditor({
     onDataChange({
       ...data,
       experience: data.experience.filter((exp) => exp.id !== id),
-    })
-  }
-
-  const handleEducationChange = (id: string, field: keyof Education, value: string) => {
-    onDataChange({
-      ...data,
-      education: data.education.map((edu) => (edu.id === id ? { ...edu, [field]: value } : edu)),
-    })
-  }
-
-  const addEducation = () => {
-    onDataChange({
-      ...data,
-      education: [
-        ...data.education,
-        {
-          id: uuidv4(),
-          degree: "",
-          institution: "",
-          period: "",
-          details: "",
-        },
-      ],
-    })
-  }
-
-  const removeEducation = (id: string) => {
-    onDataChange({
-      ...data,
-      education: data.education.filter((edu) => edu.id !== id),
-    })
-  }
-
-  const handleProjectChange = (id: string, field: keyof Project, value: string | string[]) => {
-    onDataChange({
-      ...data,
-      projects: data.projects.map((proj) => (proj.id === id ? { ...proj, [field]: value } : proj)),
-    })
-  }
-
-  const addProject = () => {
-    onDataChange({
-      ...data,
-      projects: [
-        ...data.projects,
-        {
-          id: uuidv4(),
-          name: "",
-          description: "",
-          technologies: [],
-          link: "",
-          imageUrls: [],
-        },
-      ],
-    })
-  }
-
-  const removeProject = (id: string) => {
-    onDataChange({
-      ...data,
-      projects: data.projects.filter((proj) => proj.id !== id),
-    })
-  }
-
-  const handleSkillChange = (type: "technicalSkills" | "softSkills", value: string) => {
-    onDataChange({
-      ...data,
-      [type]: value.split(",").map((s) => s.trim()),
-    })
-  }
-
-  const handleLanguageChange = (id: string, field: "language" | "level", value: string) => {
-    onDataChange({
-      ...data,
-      languages: data.languages.map((lang) => (lang.id === id ? { ...lang, [field]: value } : lang)),
-    })
-  }
-
-  const addLanguage = () => {
-    onDataChange({
-      ...data,
-      languages: [...data.languages, { id: uuidv4(), language: "", level: "" }],
-    })
-  }
-
-  const removeLanguage = (id: string) => {
-    onDataChange({
-      ...data,
-      languages: data.languages.filter((lang) => lang.id !== id),
-    })
-  }
-
-  const handleCertificationsChange = (value: string) => {
-    onDataChange({
-      ...data,
-      certifications: value.split(",").map((c) => c.trim()),
-    })
-  }
-
-  const handleInterestsChange = (value: string) => {
-    onDataChange({
-      ...data,
-      interests: value.split(",").map((i) => i.trim()),
     })
   }
 
@@ -310,12 +268,7 @@ export default function CurriculumEditor({
     onDataChange({
       ...data,
       experience: data.experience.map((exp) =>
-        exp.id === expId
-          ? {
-              ...exp,
-              achievements: [...exp.achievements, ""],
-            }
-          : exp,
+        exp.id === expId ? { ...exp, achievements: [...exp.achievements, ""] } : exp,
       ),
     })
   }
@@ -334,178 +287,478 @@ export default function CurriculumEditor({
     })
   }
 
-  const handleProjectTechnologiesChange = (projectId: string, value: string) => {
+  const handleExperienceKeywordChange = (expId: string, index: number, value: string) => {
     onDataChange({
       ...data,
-      projects: data.projects.map((proj) =>
-        proj.id === projectId ? { ...proj, technologies: value.split(",").map((t) => t.trim()) } : proj,
+      experience: data.experience.map((exp) =>
+        exp.id === expId
+          ? {
+              ...exp,
+              keywords: exp.keywords.map((kw, i) => (i === index ? value : kw)),
+            }
+          : exp,
       ),
     })
   }
 
-  const handleProjectImagesUpload = (event: React.ChangeEvent<HTMLInputElement>, projectId: string) => {
-    const files = event.target.files
-    if (files && files.length > 0) {
-      const newImageUrls: string[] = []
-      let filesProcessed = 0
+  const addExperienceKeyword = (expId: string) => {
+    onDataChange({
+      ...data,
+      experience: data.experience.map((exp) => (exp.id === expId ? { ...exp, keywords: [...exp.keywords, ""] } : exp)),
+    })
+  }
 
-      Array.from(files).forEach((file) => {
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          newImageUrls.push(reader.result as string)
-          filesProcessed++
-          if (filesProcessed === files.length) {
-            onDataChange({
-              ...data,
-              projects: data.projects.map((proj) =>
-                proj.id === projectId ? { ...proj, imageUrls: newImageUrls } : proj,
-              ),
-            })
-          }
-        }
-        reader.readAsDataURL(file)
-      })
-    } else {
-      // If no files selected, clear existing images for that project
+  const removeExperienceKeyword = (expId: string, index: number) => {
+    onDataChange({
+      ...data,
+      experience: data.experience.map((exp) =>
+        exp.id === expId
+          ? {
+              ...exp,
+              keywords: exp.keywords.filter((_, i) => i !== index),
+            }
+          : exp,
+      ),
+    })
+  }
+
+  const handleEducationChange = (id: string, field: keyof Education, value: string) => {
+    onDataChange({
+      ...data,
+      education: data.education.map((edu) => (edu.id === id ? { ...edu, [field]: value } : edu)),
+    })
+  }
+
+  const addEducation = () => {
+    onDataChange({
+      ...data,
+      education: [
+        ...data.education,
+        { id: Date.now().toString(), degree: "", institution: "", period: "", details: "" },
+      ],
+    })
+  }
+
+  const removeEducation = (id: string) => {
+    onDataChange({
+      ...data,
+      education: data.education.filter((edu) => edu.id !== id),
+    })
+  }
+
+  const handleSkillChange = (type: "technical" | "soft", index: number, value: string) => {
+    if (type === "technical") {
       onDataChange({
         ...data,
-        projects: data.projects.map((proj) => (proj.id === projectId ? { ...proj, imageUrls: [] } : proj)),
+        technicalSkills: data.technicalSkills.map((skill, i) => (i === index ? value : skill)),
+      })
+    } else {
+      onDataChange({
+        ...data,
+        softSkills: data.softSkills.map((skill, i) => (i === index ? value : skill)),
       })
     }
   }
 
-  const handleKeywordsChange = (value: string) => {
-    onDataChange({ ...data, keywords: value.split(",").map((s) => s.trim()) })
+  const addSkill = (type: "technical" | "soft") => {
+    if (type === "technical") {
+      onDataChange({ ...data, technicalSkills: [...data.technicalSkills, ""] })
+    } else {
+      onDataChange({ ...data, softSkills: [...data.softSkills, ""] })
+    }
   }
 
-  return (
-    <div className="w-full p-6 bg-white dark:bg-gray-900 shadow-lg h-full overflow-y-auto">
-      <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-50">Editor de Currículum</h1>
+  const removeSkill = (type: "technical" | "soft", index: number) => {
+    if (type === "technical") {
+      onDataChange({
+        ...data,
+        technicalSkills: data.technicalSkills.filter((_, i) => i !== index),
+      })
+    } else {
+      onDataChange({
+        ...data,
+        softSkills: data.softSkills.filter((_, i) => i !== index),
+      })
+    }
+  }
 
-      <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="personal">Personal</TabsTrigger>
-          <TabsTrigger value="experience">Experiencia</TabsTrigger>
-          <TabsTrigger value="design">Diseño</TabsTrigger>
-        </TabsList>
-        <TabsContent value="personal" className="mt-4">
-          <Card ref={(el) => (sectionRefs.current["personalInfo"] = el)}>
+  const handleLanguageChange = (id: string, field: "language" | "level", value: string) => {
+    onDataChange({
+      ...data,
+      languages: data.languages.map((lang) => (lang.id === id ? { ...lang, [field]: value } : lang)),
+    })
+  }
+
+  const addLanguage = () => {
+    onDataChange({
+      ...data,
+      languages: [...data.languages, { id: Date.now().toString(), language: "", level: "" }],
+    })
+  }
+
+  const removeLanguage = (id: string) => {
+    onDataChange({
+      ...data,
+      languages: data.languages.filter((lang) => lang.id !== id),
+    })
+  }
+
+  const handleProjectChange = (id: string, field: keyof Project, value: string | string[]) => {
+    onDataChange({
+      ...data,
+      projects: data.projects.map((proj) => (proj.id === id ? { ...proj, [field]: value } : proj)),
+    })
+  }
+
+  const addProject = () => {
+    onDataChange({
+      ...data,
+      projects: [
+        ...data.projects,
+        { id: Date.now().toString(), name: "", description: "", technologies: [""], imageUrls: [] }, // Initialize imageUrls as empty array
+      ],
+    })
+  }
+
+  const removeProject = (id: string) => {
+    onDataChange({
+      ...data,
+      projects: data.projects.filter((proj) => proj.id !== id),
+    })
+  }
+
+  const handleProjectTechnologyChange = (projId: string, index: number, value: string) => {
+    onDataChange({
+      ...data,
+      projects: data.projects.map((proj) =>
+        proj.id === projId
+          ? {
+              ...proj,
+              technologies: proj.technologies.map((tech, i) => (i === index ? value : tech)),
+            }
+          : proj,
+      ),
+    })
+  }
+
+  const addProjectTechnology = (projId: string) => {
+    onDataChange({
+      ...data,
+      projects: data.projects.map((proj) =>
+        proj.id === projId ? { ...proj, technologies: [...proj.technologies, ""] } : proj,
+      ),
+    })
+  }
+
+  const removeProjectTechnology = (projId: string, index: number) => {
+    onDataChange({
+      ...data,
+      projects: data.projects.map((proj) =>
+        proj.id === projId
+          ? {
+              ...proj,
+              technologies: proj.technologies.filter((_, i) => i !== index),
+            }
+          : proj,
+      ),
+    })
+  }
+
+  const handleProjectImageUpload = (projId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result as string
+        onDataChange((prev) => ({
+          ...prev,
+          projects: prev.projects.map((proj) =>
+            proj.id === projId ? { ...proj, imageUrls: [...(proj.imageUrls || []), result] } : proj,
+          ),
+        }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeProjectImageFromData = (projId: string, imageUrlToRemove: string) => {
+    onDataChange((prev) => ({
+      ...prev,
+      projects: prev.projects.map((proj) =>
+        proj.id === projId
+          ? { ...proj, imageUrls: (proj.imageUrls || []).filter((url) => url !== imageUrlToRemove) }
+          : proj,
+      ),
+    }))
+  }
+
+  const handleCertificationChange = (index: number, value: string) => {
+    onDataChange({
+      ...data,
+      certifications: data.certifications.map((cert, i) => (i === index ? value : cert)),
+    })
+  }
+
+  const addCertification = () => {
+    onDataChange({ ...data, certifications: [...data.certifications, ""] })
+  }
+
+  const removeCertification = (index: number) => {
+    onDataChange({
+      ...data,
+      certifications: data.certifications.filter((_, i) => i !== index),
+    })
+  }
+
+  const handleInterestChange = (index: number, value: string) => {
+    onDataChange({
+      ...data,
+      interests: data.interests.map((interest, i) => (i === index ? value : interest)),
+    })
+  }
+
+  const addInterest = () => {
+    onDataChange({ ...data, interests: [...data.interests, ""] })
+  }
+
+  const removeInterest = (index: number) => {
+    onDataChange({
+      ...data,
+      interests: data.interests.filter((_, i) => i !== index),
+    })
+  }
+
+  const handleKeywordChange = (index: number, value: string) => {
+    onDataChange({
+      ...data,
+      keywords: data.keywords.map((keyword, i) => (i === index ? value : keyword)),
+    })
+  }
+
+  const addKeyword = () => {
+    onDataChange({ ...data, keywords: [...data.keywords, ""] })
+  }
+
+  const removeKeyword = (index: number) => {
+    onDataChange({
+      ...data,
+      keywords: data.keywords.filter((_, i) => i !== index),
+    })
+  }
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result as string
+        handlePersonalInfoChange("profilePhoto", result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleQrCodeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result as string
+        handlePersonalInfoChange("qrCodeImage", result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const clearAllData = () => {
+    if (
+      window.confirm(
+        "¿Estás seguro de que quieres borrar toda la información del currículum? Esta acción no se puede deshacer.",
+      )
+    ) {
+      onDataChange(initialData)
+      onCustomBackgroundColorChange("")
+      onCustomTextColorChange("black")
+      onCustomTagPrimaryColorChange("")
+      onCustomTagSecondaryColorChange("")
+      onProfilePhotoBackgroundColorChange("")
+      onThemeChange("orange")
+      onToggleDarkMode(true)
+    }
+  }
+
+  // Scroll to active section in accordion
+  useEffect(() => {
+    if (activeSection) {
+      const element = document.getElementById(activeSection)
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" })
+      }
+    }
+  }, [activeSection])
+
+  return (
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="edit" className="flex items-center gap-2">
+          <Edit className="w-4 h-4" />
+          Editar Información
+        </TabsTrigger>
+        <TabsTrigger value="design" className="flex items-center gap-2">
+          <Palette className="w-4 h-4" />
+          Editar Diseño
+        </TabsTrigger>
+        <TabsTrigger value="optimize" className="flex items-center gap-2">
+          <Target className="w-4 h-4" />
+          Optimizar CV
+        </TabsTrigger>
+      </TabsList>
+
+      {/* Pestaña de Edición de Información */}
+      <TabsContent value="edit" className="space-y-6">
+        <ScrollArea className="h-[calc(100vh-200px)] pr-4">
+          <Card>
             <CardHeader>
-              <CardTitle>Información Personal</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                Información Personal
+                <Button onClick={clearAllData} variant="destructive" size="sm" className="flex items-center gap-2">
+                  <Eraser className="w-4 h-4" />
+                  Borrar Todo
+                </Button>
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Foto de Perfil */}
               <div>
-                <Label htmlFor="name">Nombre Completo</Label>
+                <Label>Foto de Perfil</Label>
+                <div className="flex items-center gap-4 mt-2">
+                  {data.personalInfo.profilePhoto ? (
+                    <img
+                      src={data.personalInfo.profilePhoto || "/placeholder.svg"}
+                      alt="Profile"
+                      className="w-16 h-16 rounded-lg object-cover border"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <Upload className="w-6 h-6 text-gray-400" />
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Subir Foto
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
+                </div>
                 <Input
-                  id="name"
-                  value={data.personalInfo.name}
-                  onChange={(e) => handlePersonalInfoChange("name", e.target.value)}
+                  id="profilePhotoUrl"
+                  type="text"
+                  placeholder="O pega una URL de imagen aquí"
+                  value={data.personalInfo.profilePhoto}
+                  onChange={(e) => handlePersonalInfoChange("profilePhoto", e.target.value)}
+                  className="mt-2"
                 />
               </div>
+              {/* Profile Photo Background Color */}
               <div>
-                <Label htmlFor="title">Título Profesional</Label>
-                <Input
-                  id="title"
-                  value={data.personalInfo.title}
-                  onChange={(e) => handlePersonalInfoChange("title", e.target.value)}
-                />
+                <Label htmlFor="profilePhotoBackgroundColor" className="text-base font-medium">
+                  Color de Fondo de Foto de Perfil
+                </Label>
+                <div className="flex items-center gap-2 mt-2">
+                  <Input
+                    id="profilePhotoBackgroundColor"
+                    type="color"
+                    placeholder="Ej: #C8C8C8"
+                    value={profilePhotoBackgroundColor || "#ffffff"}
+                    onChange={(e) => onProfilePhotoBackgroundColorChange(e.target.value)}
+                  />
+                  <div
+                    className="w-8 h-8 rounded-md border"
+                    style={{ backgroundColor: profilePhotoBackgroundColor || "transparent" }}
+                  />
+                </div>
+                <p className="text-sm text-gray-500 mt-1">Color de fondo para la tarjeta de la foto de perfil.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="name">Nombre Completo</Label>
+                  <Input
+                    id="name"
+                    value={data.personalInfo.name}
+                    onChange={(e) => handlePersonalInfoChange("name", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="title">Título Profesional</Label>
+                  <Input
+                    id="title"
+                    value={data.personalInfo.title}
+                    onChange={(e) => handlePersonalInfoChange("title", e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={data.personalInfo.email}
+                    onChange={(e) => handlePersonalInfoChange("email", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Teléfono</Label>
+                  <Input
+                    id="phone"
+                    value={data.personalInfo.phone}
+                    onChange={(e) => handlePersonalInfoChange("phone", e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="location">Ubicación</Label>
+                  <Input
+                    id="location"
+                    value={data.personalInfo.location}
+                    onChange={(e) => handlePersonalInfoChange("location", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="linkedin">LinkedIn</Label>
+                  <Input
+                    id="linkedin"
+                    value={data.personalInfo.linkedin}
+                    onChange={(e) => handlePersonalInfoChange("linkedin", e.target.value)}
+                  />
+                </div>
               </div>
               <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={data.personalInfo.email}
-                  onChange={(e) => handlePersonalInfoChange("email", e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Teléfono</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={data.personalInfo.phone}
-                  onChange={(e) => handlePersonalInfoChange("phone", e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="location">Ubicación</Label>
-                <Input
-                  id="location"
-                  value={data.personalInfo.location}
-                  onChange={(e) => handlePersonalInfoChange("location", e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="website">Sitio Web</Label>
+                <Label htmlFor="website">Website Personal</Label>
                 <Input
                   id="website"
                   value={data.personalInfo.website}
                   onChange={(e) => handlePersonalInfoChange("website", e.target.value)}
+                  placeholder="https://www.tu-web-personal.com"
                 />
               </div>
+
+              {/* Portfolio/QR Section Editable Fields */}
               <div>
-                <Label htmlFor="linkedin">LinkedIn</Label>
-                <Input
-                  id="linkedin"
-                  value={data.personalInfo.linkedin}
-                  onChange={(e) => handlePersonalInfoChange("linkedin", e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="github">GitHub</Label>
-                <Input
-                  id="github"
-                  value={data.personalInfo.github}
-                  onChange={(e) => handlePersonalInfoChange("github", e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="profilePhoto">Foto de Perfil (URL o Subir Archivo)</Label>
-                <Input
-                  id="profilePhoto"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleSingleImageUpload(e, "profilePhoto")}
-                  className="mb-2"
-                />
-                <Input
-                  type="text"
-                  value={data.personalInfo.profilePhoto}
-                  onChange={(e) => handlePersonalInfoChange("profilePhoto", e.target.value)}
-                  placeholder="O introduce una URL de imagen"
-                />
-                {data.personalInfo.profilePhoto && (
-                  <img
-                    src={data.personalInfo.profilePhoto || "/placeholder.svg"}
-                    alt="Profile Preview"
-                    className="mt-2 w-24 h-24 object-cover rounded-full border"
-                  />
-                )}
-              </div>
-              <div>
-                <Label htmlFor="profilePhotoBackgroundColor">Color de Fondo Foto de Perfil</Label>
-                <div className="flex items-center gap-2">
-                  <HexColorInput
-                    id="profilePhotoBackgroundColor"
-                    color={data.personalInfo.profilePhotoBackgroundColor || "#E0E7FF"}
-                    onChange={(color) => handlePersonalInfoChange("profilePhotoBackgroundColor", color)}
-                    className="flex-1 p-2 border rounded-md"
-                  />
-                  <div
-                    className="w-8 h-8 rounded-full border"
-                    style={{ backgroundColor: data.personalInfo.profilePhotoBackgroundColor || "transparent" }}
-                  />
-                </div>
-                <HexColorPicker
-                  color={data.personalInfo.profilePhotoBackgroundColor || "#E0E7FF"}
-                  onChange={(color) => handlePersonalInfoChange("profilePhotoBackgroundColor", color)}
-                  className="mt-2"
-                />
-              </div>
-              <Separator />
-              <div>
-                <Label htmlFor="portfolioTitle">Título del Portfolio/QR</Label>
+                <Label htmlFor="portfolioTitle">Título del Portfolio</Label>
                 <Input
                   id="portfolioTitle"
                   value={data.personalInfo.portfolioTitle}
@@ -513,531 +766,664 @@ export default function CurriculumEditor({
                 />
               </div>
               <div>
-                <Label htmlFor="portfolioDescription">Descripción del Portfolio/QR</Label>
-                <Textarea
+                <Label htmlFor="portfolioDescription">Descripción del Portfolio</Label>
+                <Input
                   id="portfolioDescription"
                   value={data.personalInfo.portfolioDescription}
                   onChange={(e) => handlePersonalInfoChange("portfolioDescription", e.target.value)}
                 />
               </div>
               <div>
-                <Label htmlFor="portfolioWebsite">Sitio Web del Portfolio</Label>
+                <Label htmlFor="portfolioWebsite">URL del Portfolio</Label>
                 <Input
                   id="portfolioWebsite"
                   value={data.personalInfo.portfolioWebsite}
                   onChange={(e) => handlePersonalInfoChange("portfolioWebsite", e.target.value)}
                 />
               </div>
+              {/* QR Code Image Input */}
               <div>
-                <Label htmlFor="qrCodeImage">Imagen de Código QR (URL o Subir Archivo)</Label>
+                <Label>Imagen de Código QR</Label>
+                <div className="flex items-center gap-4 mt-2">
+                  {data.personalInfo.qrCodeImage ? (
+                    <img
+                      src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
+                      alt="QR Code"
+                      className="w-16 h-16 rounded-lg object-cover border"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <Upload className="w-6 h-6 text-gray-400" />
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    onClick={() => qrCodeInputRef.current?.click()}
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Subir QR
+                  </Button>
+                  <input
+                    ref={qrCodeInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleQrCodeUpload}
+                    className="hidden"
+                  />
+                </div>
                 <Input
-                  id="qrCodeImageFile"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleSingleImageUpload(e, "qrCodeImage")}
-                  className="mb-2"
-                />
-                <Input
+                  id="qrCodeImageUrl"
                   type="text"
+                  placeholder="O pega una URL de imagen QR aquí"
                   value={data.personalInfo.qrCodeImage || ""}
                   onChange={(e) => handlePersonalInfoChange("qrCodeImage", e.target.value)}
-                  placeholder="O introduce una URL o Data URL"
-                />
-                {data.personalInfo.qrCodeImage && (
-                  <img
-                    src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
-                    alt="QR Code Preview"
-                    className="mt-2 w-24 h-24 object-contain border rounded"
-                  />
-                )}
-              </div>
-              <Button
-                onClick={onClearData}
-                variant="outline"
-                className="w-full mt-4 text-red-500 border-red-500 hover:bg-red-50 hover:text-red-600 bg-transparent"
-              >
-                <Eraser className="h-4 w-4 mr-2" /> Borrar Toda la Información
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6" ref={(el) => (sectionRefs.current["summary"] = el)}>
-            <CardHeader>
-              <CardTitle>Resumen Profesional</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={data.summary}
-                onChange={(e) => onDataChange({ ...data, summary: e.target.value })}
-                rows={5}
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6" ref={(el) => (sectionRefs.current["skills"] = el)}>
-            <CardHeader>
-              <CardTitle>Habilidades</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="technicalSkills">Habilidades Técnicas (separadas por comas)</Label>
-                <Input
-                  id="technicalSkills"
-                  value={data.technicalSkills.join(", ")}
-                  onChange={(e) => handleSkillChange("technicalSkills", e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="softSkills">Habilidades Interpersonales (separadas por comas)</Label>
-                <Input
-                  id="softSkills"
-                  value={data.softSkills.join(", ")}
-                  onChange={(e) => handleSkillChange("softSkills", e.target.value)}
+                  className="mt-2"
                 />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="mt-6" ref={(el) => (sectionRefs.current["languages"] = el)}>
-            <CardHeader>
-              <CardTitle>Idiomas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {data.languages.map((lang) => (
-                <div key={lang.id} className="flex items-end gap-2">
-                  <div className="flex-1">
-                    <Label htmlFor={`language-${lang.id}`}>Idioma</Label>
-                    <Input
-                      id={`language-${lang.id}`}
-                      value={lang.language}
-                      onChange={(e) => handleLanguageChange(lang.id, "language", e.target.value)}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <Label htmlFor={`level-${lang.id}`}>Nivel</Label>
-                    <Input
-                      id={`level-${lang.id}`}
-                      value={lang.level}
-                      onChange={(e) => handleLanguageChange(lang.id, "level", e.target.value)}
-                    />
-                  </div>
-                  <Button variant="destructive" size="icon" onClick={() => removeLanguage(lang.id)}>
-                    <Trash2 className="h-4 w-4" />
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+            value={activeSection || ""}
+            onValueChange={setActiveSection}
+          >
+            <AccordionItem value="summary" id="summary">
+              <AccordionTrigger>Resumen Profesional</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid gap-4 p-4">
+                  <Label htmlFor="summary">Resumen</Label>
+                  <Textarea id="summary" value={data.summary} onChange={(e) => handleSummaryChange(e.target.value)} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="experience" id="experience">
+              <AccordionTrigger>Experiencia Laboral</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid gap-6 p-4">
+                  {data.experience.map((exp) => (
+                    <Card key={exp.id} className="p-4">
+                      <div className="flex justify-end">
+                        <Button variant="destructive" size="sm" onClick={() => removeExperience(exp.id)}>
+                          <MinusCircle className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <Label htmlFor={`position-${exp.id}`}>Puesto</Label>
+                      <Input
+                        id={`position-${exp.id}`}
+                        value={exp.position}
+                        onChange={(e) => handleExperienceChange(exp.id, "position", e.target.value)}
+                      />
+                      <Label htmlFor={`company-${exp.id}`}>Empresa</Label>
+                      <Input
+                        id={`company-${exp.id}`}
+                        value={exp.company}
+                        onChange={(e) => handleExperienceChange(exp.id, "company", e.target.value)}
+                      />
+                      <Label htmlFor={`period-${exp.id}`}>Período</Label>
+                      <Input
+                        id={`period-${exp.id}`}
+                        value={exp.period}
+                        onChange={(e) => handleExperienceChange(exp.id, "period", e.target.value)}
+                      />
+                      <Label>Logros</Label>
+                      {exp.achievements.map((achievement, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Textarea
+                            value={achievement}
+                            onChange={(e) => handleAchievementChange(exp.id, index, e.target.value)}
+                          />
+                          <Button variant="outline" size="sm" onClick={() => removeAchievement(exp.id, index)}>
+                            <MinusCircle className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button variant="outline" size="sm" onClick={() => addAchievement(exp.id)}>
+                        <PlusCircle className="h-4 w-4 mr-2" /> Añadir Logro
+                      </Button>
+                      <Label>Palabras Clave</Label>
+                      {exp.keywords.map((keyword, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Input
+                            value={keyword}
+                            onChange={(e) => handleExperienceKeywordChange(exp.id, index, e.target.value)}
+                          />
+                          <Button variant="outline" size="sm" onClick={() => removeExperienceKeyword(exp.id, index)}>
+                            <MinusCircle className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button variant="outline" size="sm" onClick={() => addExperienceKeyword(exp.id)}>
+                        <PlusCircle className="h-4 w-4 mr-2" /> Añadir Palabra Clave
+                      </Button>
+                    </Card>
+                  ))}
+                  <Button onClick={addExperience}>
+                    <PlusCircle className="h-4 w-4 mr-2" /> Añadir Experiencia
                   </Button>
                 </div>
-              ))}
-              <Button onClick={addLanguage} className="w-full">
-                <PlusCircle className="h-4 w-4 mr-2" /> Añadir Idioma
-              </Button>
-            </CardContent>
-          </Card>
+              </AccordionContent>
+            </AccordionItem>
 
-          <Card className="mt-6" ref={(el) => (sectionRefs.current["certifications"] = el)}>
-            <CardHeader>
-              <CardTitle>Certificaciones</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={data.certifications.join(", ")}
-                onChange={(e) => handleCertificationsChange(e.target.value)}
-                placeholder="Certificación 1, Certificación 2, ..."
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6" ref={(el) => (sectionRefs.current["interests"] = el)}>
-            <CardHeader>
-              <CardTitle>Intereses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={data.interests.join(", ")}
-                onChange={(e) => handleInterestsChange(e.target.value)}
-                placeholder="Interés 1, Interés 2, ..."
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6" ref={(el) => (sectionRefs.current["keywords"] = el)}>
-            <CardHeader>
-              <CardTitle>Palabras Clave (para ATS)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                id="keywords"
-                value={data.keywords.join(", ")}
-                onChange={(e) => handleKeywordsChange(e.target.value)}
-                rows={3}
-                placeholder="Palabras clave relevantes para tu industria o puesto deseado, separadas por comas."
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="experience" className="mt-4">
-          <Card ref={(el) => (sectionRefs.current["experience"] = el)}>
-            <CardHeader>
-              <CardTitle>Experiencia Laboral</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {data.experience.map((exp) => (
-                <div key={exp.id} className="border p-4 rounded-md space-y-3 relative">
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={() => removeExperience(exp.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
+            <AccordionItem value="education" id="education">
+              <AccordionTrigger>Educación</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid gap-6 p-4">
+                  {data.education.map((edu) => (
+                    <Card key={edu.id} className="p-4">
+                      <div className="flex justify-end">
+                        <Button variant="destructive" size="sm" onClick={() => removeEducation(edu.id)}>
+                          <MinusCircle className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <Label htmlFor={`degree-${edu.id}`}>Título</Label>
+                      <Input
+                        id={`degree-${edu.id}`}
+                        value={edu.degree}
+                        onChange={(e) => handleEducationChange(edu.id, "degree", e.target.value)}
+                      />
+                      <Label htmlFor={`institution-${edu.id}`}>Institución</Label>
+                      <Input
+                        id={`institution-${edu.id}`}
+                        value={edu.institution}
+                        onChange={(e) => handleEducationChange(edu.id, "institution", e.target.value)}
+                      />
+                      <Label htmlFor={`period-edu-${edu.id}`}>Período</Label>
+                      <Input
+                        id={`period-edu-${edu.id}`}
+                        value={edu.period}
+                        onChange={(e) => handleEducationChange(edu.id, "period", e.target.value)}
+                      />
+                      <Label htmlFor={`details-${edu.id}`}>Detalles</Label>
+                      <Textarea
+                        id={`details-${edu.id}`}
+                        value={edu.details}
+                        onChange={(e) => handleEducationChange(edu.id, "details", e.target.value)}
+                      />
+                      <Label htmlFor={`gpa-${edu.id}`}>GPA (Opcional)</Label>
+                      <Input
+                        id={`gpa-${edu.id}`}
+                        value={edu.gpa || ""}
+                        onChange={(e) => handleEducationChange(edu.id, "gpa", e.target.value)}
+                      />
+                    </Card>
+                  ))}
+                  <Button onClick={addEducation}>
+                    <PlusCircle className="h-4 w-4 mr-2" /> Añadir Educación
                   </Button>
-                  <div>
-                    <Label htmlFor={`position-${exp.id}`}>Posición</Label>
-                    <Input
-                      id={`position-${exp.id}`}
-                      value={exp.position}
-                      onChange={(e) => handleExperienceChange(exp.id, "position", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`company-${exp.id}`}>Empresa</Label>
-                    <Input
-                      id={`company-${exp.id}`}
-                      value={exp.company}
-                      onChange={(e) => handleExperienceChange(exp.id, "company", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`period-${exp.id}`}>Período</Label>
-                    <Input
-                      id={`period-${exp.id}`}
-                      value={exp.period}
-                      onChange={(e) => handleExperienceChange(exp.id, "period", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label>Logros (uno por línea)</Label>
-                    {exp.achievements.map((achievement, index) => (
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="skills" id="skills">
+              <AccordionTrigger>Habilidades</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid gap-6 p-4">
+                  <Card className="p-4">
+                    <CardTitle className="mb-4">Habilidades Técnicas</CardTitle>
+                    {data.technicalSkills.map((skill, index) => (
                       <div key={index} className="flex items-center gap-2 mb-2">
-                        <Textarea
-                          value={achievement}
-                          onChange={(e) => handleAchievementChange(exp.id, index, e.target.value)}
-                          rows={2}
-                        />
-                        <Button variant="destructive" size="icon" onClick={() => removeAchievement(exp.id, index)}>
-                          <Trash2 className="h-4 w-4" />
+                        <Input value={skill} onChange={(e) => handleSkillChange("technical", index, e.target.value)} />
+                        <Button variant="outline" size="sm" onClick={() => removeSkill("technical", index)}>
+                          <MinusCircle className="h-4 w-4" />
                         </Button>
                       </div>
                     ))}
-                    <Button onClick={() => addAchievement(exp.id)} variant="outline" className="w-full mt-2">
-                      <PlusCircle className="h-4 w-4 mr-2" /> Añadir Logro
+                    <Button variant="outline" size="sm" onClick={() => addSkill("technical")}>
+                      <PlusCircle className="h-4 w-4 mr-2" /> Añadir Habilidad Técnica
                     </Button>
-                  </div>
-                  <div>
-                    <Label htmlFor={`keywords-${exp.id}`}>Palabras Clave (separadas por comas)</Label>
-                    <Input
-                      id={`keywords-${exp.id}`}
-                      value={exp.keywords.join(", ")}
-                      onChange={(e) =>
-                        handleExperienceChange(
-                          exp.id,
-                          "keywords",
-                          e.target.value.split(",").map((k) => k.trim()),
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-              ))}
-              <Button onClick={addExperience} className="w-full">
-                <PlusCircle className="h-4 w-4 mr-2" /> Añadir Experiencia
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6" ref={(el) => (sectionRefs.current["education"] = el)}>
-            <CardHeader>
-              <CardTitle>Educación</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {data.education.map((edu) => (
-                <div key={edu.id} className="border p-4 rounded-md space-y-3 relative">
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={() => removeEducation(edu.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                  <div>
-                    <Label htmlFor={`degree-${edu.id}`}>Título/Grado</Label>
-                    <Input
-                      id={`degree-${edu.id}`}
-                      value={edu.degree}
-                      onChange={(e) => handleEducationChange(edu.id, "degree", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`institution-${edu.id}`}>Institución</Label>
-                    <Input
-                      id={`institution-${edu.id}`}
-                      value={edu.institution}
-                      onChange={(e) => handleEducationChange(edu.id, "institution", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`edu-period-${edu.id}`}>Período</Label>
-                    <Input
-                      id={`edu-period-${edu.id}`}
-                      value={edu.period}
-                      onChange={(e) => handleEducationChange(edu.id, "period", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`details-${edu.id}`}>Detalles</Label>
-                    <Textarea
-                      id={`details-${edu.id}`}
-                      value={edu.details}
-                      onChange={(e) => handleEducationChange(edu.id, "details", e.target.value)}
-                      rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`gpa-${edu.id}`}>GPA (Opcional)</Label>
-                    <Input
-                      id={`gpa-${edu.id}`}
-                      value={edu.gpa || ""}
-                      onChange={(e) => handleEducationChange(edu.id, "gpa", e.target.value)}
-                    />
-                  </div>
-                </div>
-              ))}
-              <Button onClick={addEducation} className="w-full">
-                <PlusCircle className="h-4 w-4 mr-2" /> Añadir Educación
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6" ref={(el) => (sectionRefs.current["projects"] = el)}>
-            <CardHeader>
-              <CardTitle>Proyectos Destacados</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {data.projects.map((project) => (
-                <div key={project.id} className="border p-4 rounded-md space-y-3 relative">
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={() => removeProject(project.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                  <div>
-                    <Label htmlFor={`project-name-${project.id}`}>Nombre del Proyecto</Label>
-                    <Input
-                      id={`project-name-${project.id}`}
-                      value={project.name}
-                      onChange={(e) => handleProjectChange(project.id, "name", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`project-description-${project.id}`}>Descripción</Label>
-                    <Textarea
-                      id={`project-description-${project.id}`}
-                      value={project.description}
-                      onChange={(e) => handleProjectChange(project.id, "description", e.target.value)}
-                      rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`project-technologies-${project.id}`}>Tecnologías (separadas por comas)</Label>
-                    <Input
-                      id={`project-technologies-${project.id}`}
-                      value={project.technologies.join(", ")}
-                      onChange={(e) => handleProjectTechnologiesChange(project.id, e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`project-link-${project.id}`}>Enlace (URL)</Label>
-                    <Input
-                      id={`project-link-${project.id}`}
-                      value={project.link || ""}
-                      onChange={(e) => handleProjectChange(project.id, "link", e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`project-images-${project.id}`}>Imágenes del Proyecto (Subir Archivos)</Label>
-                    <Input
-                      id={`project-images-${project.id}`}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => handleProjectImagesUpload(e, project.id)}
-                      className="mb-2"
-                    />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Las imágenes se mostrarán en la vista previa.
-                    </p>
-                    {project.imageUrls && project.imageUrls.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {project.imageUrls.map((url, index) => (
-                          <img
-                            key={index}
-                            src={url || "/placeholder.svg?height=50&width=50"}
-                            alt={`Imagen ${index + 1}`}
-                            className="w-16 h-16 object-cover rounded-md border"
-                          />
-                        ))}
+                  </Card>
+                  <Card className="p-4">
+                    <CardTitle className="mb-4">Habilidades Interpersonales</CardTitle>
+                    {data.softSkills.map((skill, index) => (
+                      <div key={index} className="flex items-center gap-2 mb-2">
+                        <Input value={skill} onChange={(e) => handleSkillChange("soft", index, e.target.value)} />
+                        <Button variant="outline" size="sm" onClick={() => removeSkill("soft", index)}>
+                          <MinusCircle className="h-4 w-4" />
+                        </Button>
                       </div>
-                    )}
+                    ))}
+                    <Button variant="outline" size="sm" onClick={() => addSkill("soft")}>
+                      <PlusCircle className="h-4 w-4 mr-2" /> Añadir Habilidad Interpersonal
+                    </Button>
+                  </Card>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="languages" id="languages">
+              <AccordionTrigger>Idiomas</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid gap-6 p-4">
+                  {data.languages.map((lang) => (
+                    <Card key={lang.id} className="p-4">
+                      <div className="flex justify-end">
+                        <Button variant="destructive" size="sm" onClick={() => removeLanguage(lang.id)}>
+                          <MinusCircle className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <Label htmlFor={`language-${lang.id}`}>Idioma</Label>
+                      <Input
+                        id={`language-${lang.id}`}
+                        value={lang.language}
+                        onChange={(e) => handleLanguageChange(lang.id, "language", e.target.value)}
+                      />
+                      <Label htmlFor={`level-${lang.id}`}>Nivel</Label>
+                      <Input
+                        id={`level-${lang.id}`}
+                        value={lang.level}
+                        onChange={(e) => handleLanguageChange(lang.id, "level", e.target.value)}
+                      />
+                    </Card>
+                  ))}
+                  <Button onClick={addLanguage}>
+                    <PlusCircle className="h-4 w-4 mr-2" /> Añadir Idioma
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="projects" id="projects">
+              <AccordionTrigger>Proyectos Destacados</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid gap-6 p-4">
+                  {data.projects.map((proj) => (
+                    <Card key={proj.id} className="p-4">
+                      <div className="flex justify-end">
+                        <Button variant="destructive" size="sm" onClick={() => removeProject(proj.id)}>
+                          <MinusCircle className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <Label htmlFor={`project-name-${proj.id}`}>Nombre del Proyecto</Label>
+                      <Input
+                        id={`project-name-${proj.id}`}
+                        value={proj.name}
+                        onChange={(e) => handleProjectChange(proj.id, "name", e.target.value)}
+                      />
+                      <Label htmlFor={`project-description-${proj.id}`}>Descripción</Label>
+                      <Textarea
+                        id={`project-description-${proj.id}`}
+                        value={proj.description}
+                        onChange={(e) => handleProjectChange(proj.id, "description", e.target.value)}
+                      />
+                      <Label htmlFor={`project-link-${proj.id}`}>Enlace (Opcional)</Label>
+                      <Input
+                        id={`project-link-${proj.id}`}
+                        value={proj.link || ""}
+                        onChange={(e) => handleProjectChange(proj.id, "link", e.target.value)}
+                      />
+                      <Label>Tecnologías</Label>
+                      {proj.technologies.map((tech, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Input
+                            value={tech}
+                            onChange={(e) => handleProjectTechnologyChange(proj.id, index, e.target.value)}
+                          />
+                          <Button variant="outline" size="sm" onClick={() => removeProjectTechnology(proj.id, index)}>
+                            <MinusCircle className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button variant="outline" size="sm" onClick={() => addProjectTechnology(proj.id)}>
+                        <PlusCircle className="h-4 w-4 mr-2" /> Añadir Tecnología
+                      </Button>
+                      <Label>Imágenes del Proyecto</Label>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {(proj.imageUrls || []).map((url, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={url || "/placeholder.svg"}
+                              alt={`Project image ${index}`}
+                              className="w-24 h-24 object-cover rounded-md border"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-0 right-0 -mt-2 -mr-2 rounded-full h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => removeProjectImageFromData(proj.id, url)}
+                            >
+                              <MinusCircle className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <div
+                          className="flex items-center justify-center w-24 h-24 border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-50"
+                          onClick={() => projectImageInputRefs.current[proj.id]?.click()}
+                        >
+                          <PlusCircle className="h-6 w-6 text-gray-400" />
+                          <input
+                            ref={(el) => (projectImageInputRefs.current[proj.id] = el)}
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleProjectImageUpload(proj.id, e)}
+                            className="hidden"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Adjunta imágenes para tu proyecto. Se mostrará la primera imagen.
+                      </p>
+                    </Card>
+                  ))}
+                  <Button onClick={addProject}>
+                    <PlusCircle className="h-4 w-4 mr-2" /> Añadir Proyecto
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="certifications" id="certifications">
+              <AccordionTrigger>Certificaciones</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid gap-6 p-4">
+                  {data.certifications.map((cert, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Input value={cert} onChange={(e) => handleCertificationChange(index, e.target.value)} />
+                      <Button variant="outline" size="sm" onClick={() => removeCertification(index)}>
+                        <MinusCircle className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button onClick={addCertification}>
+                    <PlusCircle className="h-4 w-4 mr-2" /> Añadir Certificación
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="interests" id="interests">
+              <AccordionTrigger>Intereses</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid gap-6 p-4">
+                  {data.interests.map((interest, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Input value={interest} onChange={(e) => handleInterestChange(index, e.target.value)} />
+                      <Button variant="outline" size="sm" onClick={() => removeInterest(index)}>
+                        <MinusCircle className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button onClick={addInterest}>
+                    <PlusCircle className="h-4 w-4 mr-2" /> Añadir Interés
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="keywords" id="keywords">
+              <AccordionTrigger>Palabras Clave (Generales)</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid gap-6 p-4">
+                  {data.keywords.map((keyword, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Input value={keyword} onChange={(e) => handleKeywordChange(index, e.target.value)} />
+                      <Button variant="outline" size="sm" onClick={() => removeKeyword(index)}>
+                        <MinusCircle className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button onClick={addKeyword}>
+                    <PlusCircle className="h-4 w-4 mr-2" /> Añadir Palabra Clave
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </ScrollArea>
+      </TabsContent>
+
+      {/* Pestaña de Edición de Diseño */}
+      <TabsContent value="design" className="space-y-6">
+        <ScrollArea className="h-[calc(100vh-200px)] pr-4">
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Elige el Formato de tu Currículum</h2>
+            <p className="text-gray-600 mb-6">
+              Cada formato está optimizado para diferentes tipos de empresas y procesos de selección
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.entries(templateTypes).map(([key, template]) => {
+              const IconComponent = template.icon
+              return (
+                <Card
+                  key={key}
+                  className={`cursor-pointer transition-all hover:shadow-lg ${
+                    selectedTemplate === key ? "ring-2 ring-blue-500 bg-blue-50" : ""
+                  }`}
+                  onClick={() => onTemplateChange(key)}
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3">
+                      <IconComponent className="w-6 h-6 text-blue-600" />
+                      {template.name}
+                    </CardTitle>
+                    <p className="text-gray-600">{template.description}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Características:</h4>
+                      <ul className="space-y-1">
+                        {template.features.map((feature, index) => (
+                          <li key={index} className="text-sm text-gray-600 flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+
+          {/* Personalización de Diseño (para todos menos el corporativo) */}
+          {selectedTemplate !== "corporate" && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="w-5 h-5" />
+                  Personalización de Diseño
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <Label className="text-base font-medium">Tema de Color de Acento</Label>
+                  <div className="grid grid-cols-5 gap-4 mt-3">
+                    {Object.entries(colorThemes).map(([key, theme]) => (
+                      <button
+                        key={key}
+                        onClick={() => onThemeChange(key)}
+                        className={`p-2 rounded-lg border-2 transition-all ${
+                          selectedTheme === key ? "border-gray-900 ring-2 ring-gray-300" : "border-gray-200"
+                        }`}
+                      >
+                        <div
+                          className={`w-full h-8 rounded-t`}
+                          style={{
+                            backgroundColor: theme.previewPrimary,
+                          }}
+                        ></div>
+                        <div
+                          className={`w-full h-2 rounded-b`}
+                          style={{
+                            backgroundColor: theme.previewSecondary,
+                          }}
+                        ></div>
+                        <span className="text-sm capitalize mt-2 block">{theme.name}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              ))}
-              <Button onClick={addProject} className="w-full">
-                <PlusCircle className="h-4 w-4 mr-2" /> Añadir Proyecto
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="design" className="mt-4">
-          <Card ref={(el) => (sectionRefs.current["designOptions"] = el)}>
+                <div>
+                  <Label htmlFor="customBackgroundColor" className="text-base font-medium">
+                    Color de Fondo (RGB/Hex)
+                  </Label>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Input
+                      id="customBackgroundColor"
+                      type="color"
+                      placeholder="Ej: rgb(240, 240, 240) o #F0F0F0"
+                      value={customBackgroundColor || "#ffffff"}
+                      onChange={(e) => onCustomBackgroundColorChange(e.target.value)}
+                    />
+                    <div
+                      className="w-8 h-8 rounded-md border"
+                      style={{ backgroundColor: customBackgroundColor || "transparent" }}
+                    />
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Introduce un color RGB (ej. `rgb(240, 240, 240)`) o un código hexadecimal (ej. `#F0F0F0`).
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-base font-medium">Color de Letra Principal</Label>
+                  <div className="flex gap-4 mt-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="textColorBlack"
+                        name="textColor"
+                        value="black"
+                        checked={customTextColor === "black"}
+                        onChange={(e) => onCustomTextColorChange(e.target.value)}
+                        className="rounded"
+                      />
+                      <Label htmlFor="textColorBlack">Negro</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="textColorWhite"
+                        name="textColor"
+                        value="white"
+                        checked={customTextColor === "white"}
+                        onChange={(e) => onCustomTextColorChange(e.target.value)}
+                        className="rounded"
+                      />
+                      <Label htmlFor="textColorWhite">Blanco</Label>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="customTagPrimaryColor" className="text-base font-medium">
+                    Color de Tags (Habilidades Técnicas)
+                  </Label>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Input
+                      id="customTagPrimaryColor"
+                      type="color"
+                      placeholder="Ej: rgb(255, 100, 0) o #FF6400"
+                      value={customTagPrimaryColor || "#ffffff"}
+                      onChange={(e) => onCustomTagPrimaryColorChange(e.target.value)}
+                    />
+                    <div
+                      className="w-8 h-8 rounded-md border"
+                      style={{ backgroundColor: customTagPrimaryColor || "transparent" }}
+                    />
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Color de fondo para los tags de habilidades técnicas.</p>
+                </div>
+                <div>
+                  <Label htmlFor="customTagSecondaryColor" className="text-base font-medium">
+                    Color de Tags (Habilidades Interpersonales/Intereses)
+                  </Label>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Input
+                      id="customTagSecondaryColor"
+                      type="color"
+                      placeholder="Ej: rgb(0, 150, 50) o #009632"
+                      value={customTagSecondaryColor || "#ffffff"}
+                      onChange={(e) => onCustomTagSecondaryColorChange(e.target.value)}
+                    />
+                    <div
+                      className="w-8 h-8 rounded-md border"
+                      style={{ backgroundColor: customTagSecondaryColor || "transparent" }}
+                    />
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Color de fondo para los tags de habilidades interpersonales e intereses.
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="darkMode"
+                    checked={isDarkMode}
+                    onChange={(e) => onToggleDarkMode(e.target.checked)}
+                    className="rounded"
+                  />
+                  <Label htmlFor="darkMode">Modo Oscuro (afecta acentos y elementos secundarios)</Label>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </ScrollArea>
+      </TabsContent>
+
+      {/* Pestaña de Optimización ATS */}
+      <TabsContent value="optimize" className="space-y-6">
+        <ScrollArea className="h-[calc(100vh-200px)] pr-4">
+          <Card>
             <CardHeader>
-              <CardTitle>Opciones de Diseño</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5" />
+                Optimización para Sistemas ATS
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="template-select">Seleccionar Plantilla</Label>
-                <Select value={selectedTemplate} onValueChange={onTemplateChange}>
-                  <SelectTrigger id="template-select">
-                    <SelectValue placeholder="Selecciona una plantilla" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="socialMedia">Inspirada en Redes Sociales</SelectItem>
-                    <SelectItem value="ats">ATS Friendly</SelectItem>
-                    <SelectItem value="corporate">Corporativa</SelectItem>
-                    <SelectItem value="creative">Creativa</SelectItem>
-                    <SelectItem value="minimal">Minimalista</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="theme-select">Seleccionar Tema de Color</Label>
-                <Select value={selectedTheme} onValueChange={onThemeChange}>
-                  <SelectTrigger id="theme-select">
-                    <SelectValue placeholder="Selecciona un tema" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="orange">Naranja (Predeterminado)</SelectItem>
-                    <SelectItem value="teal">Verde Azulado</SelectItem>
-                    <SelectItem value="blue">Azul</SelectItem>
-                    <SelectItem value="green">Verde</SelectItem>
-                    <SelectItem value="purple">Púrpura</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="darkMode"
-                  checked={isDarkMode}
-                  onCheckedChange={(checked: boolean) => onDarkModeChange(checked)}
+                <Label>Palabras Clave Principales (separadas por comas)</Label>
+                <Textarea
+                  value={data.keywords.join(", ")}
+                  onChange={(e) =>
+                    onDataChange((prev) => ({
+                      ...prev,
+                      keywords: e.target.value.split(",").map((k) => k.trim()),
+                    }))
+                  }
+                  placeholder="Python, React, Gestión de proyectos, Análisis de datos..."
+                  rows={3}
                 />
-                <Label htmlFor="darkMode">Modo Oscuro</Label>
+                <p className="text-sm text-gray-500 mt-1">
+                  Incluye palabras clave específicas del puesto al que aplicas
+                </p>
               </div>
 
-              <Separator />
-
-              <h4 className="text-lg font-semibold mt-4">Colores Personalizados</h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Estos colores anularán los colores del tema seleccionado.
-              </p>
-
-              <div>
-                <Label htmlFor="customBackgroundColor">Color de Fondo Personalizado</Label>
-                <div className="flex items-center gap-2">
-                  <HexColorInput
-                    id="customBackgroundColor"
-                    color={customBackgroundColor}
-                    onChange={onCustomBackgroundColorChange}
-                    className="flex-1 p-2 border rounded-md"
-                  />
-                  <div
-                    className="w-8 h-8 rounded-full border"
-                    style={{ backgroundColor: customBackgroundColor || "transparent" }}
-                  />
-                </div>
-                <HexColorPicker
-                  color={customBackgroundColor}
-                  onChange={onCustomBackgroundColorChange}
-                  className="mt-2"
-                />
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Consejos para ATS:</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Usa palabras clave exactas de la descripción del trabajo</li>
+                  <li>• Evita gráficos complejos y tablas</li>
+                  <li>• Usa formatos de fecha estándar</li>
+                  <li>• Incluye tanto la versión completa como las siglas (ej: "Inteligencia Artificial (IA)")</li>
+                  <li>• Guarda en formato PDF para mantener el formato</li>
+                </ul>
               </div>
 
               <div>
-                <Label htmlFor="customTextColor">Color de Texto Principal Personalizado</Label>
-                <div className="flex items-center gap-2">
-                  <HexColorInput
-                    id="customTextColor"
-                    color={customTextColor}
-                    onChange={onCustomTextColorChange}
-                    className="flex-1 p-2 border rounded-md"
-                  />
-                  <div
-                    className="w-8 h-8 rounded-full border"
-                    style={{ backgroundColor: customTextColor || "transparent" }}
-                  />
+                <h4 className="font-medium mb-2">Análisis de Palabras Clave Actuales:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {data.keywords.map((keyword, index) => (
+                    <Badge key={index} variant="secondary">
+                      {keyword}
+                    </Badge>
+                  ))}
                 </div>
-                <HexColorPicker color={customTextColor} onChange={onCustomTextColorChange} className="mt-2" />
-              </div>
-
-              <div>
-                <Label htmlFor="customTagPrimaryColor">Color de Etiqueta Primaria Personalizado</Label>
-                <div className="flex items-center gap-2">
-                  <HexColorInput
-                    id="customTagPrimaryColor"
-                    color={customTagPrimaryColor}
-                    onChange={onCustomTagPrimaryColorChange}
-                    className="flex-1 p-2 border rounded-md"
-                  />
-                  <div
-                    className="w-8 h-8 rounded-full border"
-                    style={{ backgroundColor: customTagPrimaryColor || "transparent" }}
-                  />
-                </div>
-                <HexColorPicker
-                  color={customTagPrimaryColor}
-                  onChange={onCustomTagPrimaryColorChange}
-                  className="mt-2"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="customTagSecondaryColor">Color de Etiqueta Secundaria Personalizado</Label>
-                <div className="flex items-center gap-2">
-                  <HexColorInput
-                    id="customTagSecondaryColor"
-                    color={customTagSecondaryColor}
-                    onChange={onCustomTagSecondaryColorChange}
-                    className="flex-1 p-2 border rounded-md"
-                  />
-                  <div
-                    className="w-8 h-8 rounded-full border"
-                    style={{ backgroundColor: customTagSecondaryColor || "transparent" }}
-                  />
-                </div>
-                <HexColorPicker
-                  color={customTagSecondaryColor}
-                  onChange={onCustomTagSecondaryColorChange}
-                  className="mt-2"
-                />
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+        </ScrollArea>
+      </TabsContent>
+    </Tabs>
   )
 }

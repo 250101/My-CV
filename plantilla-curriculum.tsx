@@ -1,244 +1,247 @@
 "use client"
 
 import { useState } from "react"
-import CurriculumEditor, { type CurriculumData } from "@/components/curriculum-editor"
+import { CurriculumEditor } from "@/components/curriculum-editor"
 import CurriculumPreview from "@/components/curriculum-preview"
 
-export default function PlantillaCurriculum() {
-  const initialCurriculumData: CurriculumData = {
+// Define las interfaces para la estructura de los datos del currículum
+interface PersonalInfo {
+  name: string
+  title: string
+  email: string
+  phone: string
+  location: string
+  website: string
+  linkedin: string
+  github: string
+  profilePhoto: string
+  profilePhotoBackgroundColor?: string
+  portfolioTitle: string
+  portfolioDescription: string
+  portfolioWebsite: string
+  qrCodeImage?: string
+}
+
+interface Experience {
+  id: string
+  position: string
+  company: string
+  period: string
+  achievements: string[]
+  keywords: string[]
+}
+
+interface Education {
+  id: string
+  degree: string
+  institution: string
+  period: string
+  details: string
+  gpa?: string
+}
+
+interface Project {
+  id: string
+  name: string
+  description: string
+  technologies: string[]
+  link?: string
+  imageUrls?: string[]
+}
+
+interface CurriculumData {
+  personalInfo: PersonalInfo
+  summary: string
+  experience: Experience[]
+  education: Education[]
+  technicalSkills: string[]
+  softSkills: string[]
+  languages: { id: string; language: string; level: string }[]
+  projects: Project[]
+  certifications: string[]
+  interests: string[]
+  keywords: string[]
+}
+
+export default function CurriculumTemplate() {
+  const [curriculumData, setCurriculumData] = useState<CurriculumData>({
     personalInfo: {
-      name: "Jane Doe",
-      title: "Diseñadora UX/UI",
-      email: "jane.doe@example.com",
-      phone: "+1 (987) 654-3210",
-      location: "Barcelona, España",
-      website: "https://janedoe.design",
-      linkedin: "https://linkedin.com/in/janedoe",
-      github: "https://github.com/janedoe",
-      profilePhoto: "/placeholder.svg?height=128&width=128",
-      profilePhotoBackgroundColor: "#FFDDC1",
-      portfolioTitle: "Mi Portfolio de Diseño",
-      portfolioDescription: "Descubre mis proyectos de diseño de interfaz y experiencia de usuario.",
-      portfolioWebsite: "https://janedoe.design/portfolio",
+      name: "John Doe",
+      title: "Desarrollador Full Stack",
+      email: "john.doe@example.com",
+      phone: "+1 (123) 456-7890",
+      location: "San Francisco, CA",
+      website: "www.johndoe.com",
+      linkedin: "linkedin.com/in/johndoe",
+      github: "github.com/johndoe",
+      profilePhoto: "/placeholder.svg?height=300&width=300",
+      profilePhotoBackgroundColor: "#E0F2F7", // Light blue for profile photo background
+      portfolioTitle: "Visita mi Portfolio",
+      portfolioDescription: "Explora mis proyectos y soluciones innovadoras.",
+      portfolioWebsite: "www.johndoeportfolio.com",
       qrCodeImage: "/placeholder.svg?height=100&width=100",
     },
     summary:
-      "Diseñadora UX/UI creativa y orientada a resultados con 4 años de experiencia en el diseño de productos digitales intuitivos y atractivos. Habilidad para transformar conceptos complejos en soluciones de usuario elegantes y funcionales.",
+      "Desarrollador Full Stack con 5 años de experiencia en la creación de aplicaciones web robustas y escalables. Experto en React, Node.js y bases de datos SQL/NoSQL. Apasionado por la resolución de problemas y la creación de experiencias de usuario excepcionales.",
     experience: [
       {
-        id: "exp3",
-        position: "Diseñadora UX/UI Senior",
-        company: "Creative Solutions Studio",
-        period: "Febrero 2021 - Presente",
+        id: "1",
+        position: "Ingeniero de Software Senior",
+        company: "Tech Solutions Inc.",
+        period: "Enero 2022 - Presente",
         achievements: [
-          "Diseñé la interfaz de usuario para una aplicación móvil que alcanzó 1 millón de descargas en 6 meses.",
-          "Realicé investigaciones de usuario y pruebas de usabilidad, mejorando la satisfacción del usuario en un 25%.",
-          "Colaboré con equipos de desarrollo para asegurar la implementación fiel de los diseños.",
+          "Lideré el desarrollo de una nueva plataforma de e-commerce, aumentando las ventas en un 30%.",
+          "Implementé microservicios utilizando Node.js y Docker, mejorando la escalabilidad en un 50%.",
+          "Optimicé la base de datos PostgreSQL, reduciendo los tiempos de respuesta de las consultas en un 25%.",
         ],
-        keywords: ["UX Design", "UI Design", "Figma", "Prototyping", "User Research", "Mobile App Design"],
+        keywords: ["React", "Node.js", "PostgreSQL", "Docker", "AWS"],
       },
       {
-        id: "exp4",
-        position: "Diseñadora Gráfica",
-        company: "Marketing Innovators",
-        period: "Abril 2017 - Enero 2021",
+        id: "2",
+        position: "Desarrollador Web",
+        company: "Creative Agency",
+        period: "Julio 2019 - Diciembre 2021",
         achievements: [
-          "Desarrollé identidades de marca completas para más de 15 clientes.",
-          "Creé materiales de marketing digital y impreso que aumentaron el engagement en redes sociales en un 40%.",
-          "Gestioné proyectos de diseño desde la conceptualización hasta la entrega final.",
+          "Desarrollé y mantuve sitios web responsivos utilizando React y Next.js.",
+          "Colaboré con diseñadores para traducir wireframes y maquetas en código de alta calidad.",
+          "Implementé APIs RESTful para integrar servicios de terceros.",
         ],
-        keywords: ["Graphic Design", "Branding", "Adobe Creative Suite", "Marketing Materials"],
+        keywords: ["React", "Next.js", "JavaScript", "REST APIs", "UI/UX"],
       },
     ],
     education: [
       {
-        id: "edu3",
-        degree: "Máster en Diseño de Interacción",
-        institution: "Escuela Superior de Diseño de Barcelona (ESDI)",
-        period: "2016 - 2017",
-        details: "Enfoque en diseño centrado en el usuario y metodologías ágiles.",
-        gpa: "Sobresaliente",
+        id: "1",
+        degree: "Máster en Ciencias de la Computación",
+        institution: "Universidad Tecnológica",
+        period: "2018 - 2020",
+        details: "Especialización en Inteligencia Artificial y Machine Learning.",
+        gpa: "3.9/4.0",
       },
       {
-        id: "edu4",
-        degree: "Grado en Diseño Gráfico",
-        institution: "Universidad de Barcelona (UB)",
-        period: "2012 - 2016",
-        details: "Proyecto final: Rediseño de la experiencia de usuario de un sitio web de noticias.",
+        id: "2",
+        degree: "Grado en Ingeniería Informática",
+        institution: "Universidad Nacional",
+        period: "2014 - 2018",
+        details: "Proyecto final sobre sistemas distribuidos.",
       },
     ],
     technicalSkills: [
-      "Figma",
-      "Sketch",
-      "Adobe XD",
-      "InVision",
-      "Miro",
-      "User Research",
-      "Wireframing",
-      "Prototyping",
-      "Usability Testing",
-      "Design Systems",
-      "HTML",
-      "CSS",
-      "Sass",
-      "Responsive Design",
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "Next.js",
+      "Node.js",
+      "Python",
+      "SQL",
+      "NoSQL",
+      "AWS",
+      "Docker",
+      "Git",
+      "GraphQL",
+      "Tailwind CSS",
     ],
     softSkills: [
-      "Creatividad",
-      "Empatía",
-      "Colaboración",
-      "Atención al detalle",
-      "Comunicación visual",
+      "Comunicación",
+      "Trabajo en equipo",
       "Resolución de problemas",
+      "Adaptabilidad",
+      "Liderazgo",
+      "Creatividad",
     ],
     languages: [
-      { id: "lang3", language: "Español", level: "Nativo" },
-      { id: "lang4", language: "Inglés", level: "Avanzado" },
-      { id: "lang5", language: "Catalán", level: "Nativo" },
+      { id: "1", language: "Español", level: "Nativo" },
+      { id: "2", language: "Inglés", level: "Fluido" },
+      { id: "3", language: "Francés", level: "Básico" },
     ],
     projects: [
       {
-        id: "proj3",
-        name: "Rediseño de App de Fitness",
-        description:
-          "Rediseño completo de la interfaz y experiencia de usuario de una popular aplicación de fitness, mejorando la retención de usuarios.",
-        technologies: ["Figma", "User Research", "Prototyping"],
-        link: "https://fitnessapp.design",
-        imageUrls: ["/placeholder.svg?height=100&width=100", "/placeholder.svg?height=100&width=100"],
+        id: "1",
+        name: "Plataforma de Gestión de Proyectos",
+        description: "Aplicación web para la gestión de tareas y proyectos en equipo.",
+        technologies: ["React", "Node.js", "MongoDB", "Socket.io"],
+        link: "https://project-manager.com",
+        imageUrls: ["/placeholder.svg?height=100&width=100"],
       },
       {
-        id: "proj4",
-        name: "Plataforma de Aprendizaje Online",
-        description:
-          "Diseño UX/UI para una nueva plataforma de e-learning, enfocada en la gamificación y la interacción del usuario.",
-        technologies: ["Sketch", "InVision", "Design Systems"],
-        link: "https://elearning.design",
-        imageUrls: ["/placeholder.svg?height=100&width=100", "/placeholder.svg?height=100&width=100"],
+        id: "2",
+        name: "Aplicación de Recetas Saludables",
+        description: "App móvil con recetas personalizadas y seguimiento nutricional.",
+        technologies: ["React Native", "Firebase", "Redux"],
+        link: "https://healthy-recipes.app",
+        imageUrls: ["/placeholder.svg?height=100&width=100"],
+      },
+      {
+        id: "3",
+        name: "Sistema de Recomendación de Películas",
+        description: "Algoritmo de recomendación basado en el historial de visualización del usuario.",
+        technologies: ["Python", "Pandas", "Scikit-learn", "Flask"],
+        link: "https://movie-recommender.ai",
+        imageUrls: ["/placeholder.svg?height=100&width=100"],
       },
     ],
-    certifications: [
-      "Google UX Design Professional Certificate",
-      "Certified Usability Analyst (CUA)",
-      "Interaction Design Foundation (IxDF) Member",
-    ],
-    interests: ["Ilustración digital", "Viajes", "Diseño de interiores", "Yoga", "Cine"],
+    certifications: ["Certificación AWS Certified Developer", "Scrum Master Certified (SMC)"],
+    interests: ["Senderismo", "Fotografía", "Cocina", "Lectura", "Videojuegos"],
     keywords: [
-      "Diseño UX",
-      "Diseño UI",
-      "Experiencia de Usuario",
-      "Interfaz de Usuario",
-      "Diseño de Producto",
-      "Investigación de Usuario",
-      "Prototipado",
-      "Figma",
-      "Diseño Responsivo",
+      "Desarrollo Web",
+      "Ingeniería de Software",
+      "React",
+      "Node.js",
+      "Cloud Computing",
+      "Metodologías Ágiles",
     ],
-  }
+  })
 
-  const emptyCurriculumData: CurriculumData = {
-    personalInfo: {
-      name: "",
-      title: "",
-      email: "",
-      phone: "",
-      location: "",
-      website: "",
-      linkedin: "",
-      github: "",
-      profilePhoto: "",
-      profilePhotoBackgroundColor: "",
-      portfolioTitle: "",
-      portfolioDescription: "",
-      portfolioWebsite: "",
-      qrCodeImage: "",
-    },
-    summary: "",
-    experience: [],
-    education: [],
-    technicalSkills: [],
-    softSkills: [],
-    languages: [],
-    projects: [],
-    certifications: [],
-    interests: [],
-    keywords: [],
-  }
-
-  const [curriculumData, setCurriculumData] = useState<CurriculumData>(initialCurriculumData)
-  const [selectedTemplate, setSelectedTemplate] = useState("creative")
-  const [selectedTheme, setSelectedTheme] = useState("purple")
+  const [selectedTemplate, setSelectedTemplate] = useState("socialMedia")
+  const [selectedTheme, setSelectedTheme] = useState("orange")
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [customBackgroundColor, setCustomBackgroundColor] = useState("")
-  const [customTextColor, setCustomTextColor] = useState("")
+  const [customTextColor, setCustomTextColor] = useState("black") // Default to black
   const [customTagPrimaryColor, setCustomTagPrimaryColor] = useState("")
   const [customTagSecondaryColor, setCustomTagSecondaryColor] = useState("")
 
-  // State to control scrolling in the editor
-  const [activeEditorSectionId, setActiveEditorSectionId] = useState<string | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
 
-  const handleSectionClick = (sectionId: string) => {
-    setActiveEditorSectionId(sectionId)
-  }
-
-  const handleClearData = () => {
-    setCurriculumData(emptyCurriculumData)
-    setCustomBackgroundColor("")
-    setCustomTextColor("")
-    setCustomTagPrimaryColor("")
-    setCustomTagSecondaryColor("")
-    setSelectedTemplate("socialMedia")
-    setSelectedTheme("orange")
-    setIsDarkMode(false)
-  }
+  const handleDownloadStart = () => setIsDownloading(true)
+  const handleDownloadEnd = () => setIsDownloading(false)
 
   return (
-    <div className="container mx-auto p-4 max-w-7xl h-screen flex flex-col">
-      <header className="mb-4">
-        <h1 className="text-3xl font-bold text-center">Generador de Currículums</h1>
-      </header>
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 pr-4 overflow-y-auto">
-          <CurriculumEditor
-            data={curriculumData}
-            onDataChange={setCurriculumData}
-            selectedTemplate={selectedTemplate}
-            onTemplateChange={setSelectedTemplate}
-            selectedTheme={selectedTheme}
-            onThemeChange={setSelectedTheme}
-            isDarkMode={isDarkMode}
-            onDarkModeChange={setIsDarkMode}
-            customBackgroundColor={customBackgroundColor}
-            onCustomBackgroundColorChange={setCustomBackgroundColor}
-            customTextColor={customTextColor}
-            onCustomTextColorChange={setCustomTextColor}
-            customTagPrimaryColor={customTagPrimaryColor}
-            onCustomTagPrimaryColorChange={setCustomTagPrimaryColor}
-            customTagSecondaryColor={customTagSecondaryColor}
-            onCustomTagSecondaryColorChange={setCustomTagSecondaryColor}
-            activeSectionId={activeEditorSectionId}
-            onClearData={handleClearData} // Pass the clear data function
-          />
-        </div>
-        <div className="w-1/2 pl-4 overflow-y-auto border-l">
-          <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-md">
-            <CurriculumPreview
-              data={curriculumData}
-              selectedTemplate={selectedTemplate}
-              selectedTheme={selectedTheme}
-              isDarkMode={isDarkMode}
-              customBackgroundColor={customBackgroundColor}
-              customTextColor={customTextColor}
-              customTagPrimaryColor={customTagPrimaryColor}
-              customTagSecondaryColor={customTagSecondaryColor}
-              profilePhotoBackgroundColor={curriculumData.personalInfo.profilePhotoBackgroundColor}
-              onSectionClick={handleSectionClick}
-              onDownloadStart={() => setIsDownloading(true)}
-              onDownloadEnd={() => setIsDownloading(false)}
-              isDownloading={isDownloading}
-            />
-          </div>
-        </div>
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="w-full lg:w-1/2 p-6 lg:p-8 overflow-y-auto">
+        <CurriculumEditor
+          data={curriculumData}
+          onDataChange={setCurriculumData}
+          selectedTemplate={selectedTemplate}
+          onTemplateChange={setSelectedTemplate}
+          selectedTheme={selectedTheme}
+          onThemeChange={setSelectedTheme}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={setIsDarkMode}
+          customBackgroundColor={customBackgroundColor}
+          onCustomBackgroundColorChange={setCustomBackgroundColor}
+          customTextColor={customTextColor}
+          onCustomTextColorChange={setCustomTextColor}
+          customTagPrimaryColor={customTagPrimaryColor}
+          onCustomTagPrimaryColorChange={setCustomTagPrimaryColor}
+          customTagSecondaryColor={customTagSecondaryColor}
+          onCustomTagSecondaryColorChange={setCustomTagSecondaryColor}
+        />
+      </div>
+      <div className="w-full lg:w-1/2 p-6 lg:p-8 flex justify-center items-start overflow-y-auto">
+        <CurriculumPreview
+          data={curriculumData}
+          selectedTemplate={selectedTemplate}
+          selectedTheme={selectedTheme}
+          isDarkMode={isDarkMode}
+          customBackgroundColor={customBackgroundColor}
+          customTextColor={customTextColor}
+          customTagPrimaryColor={customTagPrimaryColor}
+          customTagSecondaryColor={customTagSecondaryColor}
+          profilePhotoBackgroundColor={curriculumData.personalInfo.profilePhotoBackgroundColor}
+          onDownloadStart={handleDownloadStart}
+          onDownloadEnd={handleDownloadEnd}
+          isDownloading={isDownloading}
+        />
       </div>
     </div>
   )

@@ -75,6 +75,8 @@
 }
 
 @theme inline {
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -122,140 +124,48 @@
   }
 }
 
-/* Print styles */
+/* Print styles for dark mode templates */
 @media print {
-  body {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    background-color: white !important;
-    color: black !important;
+  body.dark-mode-print {
+    background-color: #ffffff !important; /* Force white background */
+    color: #000000 !important; /* Force black text */
   }
 
-  /* Hide elements not needed for print */
-  .print\\:hidden {
+  /* Adjust specific elements if needed for dark mode print */
+  body.dark-mode-print .dark\:bg-gray-800 {
+    background-color: #ffffff !important;
+  }
+
+  body.dark-mode-print .dark\:text-gray-50 {
+    color: #000000 !important;
+  }
+
+  /* Example for specific template elements if they use dark mode classes */
+  body.dark-mode-print .dark\:bg-\[\#1F2937\] {
+    background-color: #ffffff !important;
+  }
+
+  body.dark-mode-print .dark\:text-\[\#F9FAFB\] {
+    color: #000000 !important;
+  }
+
+  /* Ensure custom colors are respected or default to black/white */
+  body.dark-mode-print [style*="background-color"] {
+    /* This might need more specific overrides if custom colors are too dark */
+    /* For now, let's assume custom colors are chosen to be readable on white */
+  }
+
+  body.dark-mode-print [style*="color"] {
+    /* This might need more specific overrides */
+  }
+
+  /* Force borders to be visible if they were light in dark mode */
+  body.dark-mode-print .border {
+    border-color: #cccccc !important;
+  }
+
+  /* Hide elements that should not be printed */
+  .no-print {
     display: none !important;
   }
-
-  /* Adjust width for print */
-  .print\\:w-full {
-    width: 100% !important;
-  }
-
-  /* Remove padding for print */
-  .print\\:p-0 {
-    padding: 0 !important;
-  }
-
-  /* Ensure block display for print */
-  .print\\:block {
-    display: block !important;
-  }
-
-  /* Remove shadows for print */
-  .print\\:shadow-none {
-    box-shadow: none !important;
-  }
-
-  /* Ensure text colors are readable on print */
-  .dark .text-gray-500 {
-    color: #6b7280 !important; /* Tailwind gray-500 */
-  }
-  .dark .text-gray-400 {
-    color: #9ca3af !important; /* Tailwind gray-400 */
-  }
-  .dark .text-gray-900 {
-    color: #111827 !important; /* Tailwind gray-900 */
-  }
-  .dark .text-gray-50 {
-    color: #f9fafb !important; /* Tailwind gray-50 */
-  }
-  .dark .bg-gray-900 {
-    background-color: white !important;
-  }
-  .dark .bg-gray-950 {
-    background-color: white !important;
-  }
-  .dark .bg-white {
-    background-color: white !important;
-  }
-  .dark .border {
-    border-color: #e5e7eb !important; /* Tailwind gray-200 */
-  }
-  .dark .shadow-lg {
-    box-shadow: none !important;
-  }
-  .dark .text-white {
-    color: black !important;
-  }
-  .dark .text-blue-600 {
-    color: #2563eb !important;
-  }
-
-  .bg-clip-text {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color: transparent !important; /* Keep text transparent */
-  }
-
-  [style*="background-image"] {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .container.mx-auto.p-4.max-w-7xl > div:first-child /* Header */,
-  .container.mx-auto.p-4.max-w-7xl > div:nth-child(2) > div:first-child /* TabsList */,
-  .container.mx-auto.p-4.max-w-7xl
-    > div:nth-child(2)
-    > div:nth-child(2)
-    > div:not(.border.rounded-lg.overflow-hidden.bg-white) /* Hide all tabs content except preview */ {
-    display: none !important;
-  }
-
-  /* Show only the preview tab content */
-  .container.mx-auto.p-4.max-w-7xl
-    > div:nth-child(2)
-    > div:nth-child(2)
-    > div.border.rounded-lg.overflow-hidden.bg-white {
-    display: block !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  /* Adjust margins and padding for print */
-  .max-w-4xl.mx-auto {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-  }
-}
-
-/* Custom styles for react-colorful */
-.react-colorful {
-  width: 100% !important;
-  height: 150px !important;
-  box-shadow: none !important;
-}
-
-.react-colorful__saturation {
-  border-radius: 0.5rem 0.5rem 0 0 !important;
-}
-
-.react-colorful__hue,
-.react-colorful__alpha {
-  border-radius: 0 0 0.5rem 0.5rem !important;
-  height: 10px !important;
-  margin-top: 8px !important;
-}
-
-.react-colorful__pointer {
-  border-radius: 50% !important;
-  width: 20px !important;
-  height: 20px !important;
-  border: 2px solid white !important;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) !important;
 }
