@@ -590,9 +590,14 @@ export default function CreativeTemplate({
                         />
                       )}
                     </div>
-                    <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
+                    <p className={`p-2 text-sm text-center font-semibold`} style={{ color: finalTextColor }}>
                       {project.name}
                     </p>
+                    {project.description && (
+                      <p className={`p-2 text-xs text-center`} style={{ color: finalSecondaryTextColor }}>
+                        {project.description}
+                      </p>
+                    )}
                   </div>
                 ))
               : // Placeholder projects if no data
@@ -608,8 +613,11 @@ export default function CreativeTemplate({
                     <div className="w-full h-32 bg-gray-200 rounded-md flex items-center justify-center">
                       <span className="text-gray-500 text-sm">No Image</span>
                     </div>
-                    <p className={`p-2 text-sm text-center`} style={{ color: finalSecondaryTextColor }}>
+                    <p className={`p-2 text-sm text-center font-semibold`} style={{ color: finalTextColor }}>
                       [Nombre del Proyecto {i + 1}]
+                    </p>
+                    <p className={`p-2 text-xs text-center`} style={{ color: finalSecondaryTextColor }}>
+                      [Descripción del proyecto {i + 1}]
                     </p>
                   </div>
                 ))}

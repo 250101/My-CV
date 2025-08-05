@@ -576,12 +576,12 @@ export function CurriculumEditor({
         "¿Estás seguro de que quieres borrar toda la información del currículum? Esta acción no se puede deshacer.",
       )
     ) {
-      onDataChange(initialData)
+      onDataChange(initialData) // Use the initialData prop for reset
       onCustomBackgroundColorChange("")
       onCustomTextColorChange("black")
       onCustomTagPrimaryColorChange("")
       onCustomTagSecondaryColorChange("")
-      onProfilePhotoBackgroundColorChange("")
+      onProfilePhotoBackgroundColorChange("") // Reset profile photo background color
       onThemeChange("orange")
       onToggleDarkMode(true)
     }

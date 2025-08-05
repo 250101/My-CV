@@ -67,6 +67,7 @@ interface CurriculumData {
   keywords: string[]
 }
 
+// Datos iniciales de ejemplo para el currículum
 const initialData: CurriculumData = {
   personalInfo: {
     name: "Martín Moore",
@@ -166,6 +167,36 @@ const initialData: CurriculumData = {
   keywords: ["Python", "Power BI", "Automatización", "Cocina", "Eventos", "Análisis", "Gestión", "Digitalización"],
 }
 
+// Datos de currículum completamente vacíos para la función de "borrar todo"
+const emptyCurriculumData: CurriculumData = {
+  personalInfo: {
+    name: "",
+    title: "",
+    email: "",
+    phone: "",
+    location: "",
+    website: "",
+    linkedin: "",
+    github: "",
+    profilePhoto: "",
+    profilePhotoBackgroundColor: "",
+    portfolioTitle: "",
+    portfolioDescription: "",
+    portfolioWebsite: "",
+    qrCodeImage: "",
+  },
+  summary: "",
+  experience: [],
+  education: [],
+  technicalSkills: [],
+  softSkills: [],
+  languages: [],
+  projects: [],
+  certifications: [],
+  interests: [],
+  keywords: [],
+}
+
 const colorThemes = {
   teal: {
     name: "Teal",
@@ -213,7 +244,7 @@ export default function Home() {
   const [customTextColor, setCustomTextColor] = useState("black")
   const [customTagPrimaryColor, setCustomTagPrimaryColor] = useState("")
   const [customTagSecondaryColor, setCustomTagSecondaryColor] = useState("")
-  const [profilePhotoBackgroundColor, setProfilePhotoBackgroundColor] = useState("")
+  // profilePhotoBackgroundColor is now part of data.personalInfo
   const [isDownloading, setIsDownloading] = useState(false)
 
   const previewRef = useRef<HTMLDivElement>(null)
@@ -221,6 +252,8 @@ export default function Home() {
   const handleDownloadPdf = async () => {
     if (previewRef.current) {
       setIsDownloading(true)
+      // Give a small delay to ensure all content is rendered before capture
+      await new Promise((resolve) => setTimeout(resolve, 100))
       try {
         // Add a temporary class to the body for print styles if dark mode is active
         if (isDarkMode && selectedTemplate !== "corporate") {
@@ -292,9 +325,16 @@ export default function Home() {
           onCustomTagPrimaryColorChange={setCustomTagPrimaryColor}
           customTagSecondaryColor={customTagSecondaryColor}
           onCustomTagSecondaryColorChange={setCustomTagSecondaryColor}
-          profilePhotoBackgroundColor={profilePhotoBackgroundColor}
-          onProfilePhotoBackgroundColorChange={setProfilePhotoBackgroundColor}
-          initialData={initialData} // Pass initialData for reset functionality
+          // Pass profilePhotoBackgroundColor from data.personalInfo
+          profilePhotoBackgroundColor={data.personalInfo.profilePhotoBackgroundColor}
+          // Update personalInfo directly for profilePhotoBackgroundColor
+          onProfilePhotoBackgroundColorChange={(color) =>
+            setData((prev) => ({
+              ...prev,
+              personalInfo: { ...prev.personalInfo, profilePhotoBackgroundColor: color },
+            }))
+          }
+          initialData={emptyCurriculumData} // Pass empty data for reset functionality
         />
       </div>
 
@@ -322,7 +362,7 @@ export default function Home() {
             customTextColor={customTextColor}
             customTagPrimaryColor={customTagPrimaryColor}
             customTagSecondaryColor={customTagSecondaryColor}
-            profilePhotoBackgroundColor={profilePhotoBackgroundColor}
+            profilePhotoBackgroundColor={data.personalInfo.profilePhotoBackgroundColor} // Use from data
             previewRef={previewRef} // Pass the ref to the preview component
           />
         </div>

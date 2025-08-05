@@ -1,7 +1,7 @@
 "use client"
 
 import { Mail, Phone, MapPin, Globe, Code } from "lucide-react"
-import type { RefObject } from "react"
+import type { RefObject } from "react" // Import RefObject
 
 interface PersonalInfo {
   name: string
@@ -69,7 +69,8 @@ interface ATSTemplateProps {
   customTextColor: string
   customTagPrimaryColor: string
   customTagSecondaryColor: string
-  previewRef: RefObject<HTMLDivElement>
+  profilePhotoBackgroundColor?: string
+  previewRef: RefObject<HTMLDivElement> // New prop for the ref
 }
 
 export default function ATSTemplate({
@@ -80,179 +81,171 @@ export default function ATSTemplate({
   customTextColor,
   customTagPrimaryColor,
   customTagSecondaryColor,
+  profilePhotoBackgroundColor,
   previewRef,
 }: ATSTemplateProps) {
   const getThemeColors = () => {
     const themes = {
       teal: {
-        primaryColor: "#10B981", // teal-500
-        secondaryColor: "#22C55E", // green-500
+        primaryColor: "#10B981", // Hex for direct use
+        secondaryColor: "#22C55E", // Hex for direct use
         lightBg: "#FFFFFF", // white
         darkBg: "#1F2937", // gray-800
-        lightText: "#1F2937", // gray-800
-        darkText: "#F9FAFB", // gray-50
+        lightCardBg: "#F9FAFB", // gray-50
+        darkCardBg: "#374151", // gray-700
+        lightAccentBg: "#CCFBF1", // teal-100
         lightAccentText: "#0D9488", // teal-800
-        darkAccentText: "#22C55E", // green-500
       },
       orange: {
         primaryColor: "rgb(242,89,13)",
         secondaryColor: "#16A34A", // green-600
         lightBg: "#FFFFFF", // white
         darkBg: "#1F2937", // gray-800
-        lightText: "#1F2937", // gray-800
-        darkText: "#F9FAFB", // gray-50
+        lightCardBg: "#F9FAFB", // gray-50
+        darkCardBg: "#374151", // gray-700
+        lightAccentBg: "#FFEDD5", // orange-100
         lightAccentText: "#9A3412", // orange-800
-        darkAccentText: "rgb(242,89,13)",
       },
       blue: {
         primaryColor: "#3B82F6", // blue-500
         secondaryColor: "#9333EA", // purple-500
         lightBg: "#FFFFFF", // white
-        darkBg: "#1a202c", // gray-900
-        lightText: "#1a202c", // gray-900
-        darkText: "#F9FAFB", // gray-50
+        darkBg: "#1F2937", // gray-800
+        lightCardBg: "#F9FAFB", // gray-50
+        darkCardBg: "#374151", // gray-700
+        lightAccentBg: "#DBEAFE", // blue-100
         lightAccentText: "#1E40AF", // blue-800
-        darkAccentText: "#3B82F6", // blue-500
       },
       green: {
         primaryColor: "#22C55E", // green-500
         secondaryColor: "#3B82F6", // blue-500
         lightBg: "#FFFFFF", // white
-        darkBg: "#1f2937", // gray-800
-        lightText: "#1f2937", // gray-800
-        darkText: "#F9FAFB", // gray-50
+        darkBg: "#1F2937", // gray-800
+        lightCardBg: "#F9FAFB", // gray-50
+        darkCardBg: "#374151", // gray-700
+        lightAccentBg: "#D1FAE5", // green-100
         lightAccentText: "#065F46", // green-800
-        darkAccentText: "#22C55E", // green-500
       },
       purple: {
         primaryColor: "#9333EA", // purple-500
         secondaryColor: "#EC4899", // pink-500
         lightBg: "#FFFFFF", // white
-        darkBg: "#2d2640", // deep purple
-        lightText: "#2d2640", // deep purple
-        darkText: "#F9FAFB", // gray-50
+        darkBg: "#1F2937", // gray-800
+        lightCardBg: "#F9FAFB", // gray-50
+        darkCardBg: "#374151", // gray-700
+        lightAccentBg: "#EDE9FE", // purple-100
         lightAccentText: "#5B21B6", // purple-800
-        darkAccentText: "#9333EA", // purple-500
       },
     }
-    return themes[selectedTheme as keyof typeof themes] || themes.orange
+    return themes[selectedTheme as keyof typeof themes] || themes.orange // Default to orange
   }
 
   const colors = getThemeColors()
 
+  // Determine background color
   const finalBgColor = customBackgroundColor || (isDarkMode ? colors.darkBg : colors.lightBg)
-  const finalTextColor = customTextColor === "white" ? colors.darkText : colors.lightText
-  const finalAccentColor = isDarkMode ? colors.darkAccentText : colors.lightAccentText
+  // Determine text color
+  const finalTextColor = customTextColor === "white" ? "white" : "black"
+  const finalSecondaryTextColor = customTextColor === "white" ? "rgb(209, 213, 219)" : "rgb(75, 85, 99)" // gray-300 or gray-700
 
-  // ATS template typically avoids complex styling for tags,
-  // so we'll use simple text or a very minimal background.
+  const cardBgColor = isDarkMode ? colors.darkCardBg : colors.lightCardBg
+
+  // Tag colors logic
   const getTagStyle = (isPrimaryTag: boolean) => {
     const customColor = isPrimaryTag ? customTagPrimaryColor : customTagSecondaryColor
     const defaultBg = isPrimaryTag
       ? isDarkMode
-        ? "rgba(255, 255, 255, 0.1)"
-        : "rgb(243, 244, 246)" // gray-100
+        ? `rgba(${colors.primaryColor.replace("rgb(", "").replace(")", "")}, 0.2)`
+        : colors.lightAccentBg
       : isDarkMode
-        ? "rgba(255, 255, 255, 0.05)"
-        : "rgb(243, 244, 246)" // gray-100
+        ? `rgba(${colors.secondaryColor.replace("rgb(", "").replace(")", "")}, 0.2)`
+        : "rgb(220, 252, 231)" // Fallback to a light green for secondary in light mode
     const defaultText = isPrimaryTag
       ? isDarkMode
-        ? colors.darkText
-        : colors.lightText
+        ? colors.primaryColor
+        : colors.lightAccentText
       : isDarkMode
-        ? colors.darkText
-        : colors.lightText // Secondary text for ATS tags
+        ? "white"
+        : "rgb(22, 101, 52)" // Fallback to a dark green for secondary in light mode
+
     return {
       backgroundColor: customColor || defaultBg,
       color: customColor ? (customTextColor === "white" ? "white" : "black") : defaultText,
-      border: "1px solid transparent", // Add a subtle border
-      borderColor: isDarkMode ? "rgba(255,255,255,0.2)" : "rgb(209, 213, 219)", // gray-300
     }
   }
 
   return (
     <div
-      ref={previewRef}
-      className={`max-w-3xl mx-auto p-8 font-sans leading-relaxed shadow-2xl print:shadow-none`}
-      style={{
-        backgroundColor: finalBgColor,
-        color: finalTextColor,
-        fontFamily: "sans-serif", // ATS friendly font
-      }}
+      ref={previewRef} // Apply the ref here
+      className={`max-w-4xl mx-auto p-8 font-sans leading-relaxed ${isDarkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"}`}
+      style={{ backgroundColor: finalBgColor, color: finalTextColor }}
     >
       {/* Header */}
-      <header className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-1" style={{ color: finalTextColor }}>
+      <header className="mb-8 text-center">
+        <h1 className="text-4xl font-bold mb-2" style={{ color: finalTextColor }}>
           {data.personalInfo.name}
         </h1>
-        <h2 className="text-xl font-semibold mb-4" style={{ color: finalAccentColor }}>
+        <h2 className="text-2xl font-semibold mb-4" style={{ color: colors.primaryColor }}>
           {data.personalInfo.title}
         </h2>
-        <div className={`flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 text-sm`} style={{ color: finalTextColor }}>
-          {data.personalInfo.email && (
-            <span className="flex items-center gap-1">
-              <Mail className="w-3 h-3" />
-              {data.personalInfo.email}
-            </span>
-          )}
-          {data.personalInfo.phone && (
-            <span className="flex items-center gap-1">
-              <Phone className="w-3 h-3" />
-              {data.personalInfo.phone}
-            </span>
-          )}
-          {data.personalInfo.location && (
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              {data.personalInfo.location}
-            </span>
-          )}
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
+          <div className="flex items-center gap-1">
+            <Mail className="w-4 h-4" style={{ color: colors.primaryColor }} />
+            <span>{data.personalInfo.email}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Phone className="w-4 h-4" style={{ color: colors.primaryColor }} />
+            <span>{data.personalInfo.phone}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <MapPin className="w-4 h-4" style={{ color: colors.primaryColor }} />
+            <span>{data.personalInfo.location}</span>
+          </div>
           {data.personalInfo.linkedin && (
-            <span className="flex items-center gap-1">
-              <Globe className="w-3 h-3" />
-              {data.personalInfo.linkedin}
-            </span>
+            <div className="flex items-center gap-1">
+              <Globe className="w-4 h-4" style={{ color: colors.primaryColor }} />
+              <span>{data.personalInfo.linkedin}</span>
+            </div>
           )}
           {data.personalInfo.website && (
-            <span className="flex items-center gap-1">
-              <Globe className="w-3 h-3" />
-              {data.personalInfo.website}
-            </span>
+            <div className="flex items-center gap-1">
+              <Globe className="w-4 h-4" style={{ color: colors.primaryColor }} />
+              <span>{data.personalInfo.website}</span>
+            </div>
           )}
           {data.personalInfo.github && (
-            <span className="flex items-center gap-1">
-              <Code className="w-3 h-3" />
-              {data.personalInfo.github}
-            </span>
+            <div className="flex items-center gap-1">
+              <Code className="w-4 h-4" style={{ color: colors.primaryColor }} />
+              <span>{data.personalInfo.github}</span>
+            </div>
           )}
         </div>
       </header>
 
       {/* Summary */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalAccentColor }}>
+      <section className="mb-8">
+        <h3 className="text-xl font-bold mb-3 pb-1 border-b-2" style={{ borderColor: colors.primaryColor }}>
           Resumen Profesional
         </h3>
-        <p className={`text-sm leading-relaxed`} style={{ color: finalTextColor }}>
-          {data.summary}
-        </p>
+        <p className="text-sm">{data.summary}</p>
       </section>
 
       {/* Experience */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalAccentColor }}>
+      <section className="mb-8">
+        <h3 className="text-xl font-bold mb-3 pb-1 border-b-2" style={{ borderColor: colors.primaryColor }}>
           Experiencia Laboral
         </h3>
         <div className="space-y-4">
-          {data.experience.map((exp, index) => (
-            <div key={exp.id} className="text-sm">
+          {data.experience.map((exp) => (
+            <div key={exp.id}>
               <div className="flex justify-between items-baseline mb-1">
-                <h4 className={`font-semibold`} style={{ color: finalAccentColor }}>
-                  {exp.position} - {exp.company}
-                </h4>
-                <span style={{ color: finalTextColor }}>{exp.period}</span>
+                <h4 className="font-semibold text-base">{exp.position}</h4>
+                <span className="text-xs text-gray-600">{exp.period}</span>
               </div>
-              <ul className={`list-disc list-inside space-y-0.5`} style={{ color: finalTextColor }}>
+              <p className="text-sm font-medium mb-2" style={{ color: colors.primaryColor }}>
+                {exp.company}
+              </p>
+              <ul className="list-disc list-inside text-sm space-y-1">
                 {exp.achievements.map((achievement, i) => (
                   <li key={i}>{achievement}</li>
                 ))}
@@ -260,7 +253,11 @@ export default function ATSTemplate({
               {exp.keywords && exp.keywords.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {exp.keywords.map((keyword, i) => (
-                    <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(true)}>
+                    <span
+                      key={i}
+                      className={`px-2 py-0.5 rounded-full text-xs`}
+                      style={getTagStyle(true)} // Keywords use primary tag style
+                    >
                       {keyword}
                     </span>
                   ))}
@@ -272,52 +269,48 @@ export default function ATSTemplate({
       </section>
 
       {/* Education */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalAccentColor }}>
+      <section className="mb-8">
+        <h3 className="text-xl font-bold mb-3 pb-1 border-b-2" style={{ borderColor: colors.primaryColor }}>
           Educación
         </h3>
         <div className="space-y-4">
           {data.education.map((edu) => (
-            <div key={edu.id} className="text-sm">
+            <div key={edu.id}>
               <div className="flex justify-between items-baseline mb-1">
-                <h4 className={`font-semibold`} style={{ color: finalAccentColor }}>
-                  {edu.degree}
-                </h4>
-                <span style={{ color: finalTextColor }}>{edu.period}</span>
+                <h4 className="font-semibold text-base">{edu.degree}</h4>
+                <span className="text-xs text-gray-600">{edu.period}</span>
               </div>
-              <p style={{ color: finalTextColor }}>{edu.institution}</p>
-              {edu.details && <p style={{ color: finalTextColor }}>{edu.details}</p>}
-              {edu.gpa && <p style={{ color: finalTextColor }}>GPA: {edu.gpa}</p>}
+              <p className="text-sm font-medium mb-1" style={{ color: colors.primaryColor }}>
+                {edu.institution}
+              </p>
+              <p className="text-sm">{edu.details}</p>
+              {edu.gpa && <p className="text-sm">GPA: {edu.gpa}</p>}
             </div>
           ))}
         </div>
       </section>
 
       {/* Skills */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalAccentColor }}>
+      <section className="mb-8">
+        <h3 className="text-xl font-bold mb-3 pb-1 border-b-2" style={{ borderColor: colors.primaryColor }}>
           Habilidades
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h4 className={`font-semibold mb-1`} style={{ color: finalAccentColor }}>
-              Técnicas:
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {data.technicalSkills.map((skill, i) => (
-                <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(true)}>
+            <h4 className="font-semibold mb-2">Habilidades Técnicas</h4>
+            <div className="flex flex-wrap gap-2">
+              {data.technicalSkills.map((skill) => (
+                <span key={skill} className={`px-3 py-1 rounded-full text-sm font-medium`} style={getTagStyle(true)}>
                   {skill}
                 </span>
               ))}
             </div>
           </div>
           <div>
-            <h4 className={`font-semibold mb-1`} style={{ color: finalAccentColor }}>
-              Interpersonales:
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {data.softSkills.map((skill, i) => (
-                <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(false)}>
+            <h4 className="font-semibold mb-2">Habilidades Interpersonales</h4>
+            <div className="flex flex-wrap gap-2">
+              {data.softSkills.map((skill) => (
+                <span key={skill} className={`px-3 py-1 rounded-full text-sm font-medium`} style={getTagStyle(false)}>
                   {skill}
                 </span>
               ))}
@@ -326,100 +319,129 @@ export default function ATSTemplate({
         </div>
       </section>
 
-      {/* Languages and Interests */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      {/* Languages and Certifications */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <section>
-          <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalAccentColor }}>
+          <h3 className="text-xl font-bold mb-3 pb-1 border-b-2" style={{ borderColor: colors.primaryColor }}>
             Idiomas
           </h3>
-          <ul className="text-sm space-y-1">
+          <div className="space-y-2">
             {data.languages.map((lang) => (
-              <li key={lang.id}>
-                <span style={{ color: finalTextColor }}>{lang.language}</span> (
-                <span style={{ color: finalTextColor }}>{lang.level}</span>)
-              </li>
+              <div key={lang.id} className="flex justify-between text-sm">
+                <span className="font-medium">{lang.language}</span>
+                <span>{lang.level}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
         <section>
-          <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalAccentColor }}>
-            Intereses
+          <h3 className="text-xl font-bold mb-3 pb-1 border-b-2" style={{ borderColor: colors.primaryColor }}>
+            Certificaciones
           </h3>
-          <div className="flex flex-wrap gap-1 text-sm">
-            {data.interests.map((interest, i) => (
-              <span key={i} className={`px-2 py-0.5 rounded text-xs`} style={getTagStyle(false)}>
-                {interest}
+          <div className="flex flex-wrap gap-2">
+            {data.certifications.map((cert) => (
+              <span
+                key={cert}
+                className={`px-3 py-1 rounded-full text-sm font-medium`}
+                style={getTagStyle(true)} // Certifications use primary tag style
+              >
+                {cert}
               </span>
             ))}
           </div>
         </section>
       </div>
 
-      {/* Certifications */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalAccentColor }}>
-          Certificaciones
+      {/* Projects */}
+      <section className="mb-8">
+        <h3 className="text-xl font-bold mb-3 pb-1 border-b-2" style={{ borderColor: colors.primaryColor }}>
+          Proyectos Destacados
         </h3>
-        <ul className="list-disc list-inside text-sm">
-          {data.certifications.map((cert, i) => (
-            <li key={i}>{cert}</li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Projects (ATS friendly - no images) */}
-      <section className="mb-6">
-        <h3 className={`text-xl font-bold mb-2 pb-1 border-b`} style={{ borderColor: finalAccentColor }}>
-          Proyectos
-        </h3>
-        <div className="space-y-4 text-sm">
-          {data.projects.length > 0 ? (
-            data.projects.map((project) => (
-              <div key={project.id}>
-                <h4 className={`font-semibold`} style={{ color: finalAccentColor }}>
-                  {project.name}
+        <div className="space-y-4">
+          {data.projects.length > 0
+            ? data.projects.map((project) => (
+                <div key={project.id} className="mb-4">
+                  <h4 className="font-semibold text-base">{project.name}</h4>
+                  <p className="text-sm mb-1">{project.description}</p>
                   {project.link && (
-                    <span className="ml-2 text-blue-600 hover:underline">
-                      (
+                    <p className="text-sm" style={{ color: colors.primaryColor }}>
+                      Link:{" "}
                       <a href={project.link} target="_blank" rel="noopener noreferrer">
-                        Link
+                        {project.link}
                       </a>
-                      )
-                    </span>
+                    </p>
                   )}
-                </h4>
-                <p style={{ color: finalTextColor }}>{project.description}</p>
-                {project.technologies && project.technologies.length > 0 && (
-                  <p className="mt-1 text-xs">
-                    <span className="font-semibold">Tecnologías:</span> {project.technologies.join(", ")}
+                  {project.technologies.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {project.technologies.map((tech, i) => (
+                        <span
+                          key={i}
+                          className={`px-2 py-0.5 rounded-full text-xs`}
+                          style={getTagStyle(true)} // Technologies use primary tag style
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            : Array.from({ length: 2 }).map((_, i) => (
+                <div key={`placeholder-proj-${i}`} className="mb-4">
+                  <h4 className="font-semibold text-base">[Nombre del Proyecto {i + 1}]</h4>
+                  <p className="text-sm mb-1">[Descripción del proyecto {i + 1}]</p>
+                  <p className="text-sm" style={{ color: colors.primaryColor }}>
+                    Link: [Enlace del proyecto {i + 1}]
                   </p>
-                )}
-              </div>
-            ))
-          ) : (
-            <p className={`text-sm`} style={{ color: finalTextColor }}>
-              No hay proyectos destacados.
-            </p>
-          )}
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    <span className={`px-2 py-0.5 rounded-full text-xs`} style={getTagStyle(true)}>
+                      Tecnología 1
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs`} style={getTagStyle(true)}>
+                      Tecnología 2
+                    </span>
+                  </div>
+                </div>
+              ))}
         </div>
       </section>
 
-      {/* QR Code Section (ATS friendly - text-based link) */}
+      {/* Interests */}
+      <section className="mb-8">
+        <h3 className="text-xl font-bold mb-3 pb-1 border-b-2" style={{ borderColor: colors.primaryColor }}>
+          Intereses
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {data.interests.map((interest) => (
+            <span
+              key={interest}
+              className={`px-3 py-1 rounded-full text-sm font-medium`}
+              style={getTagStyle(false)} // Interests use secondary tag style
+            >
+              {interest}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* QR Code Section */}
       <section className="text-center mt-8">
-        <h3 className={`text-lg font-bold mb-2`} style={{ color: finalAccentColor }}>
+        <h3 className="text-xl font-bold mb-2" style={{ color: finalTextColor }}>
           {data.personalInfo.portfolioTitle}
         </h3>
-        <p className={`text-sm`} style={{ color: finalTextColor }}>
-          {data.personalInfo.portfolioDescription}
-        </p>
-        {data.personalInfo.portfolioWebsite && (
-          <p className={`text-sm text-blue-600 hover:underline mt-1`}>
-            <a href={`https://${data.personalInfo.portfolioWebsite}`} target="_blank" rel="noopener noreferrer">
-              {data.personalInfo.portfolioWebsite}
-            </a>
-          </p>
+        <p className="text-sm mb-2">{data.personalInfo.portfolioDescription}</p>
+        {data.personalInfo.qrCodeImage && (
+          <div className="inline-block p-2 border-2 rounded-lg" style={{ borderColor: colors.primaryColor }}>
+            <img
+              src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
+              alt="Código QR del Portfolio"
+              className="w-24 h-24 object-contain"
+            />
+          </div>
         )}
-        {/* ATS templates typically avoid images, so QR code image is not rendered */}
+        <p className="text-sm mt-2" style={{ color: colors.primaryColor }}>
+          {data.personalInfo.portfolioWebsite}
+        </p>
       </section>
     </div>
   )

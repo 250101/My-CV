@@ -126,46 +126,89 @@
 
 /* Print styles for dark mode templates */
 @media print {
-  body.dark-mode-print {
-    background-color: #ffffff !important; /* Force white background */
+  .dark-mode-print {
+    /* Force light background and text for better print readability */
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .dark-mode-print .text-white {
+    color: #000000 !important; /* Ensure white text becomes black */
+  }
+
+  .dark-mode-print .bg-gray-800,
+  .dark-mode-print .bg-neutral-900,
+  \
+  .dark-mode-print .bg-\[#1a202c\],
+  \
+  .dark-mode-print .bg-\[#29303d\],
+  \
+  .dark-mode-print .bg-\[#1f2937\],
+  \
+  .dark-mode-print .bg-\[#2d2640\],
+  \
+  .dark-mode-print .bg-\[#3a4250\],
+  \
+  .dark-mode-print .bg-\[#2d3748\],
+  \
+  .dark-mode-print .bg-\[#374151\],
+  \
+  .dark-mode-print .bg-\[#4a3f6b\] {
+    background-color: #ffffff !important; /* Force light background for dark mode elements */
+    color: #000000 !important;
+  }
+
+  .dark-mode-print .text-gray-100,
+  .dark-mode-print .text-neutral-100,
+  .dark-mode-print .text-gray-300,
+  .dark-mode-print .text-neutral-300,
+  .dark-mode-print .text-gray-400,
+  .dark-mode-print .text-neutral-400,
+  .dark-mode-print .text-gray-500,
+  .dark-mode-print .text-neutral-500,
+  .dark-mode-print .text-gray-600,
+  .dark-mode-print .text-neutral-600,
+  .dark-mode-print .text-gray-700,
+  .dark-mode-print .text-neutral-700 {
+    color: #000000 !important; /* Ensure all shades of gray/white text become black */
+  }
+
+  /* Specific overrides for template elements that might have hardcoded dark colors */
+  .dark-mode-print [style*="background-color: rgb(25, 32, 44)"] /* Example dark background */,
+  .dark-mode-print [style*="background-color: rgb(41, 48, 61)"],
+  .dark-mode-print [style*="background-color: rgb(45, 55, 72)"],
+  .dark-mode-print [style*="background-color: rgb(55, 65, 81)"],
+  .dark-mode-print [style*="background-color: rgb(74, 63, 107)"] {
+    background-color: #ffffff !important;
+  }
+
+  .dark-mode-print [style*="color: rgb(209, 213, 219)"] /* Example light text color */,
+  .dark-mode-print [style*="color: rgb(156, 163, 175)"] {
+    color: #000000 !important;
+  }
+
+  /* Ensure borders are visible */
+  .dark-mode-print .border,
+  .dark-mode-print [class*="border-"],
+  .dark-mode-print [style*="border-color"] {
+    border-color: #e5e7eb !important; /* Light gray border */
+  }
+
+  /* Ensure gradients are removed or flattened */
+  .dark-mode-print [style*="background-image: linear-gradient"] {
+    background-image: none !important;
+    background-color: #ffffff !important; /* Fallback to white */
+  }
+
+  .dark-mode-print .bg-clip-text {
+    -webkit-text-fill-color: initial !important; /* Reset text fill color */
     color: #000000 !important; /* Force black text */
   }
 
-  /* Adjust specific elements if needed for dark mode print */
-  body.dark-mode-print .dark\:bg-gray-800 {
-    background-color: #ffffff !important;
-  }
-
-  body.dark-mode-print .dark\:text-gray-50 {
-    color: #000000 !important;
-  }
-
-  /* Example for specific template elements if they use dark mode classes */
-  body.dark-mode-print .dark\:bg-\[\#1F2937\] {
-    background-color: #ffffff !important;
-  }
-
-  body.dark-mode-print .dark\:text-\[\#F9FAFB\] {
-    color: #000000 !important;
-  }
-
-  /* Ensure custom colors are respected or default to black/white */
-  body.dark-mode-print [style*="background-color"] {
-    /* This might need more specific overrides if custom colors are too dark */
-    /* For now, let's assume custom colors are chosen to be readable on white */
-  }
-
-  body.dark-mode-print [style*="color"] {
-    /* This might need more specific overrides */
-  }
-
-  /* Force borders to be visible if they were light in dark mode */
-  body.dark-mode-print .border {
-    border-color: #cccccc !important;
-  }
-
-  /* Hide elements that should not be printed */
-  .no-print {
-    display: none !important;
+  /* Remove shadows for print */
+  .dark-mode-print .shadow-lg,
+  .dark-mode-print .shadow-xl,
+  .dark-mode-print .shadow-2xl {
+    box-shadow: none !important;
   }
 }
