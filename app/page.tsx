@@ -235,7 +235,7 @@ const colorThemes = {
   },
 }
 
-export default function Home() {
+const Page = () => {
   const [data, setData] = useState<CurriculumData>(initialData)
   const [selectedTemplate, setSelectedTemplate] = useState("socialMedia")
   const [selectedTheme, setSelectedTheme] = useState("orange")
@@ -266,6 +266,7 @@ export default function Home() {
           logging: true,
           windowWidth: previewRef.current.scrollWidth,
           windowHeight: previewRef.current.scrollHeight,
+          backgroundColor: "#ffffff", // Explicitly set background to white for PDF
         })
         const imgData = canvas.toDataURL("image/png")
         const pdf = new jsPDF("p", "mm", "a4") // Portrait, millimeters, A4 size
@@ -352,7 +353,8 @@ export default function Home() {
             )}
           </Button>
         </div>
-        <div className="border rounded-lg overflow-hidden bg-white">
+        {/* Removed overflow-hidden from this div */}
+        <div className="border rounded-lg bg-white">
           <CurriculumPreview
             data={data}
             selectedTemplate={selectedTemplate}
@@ -370,3 +372,5 @@ export default function Home() {
     </div>
   )
 }
+
+export default Page

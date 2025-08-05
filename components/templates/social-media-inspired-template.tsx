@@ -1,7 +1,7 @@
-"use client"
-
-import { Mail, Phone, MapPin, Globe, Calendar, Award, Code, Languages, Heart, QrCode } from "lucide-react"
-import type { RefObject } from "react" // Import RefObject
+import type { RefObject } from "react"
+import { cn } from "@/lib/utils"
+import { Mail, Phone, MapPin, Globe, Linkedin, Github } from "lucide-react"
+import Image from "next/image"
 
 interface PersonalInfo {
   name: string
@@ -13,7 +13,7 @@ interface PersonalInfo {
   linkedin: string
   github: string
   profilePhoto: string
-  profilePhotoBackgroundColor?: string // Add this line
+  profilePhotoBackgroundColor?: string
   portfolioTitle: string
   portfolioDescription: string
   portfolioWebsite: string
@@ -44,7 +44,7 @@ interface Project {
   description: string
   technologies: string[]
   link?: string
-  imageUrls?: string[] // Changed to array
+  imageUrls?: string[]
 }
 
 interface CurriculumData {
@@ -69,8 +69,8 @@ interface SocialMediaInspiredTemplateProps {
   customTextColor: string
   customTagPrimaryColor: string
   customTagSecondaryColor: string
-  profilePhotoBackgroundColor?: string // New prop
-  previewRef: RefObject<HTMLDivElement> // New prop for the ref
+  profilePhotoBackgroundColor?: string
+  previewRef: RefObject<HTMLDivElement>
 }
 
 export default function SocialMediaInspiredTemplate({
@@ -81,485 +81,352 @@ export default function SocialMediaInspiredTemplate({
   customTextColor,
   customTagPrimaryColor,
   customTagSecondaryColor,
-  profilePhotoBackgroundColor, // Destructure new prop
-  previewRef, // Destructure the new prop
+  profilePhotoBackgroundColor,
+  previewRef,
 }: SocialMediaInspiredTemplateProps) {
-  const getThemeColors = () => {
-    const themes = {
-      teal: {
-        primaryColor: "#10B981", // Hex for direct use
-        secondaryColor: "#22C55E", // Hex for direct use
-        lightBg: "#F0FDF4", // teal-50
-        darkBg: "#29303d",
-        lightCardBg: "#F9FAFB", // gray-50
-        darkCardBg: "#3a4250",
-        lightAccentBg: "#CCFBF1", // teal-100
-        lightAccentText: "#0D9488", // teal-800
-      },
-      orange: {
-        primaryColor: "rgb(242,89,13)",
-        secondaryColor: "#16A34A", // green-600
-        lightBg: "#FFF7ED", // orange-50
-        darkBg: "#29303d",
-        lightCardBg: "#F9FAFB", // gray-50
-        darkCardBg: "#3a4250",
-        lightAccentBg: "#FFEDD5", // orange-100
-        lightAccentText: "#9A3412", // orange-800
-      },
-      blue: {
-        primaryColor: "#3B82F6", // blue-500
-        secondaryColor: "#9333EA", // purple-500
-        lightBg: "#EFF6FF", // blue-50
-        darkBg: "#1a202c",
-        lightCardBg: "#F9FAFB", // gray-50
-        darkCardBg: "#2d3748",
-        lightAccentBg: "#DBEAFE", // blue-100
-        lightAccentText: "#1E40AF", // blue-800
-      },
-      green: {
-        primaryColor: "#22C55E", // green-500
-        secondaryColor: "#3B82F6", // blue-500
-        lightBg: "#F0FDF4", // green-50
-        darkBg: "#1f2937",
-        lightCardBg: "#F9FAFB", // gray-50
-        darkCardBg: "#374151",
-        lightAccentBg: "#D1FAE5", // green-100
-        lightAccentText: "#065F46", // green-800
-      },
-      purple: {
-        primaryColor: "#9333EA", // purple-500
-        secondaryColor: "#EC4899", // pink-500
-        lightBg: "#F5F3FF", // purple-50
-        darkBg: "#2d2640",
-        lightCardBg: "#F9FAFB", // gray-50
-        darkCardBg: "#4a3f6b",
-        lightAccentBg: "#EDE9FE", // purple-100
-        lightAccentText: "#5B21B6", // purple-800
-      },
-    }
-    return themes[selectedTheme as keyof typeof themes] || themes.orange // Default to orange
+  const themeColors = {
+    teal: { primary: "bg-teal-500", text: "text-teal-500", border: "border-teal-500" },
+    orange: { primary: "bg-[rgb(242,89,13)]", text: "text-[rgb(242,89,13)]", border: "border-[rgb(242,89,13)]" },
+    blue: { primary: "bg-blue-500", text: "text-blue-500", border: "border-blue-500" },
+    green: { primary: "bg-green-500", text: "text-green-500", border: "border-green-500" },
+    purple: { primary: "bg-purple-500", text: "text-purple-500", border: "border-purple-500" },
   }
 
-  const colors = getThemeColors()
+  const currentTheme = themeColors[selectedTheme as keyof typeof themeColors] || themeColors.orange
 
-  // Determine background color
-  const finalBgColor = customBackgroundColor || (isDarkMode ? colors.darkBg : colors.lightBg)
-  // Determine text color
-  const finalTextColor = customTextColor === "white" ? "white" : "black"
-  const finalSecondaryTextColor = customTextColor === "white" ? "rgb(209, 213, 219)" : "rgb(75, 85, 99)" // gray-300 or gray-700
-
-  const cardBgColor = isDarkMode ? colors.darkCardBg : colors.lightCardBg
-
-  // Tag colors logic
-  const getTagStyle = (isPrimaryTag: boolean) => {
-    const customColor = isPrimaryTag ? customTagPrimaryColor : customTagSecondaryColor
-    const defaultBg = isPrimaryTag
-      ? isDarkMode
-        ? `rgba(${colors.primaryColor.replace("rgb(", "").replace(")", "")}, 0.2)`
-        : colors.lightAccentBg
-      : isDarkMode
-        ? `rgba(${colors.secondaryColor.replace("rgb(", "").replace(")", "")}, 0.2)`
-        : "rgb(220, 252, 231)" // Fallback to a light green for secondary in light mode
-    const defaultText = isPrimaryTag
-      ? isDarkMode
-        ? colors.primaryColor
-        : colors.lightAccentText
-      : isDarkMode
-        ? "white"
-        : "rgb(22, 101, 52)" // Fallback to a dark green for secondary in light mode
-
-    return {
-      backgroundColor: customColor || defaultBg,
-      color: customColor ? (customTextColor === "white" ? "white" : "black") : defaultText,
-    }
-  }
+  const textColorClass = customTextColor === "black" ? "text-gray-900" : "text-white"
+  const sectionTitleColorClass = customTextColor === "black" ? "text-gray-800" : "text-gray-200"
+  const tagPrimaryColor = customTagPrimaryColor || currentTheme.primary
+  const tagSecondaryColor = customTagSecondaryColor || "bg-gray-200"
 
   return (
     <div
-      ref={previewRef} // Apply the ref here
-      className={`max-w-4xl mx-auto shadow-2xl print:shadow-none`}
-      style={{
-        backgroundColor: finalBgColor,
-        color: finalTextColor,
-      }}
+      ref={previewRef}
+      className={cn(
+        "social-media-template flex flex-col w-[794px] mx-auto shadow-lg", // Removed min-h-[1122px]
+        isDarkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900",
+        customBackgroundColor && `!bg-[${customBackgroundColor}]`,
+      )}
+      style={customBackgroundColor ? { backgroundColor: customBackgroundColor } : {}}
     >
-      {/* Sección Header */}
-      <div
-        className={`p-8 border-b-2`}
-        style={{
-          backgroundColor: finalBgColor,
-          borderColor: colors.primaryColor,
-        }}
-      >
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* Foto de Perfil */}
-          {data.personalInfo.profilePhoto && (
-            <div className="flex-shrink-0">
-              <div
-                className={`w-32 h-32 rounded-lg overflow-hidden border-4 shadow-xl`}
-                style={{
-                  backgroundColor: profilePhotoBackgroundColor || cardBgColor,
-                  borderColor: colors.primaryColor,
-                }}
-              >
-                <img
-                  src={data.personalInfo.profilePhoto || "/placeholder.svg?height=300&width=300"}
-                  alt="Foto de Perfil"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Nombre e Información de Contacto */}
-          <div className="flex-1">
-            <h1 className={`text-4xl font-bold mb-2`} style={{ color: finalTextColor }}>
-              {data.personalInfo.name}
-            </h1>
-            <h2 className={`text-xl font-medium mb-4`} style={{ color: colors.primaryColor }}>
-              {data.personalInfo.title}
-            </h2>
-
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-3`} style={{ color: finalSecondaryTextColor }}>
-              <div className="flex items-center gap-2">
-                <Mail className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
-                <span className="text-sm">{data.personalInfo.email}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
-                <span className="text-sm">{data.personalInfo.phone}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
-                <span className="text-sm">{data.personalInfo.location}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Globe className={`w-4 h-4`} style={{ color: colors.primaryColor }} />
-                <span className="text-sm">{data.personalInfo.linkedin}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-8">
-        {/* Resumen Profesional */}
-        <section className="mb-8">
-          <h3
-            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
+      {/* Header Section */}
+      <header className={cn("relative h-48", currentTheme.primary)}>
+        {data.personalInfo.profilePhoto && (
+          <div
+            className="absolute -bottom-16 left-8 w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg"
+            style={profilePhotoBackgroundColor ? { backgroundColor: profilePhotoBackgroundColor } : {}}
           >
-            Resumen Profesional
-          </h3>
-          <p className={`leading-relaxed`} style={{ color: finalSecondaryTextColor }}>
-            {data.summary}
-          </p>
+            <Image
+              src={data.personalInfo.profilePhoto || "/placeholder.svg"}
+              alt="Profile"
+              layout="fill"
+              objectFit="cover"
+              crossOrigin="anonymous"
+            />
+          </div>
+        )}
+      </header>
+
+      {/* Main Content */}
+      <div className="p-8 pt-20 flex-grow">
+        <section className="mb-8">
+          <h1 className={cn("text-3xl font-bold", textColorClass)}>{data.personalInfo.name}</h1>
+          <h2 className="text-xl font-semibold text-gray-600 dark:text-gray-400">{data.personalInfo.title}</h2>
+          <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-700 dark:text-gray-300">
+            {data.personalInfo.email && (
+              <div className="flex items-center gap-1">
+                <Mail className="h-4 w-4" />
+                <span>{data.personalInfo.email}</span>
+              </div>
+            )}
+            {data.personalInfo.phone && (
+              <div className="flex items-center gap-1">
+                <Phone className="h-4 w-4" />
+                <span>{data.personalInfo.phone}</span>
+              </div>
+            )}
+            {data.personalInfo.location && (
+              <div className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                <span>{data.personalInfo.location}</span>
+              </div>
+            )}
+            {data.personalInfo.website && (
+              <div className="flex items-center gap-1">
+                <Globe className="h-4 w-4" />
+                <a href={`https://${data.personalInfo.website}`} target="_blank" rel="noopener noreferrer">
+                  {data.personalInfo.website}
+                </a>
+              </div>
+            )}
+            {data.personalInfo.linkedin && (
+              <div className="flex items-center gap-1">
+                <Linkedin className="h-4 w-4" />
+                <a href={`https://${data.personalInfo.linkedin}`} target="_blank" rel="noopener noreferrer">
+                  {data.personalInfo.linkedin}
+                </a>
+              </div>
+            )}
+            {data.personalInfo.github && (
+              <div className="flex items-center gap-1">
+                <Github className="h-4 w-4" />
+                <a href={`https://${data.personalInfo.github}`} target="_blank" rel="noopener noreferrer">
+                  {data.personalInfo.github}
+                </a>
+              </div>
+            )}
+          </div>
         </section>
 
-        {/* Experiencia Laboral */}
-        <section className="mb-8">
-          <h3
-            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-          >
-            Experiencia Laboral
-          </h3>
+        {data.summary && (
+          <section className="mb-8">
+            <h3 className={cn("text-xl font-semibold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+              Resumen Profesional
+            </h3>
+            <p className="text-sm leading-relaxed">{data.summary}</p>
+          </section>
+        )}
 
-          <div className="space-y-6">
-            {data.experience.map((exp, index) => (
-              <div
-                key={exp.id}
-                className={`p-6 rounded-lg border-l-4 shadow-lg`}
-                style={{
-                  backgroundColor: cardBgColor,
-                  borderColor: colors.primaryColor,
-                }}
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h4 className={`text-lg font-semibold`} style={{ color: finalTextColor }}>
-                      {exp.position}
-                    </h4>
-                    <p className={`font-medium`} style={{ color: colors.primaryColor }}>
-                      {exp.company}
-                    </p>
-                  </div>
-                  <div className={`flex items-center text-sm`} style={{ color: finalSecondaryTextColor }}>
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {exp.period}
-                  </div>
-                </div>
-                <ul className={`list-disc list-inside space-y-1`} style={{ color: finalSecondaryTextColor }}>
-                  {exp.achievements.map((achievement, i) => (
-                    <li key={i}>{achievement}</li>
+        {data.experience.length > 0 && (
+          <section className="mb-8">
+            <h3 className={cn("text-xl font-semibold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+              Experiencia Laboral
+            </h3>
+            {data.experience.map((exp) => (
+              <div key={exp.id} className="mb-6 last:mb-0">
+                <h4 className="text-lg font-semibold">{exp.position}</h4>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  {exp.company} | {exp.period}
+                </p>
+                <ul className="list-disc list-inside text-sm mt-2 space-y-1">
+                  {exp.achievements.map((achievement, index) => (
+                    <li key={index}>{achievement}</li>
                   ))}
                 </ul>
+                {exp.keywords.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {exp.keywords.map((keyword, index) => (
+                      <span
+                        key={index}
+                        className={cn(
+                          "px-2 py-0.5 rounded-md text-xs",
+                          isDarkMode ? "bg-gray-700 text-gray-200" : "bg-gray-200 text-gray-800",
+                        )}
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* Layout de Dos Columnas para Educación, Habilidades, Idiomas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Educación */}
-          <section>
-            <h3
-              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-            >
+        {data.education.length > 0 && (
+          <section className="mb-8">
+            <h3 className={cn("text-xl font-semibold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
               Educación
             </h3>
-            <div className="space-y-6">
-              {data.education.map((edu) => (
-                <div
-                  key={edu.id}
-                  className={`p-6 rounded-lg border-l-4 shadow-lg`}
-                  style={{
-                    backgroundColor: cardBgColor,
-                    borderColor: colors.primaryColor,
-                  }}
+            {data.education.map((edu) => (
+              <div key={edu.id} className="mb-4 last:mb-0">
+                <h4 className="text-lg font-semibold">{edu.degree}</h4>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  {edu.institution} | {edu.period}
+                </p>
+                {edu.details && <p className="text-sm mt-1">{edu.details}</p>}
+                {edu.gpa && <p className="text-sm mt-1">GPA: {edu.gpa}</p>}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {data.technicalSkills.length > 0 && (
+          <section className="mb-8">
+            <h3 className={cn("text-xl font-semibold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+              Habilidades Técnicas
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {data.technicalSkills.map((skill, index) => (
+                <span
+                  key={index}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-sm",
+                    isDarkMode ? "bg-gray-700 text-gray-200" : "bg-gray-200 text-gray-800",
+                  )}
                 >
-                  <h4 className={`text-lg font-semibold`} style={{ color: finalTextColor }}>
-                    {edu.degree}
-                  </h4>
-                  <p className={`font-medium`} style={{ color: colors.primaryColor }}>
-                    {edu.institution}
-                  </p>
-                  <p className={`text-sm`} style={{ color: finalSecondaryTextColor }}>
-                    {edu.period}
-                  </p>
-                  <p className={`mt-2`} style={{ color: finalSecondaryTextColor }}>
-                    {edu.details}
-                  </p>
-                </div>
+                  {skill}
+                </span>
               ))}
             </div>
           </section>
+        )}
 
-          {/* Habilidades */}
-          <section>
-            <h3
-              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-            >
-              <Code className="inline w-6 h-6 mr-2" />
-              Habilidades
+        {data.softSkills.length > 0 && (
+          <section className="mb-8">
+            <h3 className={cn("text-xl font-semibold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+              Habilidades Blandas
             </h3>
-            <div className="space-y-4">
-              <div>
-                <h4 className={`font-semibold mb-2`} style={{ color: finalTextColor }}>
-                  Habilidades Técnicas
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {data.technicalSkills.map((skill) => (
-                    <span
-                      key={skill}
-                      className={`px-3 py-1 rounded-full text-sm font-medium`}
-                      style={getTagStyle(true)}
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h4 className={`font-semibold mb-2`} style={{ color: finalTextColor }}>
-                  Habilidades Interpersonales
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {data.softSkills.map((skill) => (
-                    <span
-                      key={skill}
-                      className={`px-3 py-1 rounded-full text-sm font-medium`}
-                      style={getTagStyle(false)}
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              {data.softSkills.map((skill, index) => (
+                <span
+                  key={index}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-sm",
+                    isDarkMode ? "bg-gray-700 text-gray-200" : "bg-gray-200 text-gray-800",
+                  )}
+                >
+                  {skill}
+                </span>
+              ))}
             </div>
           </section>
-        </div>
+        )}
 
-        {/* Idiomas e Intereses */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <section>
-            <h3
-              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-            >
-              <Languages className="inline w-6 h-6 mr-2" />
+        {data.languages.length > 0 && (
+          <section className="mb-8">
+            <h3 className={cn("text-xl font-semibold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
               Idiomas
             </h3>
-            <div className="space-y-3">
+            <ul className="list-disc list-inside text-sm space-y-1">
               {data.languages.map((lang) => (
-                <div key={lang.id} className="flex justify-between items-center">
-                  <span className={`font-medium`} style={{ color: finalTextColor }}>
-                    {lang.language}
-                  </span>
-                  <span style={{ color: finalSecondaryTextColor }}>{lang.level}</span>
+                <li key={lang.id}>
+                  {lang.language} ({lang.level})
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {data.projects.length > 0 && (
+          <section className="mb-8">
+            <h3 className={cn("text-xl font-semibold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+              Proyectos Destacados
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {data.projects.map((project) => (
+                <div key={project.id} className="border rounded-lg overflow-hidden shadow-sm">
+                  {project.imageUrls && project.imageUrls.length > 0 && (
+                    <div className="relative h-40 w-full">
+                      <Image
+                        src={project.imageUrls[0] || "/placeholder.svg"}
+                        alt={project.name}
+                        layout="fill"
+                        objectFit="cover"
+                        crossOrigin="anonymous"
+                      />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h4 className="text-lg font-semibold">{project.name}</h4>
+                    {project.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{project.description}</p>
+                    )}
+                    {project.technologies.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {project.technologies.map((tech, index) => (
+                          <span
+                            key={index}
+                            className={cn(
+                              "px-2 py-0.5 rounded-md text-xs",
+                              isDarkMode ? "bg-gray-700 text-gray-200" : "bg-gray-200 text-gray-800",
+                            )}
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {project.link && (
+                      <p className="text-sm mt-2">
+                        <a
+                          href={`https://${project.link}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn("underline", currentTheme.text)}
+                        >
+                          Ver proyecto
+                        </a>
+                      </p>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           </section>
+        )}
 
-          <section>
-            <h3
-              className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-              style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-            >
-              <Heart className="inline w-6 h-6 mr-2" />
+        {data.certifications.length > 0 && (
+          <section className="mb-8">
+            <h3 className={cn("text-xl font-semibold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+              Certificaciones
+            </h3>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              {data.certifications.map((cert, index) => (
+                <li key={index}>{cert}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {data.interests.length > 0 && (
+          <section className="mb-8">
+            <h3 className={cn("text-xl font-semibold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
               Intereses
             </h3>
             <div className="flex flex-wrap gap-2">
-              {data.interests.map((interest) => (
+              {data.interests.map((interest, index) => (
                 <span
-                  key={interest}
-                  className={`px-3 py-1 rounded-full text-sm font-medium`}
-                  style={getTagStyle(false)} // Interests use secondary tag style
+                  key={index}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-sm",
+                    isDarkMode ? "bg-gray-700 text-gray-200" : "bg-gray-200 text-gray-800",
+                  )}
                 >
                   {interest}
                 </span>
               ))}
             </div>
           </section>
-        </div>
+        )}
 
-        {/* Certificaciones */}
-        <section className="mb-8">
-          <h3
-            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-          >
-            <Award className="inline w-6 h-6 mr-2" />
-            Certificaciones
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {data.certifications.map((cert) => (
-              <span
-                key={cert}
-                className={`px-3 py-1 rounded-full text-sm font-medium`}
-                style={getTagStyle(true)} // Certifications use primary tag style
-              >
-                {cert}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* Proyectos Destacados */}
-        <section className="mb-8">
-          <h3
-            className={`text-2xl font-bold mb-4 pb-2 border-b-2`}
-            style={{ color: finalTextColor, borderColor: colors.primaryColor }}
-          >
-            <Award className="inline w-6 h-6 mr-2" />
-            Proyectos Destacados
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.projects.length > 0
-              ? data.projects.map((project) => (
-                  <div
-                    key={project.id}
-                    className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
-                    style={{
-                      backgroundColor: cardBgColor,
-                      border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined, // gray-600
-                      borderColor: isDarkMode ? colors.primaryColor : undefined, // hover effect
-                    }}
-                  >
-                    <div className="flex flex-wrap justify-center gap-2 p-2">
-                      {project.imageUrls && project.imageUrls.length > 0 ? (
-                        project.imageUrls.map((imageUrl, idx) => (
-                          <img
-                            key={idx}
-                            src={imageUrl || "/placeholder.svg?height=100&width=100"}
-                            alt={`Proyecto ${project.name} imagen ${idx + 1}`}
-                            className="w-24 h-24 object-cover rounded-md" // Adjusted size for multiple images
-                          />
-                        ))
-                      ) : (
-                        <img
-                          src="/placeholder.svg?height=100&width=100"
-                          alt={`Proyecto ${project.name} placeholder`}
-                          className="w-full h-32 object-cover rounded-md" // Adjusted size
-                        />
-                      )}
-                    </div>
-                    <p className={`p-2 text-sm text-center font-semibold`} style={{ color: finalTextColor }}>
-                      {project.name}
-                    </p>
-                    {project.description && (
-                      <p className={`p-2 text-xs text-center`} style={{ color: finalSecondaryTextColor }}>
-                        {project.description}
-                      </p>
-                    )}
-                  </div>
-                ))
-              : // Placeholder projects if no data
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                    key={`placeholder-${i}`}
-                    className={`rounded-lg overflow-hidden shadow-lg transition-colors`}
-                    style={{
-                      backgroundColor: cardBgColor,
-                      border: isDarkMode ? `2px solid rgb(75, 85, 99)` : undefined,
-                    }}
-                  >
-                    <div className="w-full h-32 bg-gray-200 rounded-md flex items-center justify-center">
-                      <span className="text-gray-500 text-sm">No Image</span>
-                    </div>
-                    <p className={`p-2 text-sm text-center font-semibold`} style={{ color: finalTextColor }}>
-                      [Nombre del Proyecto {i + 1}]
-                    </p>
-                    <p className={`p-2 text-xs text-center`} style={{ color: finalSecondaryTextColor }}>
-                      [Descripción del proyecto {i + 1}]
-                    </p>
-                  </div>
-                ))}
-          </div>
-        </section>
-
-        {/* Sección Código QR */}
-        <section
-          className={`p-6 rounded-lg border-2 shadow-lg`}
-          style={{
-            backgroundColor: cardBgColor,
-            borderColor: colors.primaryColor,
-          }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className={`text-xl font-bold mb-2`} style={{ color: finalTextColor }}>
-                {data.personalInfo.portfolioTitle}
-              </h3>
-              <p style={{ color: finalSecondaryTextColor }}>{data.personalInfo.portfolioDescription}</p>
-              <p className={`text-sm mt-1`} style={{ color: colors.primaryColor }}>
-                {data.personalInfo.portfolioWebsite}
-              </p>
-            </div>
-            <div
-              className={`p-4 rounded-lg shadow-lg border-2`}
-              style={{
-                backgroundColor: "white", // QR code background is always white for readability
-                borderColor: colors.primaryColor,
-              }}
-            >
-              {data.personalInfo.qrCodeImage ? (
-                <img
+        {(data.personalInfo.portfolioTitle || data.personalInfo.qrCodeImage) && (
+          <section className="mb-8 flex items-center gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+            {data.personalInfo.qrCodeImage && (
+              <div className="flex-shrink-0 w-24 h-24 relative">
+                <Image
                   src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
-                  alt="Código QR del Portfolio"
-                  className="w-32 h-32 object-contain" // Increased size here
+                  alt="QR Code"
+                  layout="fill"
+                  objectFit="contain"
+                  crossOrigin="anonymous"
                 />
-              ) : (
-                <div className="w-32 h-32 bg-gray-200 rounded flex items-center justify-center">
-                  <QrCode className="w-16 h-16 text-gray-500" /> {/* Icon size adjusted */}
-                </div>
+              </div>
+            )}
+            <div>
+              {data.personalInfo.portfolioTitle && (
+                <h4 className="text-lg font-semibold">{data.personalInfo.portfolioTitle}</h4>
+              )}
+              {data.personalInfo.portfolioDescription && (
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {data.personalInfo.portfolioDescription}
+                </p>
+              )}
+              {data.personalInfo.portfolioWebsite && (
+                <p className="text-sm mt-2">
+                  <a
+                    href={`https://${data.personalInfo.portfolioWebsite}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn("underline", currentTheme.text)}
+                  >
+                    {data.personalInfo.portfolioWebsite}
+                  </a>
+                </p>
               )}
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </div>
     </div>
   )

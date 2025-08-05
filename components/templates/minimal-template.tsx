@@ -1,7 +1,6 @@
-"use client"
-
-import { Mail, Phone, MapPin, Globe, Code } from "lucide-react"
-import type { RefObject } from "react" // Import RefObject
+import type { RefObject } from "react"
+import { cn } from "@/lib/utils"
+import { Mail, Phone, MapPin, Globe, Linkedin, Github } from "lucide-react"
 
 interface PersonalInfo {
   name: string
@@ -70,7 +69,7 @@ interface MinimalTemplateProps {
   customTagPrimaryColor: string
   customTagSecondaryColor: string
   profilePhotoBackgroundColor?: string
-  previewRef: RefObject<HTMLDivElement> // New prop for the ref
+  previewRef: RefObject<HTMLDivElement>
 }
 
 export default function MinimalTemplate({
@@ -84,363 +83,217 @@ export default function MinimalTemplate({
   profilePhotoBackgroundColor,
   previewRef,
 }: MinimalTemplateProps) {
-  const getThemeColors = () => {
-    const themes = {
-      teal: {
-        primaryColor: "#10B981", // Hex for direct use
-        secondaryColor: "#22C55E", // Hex for direct use
-        lightBg: "#FFFFFF", // white
-        darkBg: "#171717", // neutral-900
-        lightAccentBg: "#F0FDF4", // teal-50
-        darkAccentBg: "#262626", // neutral-800
-        lightAccentText: "#0D9488", // teal-800
-        darkAccentText: "#34D399", // green-400
-      },
-      orange: {
-        primaryColor: "rgb(242,89,13)",
-        secondaryColor: "#16A34A", // green-600
-        lightBg: "#FFFFFF", // white
-        darkBg: "#171717", // neutral-900
-        lightAccentBg: "#FFF7ED", // orange-50
-        darkAccentBg: "#262626", // neutral-800
-        lightAccentText: "#9A3412", // orange-800
-        darkAccentText: "#FDBA74", // orange-300
-      },
-      blue: {
-        primaryColor: "#3B82F6", // blue-500
-        secondaryColor: "#9333EA", // purple-500
-        lightBg: "#FFFFFF", // white
-        darkBg: "#171717", // neutral-900
-        lightAccentBg: "#EFF6FF", // blue-50
-        darkAccentBg: "#262626", // neutral-800
-        lightAccentText: "#1E40AF", // blue-800
-        darkAccentText: "#60A5FA", // blue-400
-      },
-      green: {
-        primaryColor: "#22C55E", // green-500
-        secondaryColor: "#3B82F6", // blue-500
-        lightBg: "#FFFFFF", // white
-        darkBg: "#171717", // neutral-900
-        lightAccentBg: "#F0FDF4", // green-50
-        darkAccentBg: "#262626", // neutral-800
-        lightAccentText: "#065F46", // green-800
-        darkAccentText: "#4ADE80", // green-400
-      },
-      purple: {
-        primaryColor: "#9333EA", // purple-500
-        secondaryColor: "#EC4899", // pink-500
-        lightBg: "#FFFFFF", // white
-        darkBg: "#171717", // neutral-900
-        lightAccentBg: "#F5F3FF", // purple-50
-        darkAccentBg: "#262626", // neutral-800
-        lightAccentText: "#5B21B6", // purple-800
-        darkAccentText: "#C084FC", // purple-400
-      },
-    }
-    return themes[selectedTheme as keyof typeof themes] || themes.orange // Default to orange
+  const themeColors = {
+    teal: { primary: "bg-teal-500", text: "text-teal-500", border: "border-teal-500" },
+    orange: { primary: "bg-[rgb(242,89,13)]", text: "text-[rgb(242,89,13)]", border: "border-[rgb(242,89,13)]" },
+    blue: { primary: "bg-blue-500", text: "text-blue-500", border: "border-blue-500" },
+    green: { primary: "bg-green-500", text: "text-green-500", border: "border-green-500" },
+    purple: { primary: "bg-purple-500", text: "text-purple-500", border: "border-purple-500" },
   }
 
-  const colors = getThemeColors()
+  const currentTheme = themeColors[selectedTheme as keyof typeof themeColors] || themeColors.orange
 
-  // Determine background color
-  const finalBgColor = customBackgroundColor || (isDarkMode ? colors.darkBg : colors.lightBg)
-  // Determine text color
-  const finalTextColor = customTextColor === "white" ? "white" : "black"
-  const finalSecondaryTextColor = customTextColor === "white" ? "rgb(209, 213, 219)" : "rgb(75, 85, 99)" // gray-300 or gray-700
-
-  // Tag colors logic
-  const getTagStyle = (isPrimaryTag: boolean) => {
-    const customColor = isPrimaryTag ? customTagPrimaryColor : customTagSecondaryColor
-    const defaultBg = isPrimaryTag
-      ? isDarkMode
-        ? colors.darkAccentBg
-        : colors.lightAccentBg
-      : isDarkMode
-        ? colors.darkAccentBg
-        : colors.lightAccentBg
-    const defaultText = isPrimaryTag
-      ? isDarkMode
-        ? colors.darkAccentText
-        : colors.lightAccentText
-      : isDarkMode
-        ? colors.darkAccentText
-        : colors.lightAccentText
-
-    return {
-      backgroundColor: customColor || defaultBg,
-      color: customColor ? (customTextColor === "white" ? "white" : "black") : defaultText,
-    }
-  }
+  const textColorClass = customTextColor === "black" ? "text-gray-900" : "text-white"
+  const sectionTitleColorClass = customTextColor === "black" ? "text-gray-800" : "text-gray-200"
+  const tagPrimaryColor = customTagPrimaryColor || currentTheme.primary
+  const tagSecondaryColor = customTagSecondaryColor || "bg-gray-200"
 
   return (
     <div
-      ref={previewRef} // Apply the ref here
-      className={`max-w-3xl mx-auto p-8 font-sans leading-relaxed ${isDarkMode ? "bg-neutral-900 text-neutral-100" : "bg-white text-neutral-900"}`}
-      style={{ backgroundColor: finalBgColor, color: finalTextColor }}
+      ref={previewRef}
+      className={cn(
+        "minimal-template flex flex-col w-[794px] mx-auto shadow-lg p-8", // Removed min-h-[1122px]
+        isDarkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900",
+        customBackgroundColor && `!bg-[${customBackgroundColor}]`,
+      )}
+      style={customBackgroundColor ? { backgroundColor: customBackgroundColor } : {}}
     >
-      {/* Header */}
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold mb-1" style={{ color: finalTextColor }}>
-          {data.personalInfo.name}
-        </h1>
-        <h2 className="text-xl font-semibold mb-4" style={{ color: colors.primaryColor }}>
-          {data.personalInfo.title}
-        </h2>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-          <div className="flex items-center gap-1">
-            <Mail className="w-4 h-4" style={{ color: colors.primaryColor }} />
-            <span>{data.personalInfo.email}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Phone className="w-4 h-4" style={{ color: colors.primaryColor }} />
-            <span>{data.personalInfo.phone}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <MapPin className="w-4 h-4" style={{ color: colors.primaryColor }} />
-            <span>{data.personalInfo.location}</span>
-          </div>
-          {data.personalInfo.linkedin && (
+      {/* Header Section */}
+      <header className="mb-8 text-center">
+        <h1 className={cn("text-4xl font-bold mb-1", textColorClass)}>{data.personalInfo.name}</h1>
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300">{data.personalInfo.title}</h2>
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 text-sm text-gray-600 dark:text-gray-400">
+          {data.personalInfo.email && (
             <div className="flex items-center gap-1">
-              <Globe className="w-4 h-4" style={{ color: colors.primaryColor }} />
-              <span>{data.personalInfo.linkedin}</span>
+              <Mail className="h-4 w-4" />
+              <span>{data.personalInfo.email}</span>
+            </div>
+          )}
+          {data.personalInfo.phone && (
+            <div className="flex items-center gap-1">
+              <Phone className="h-4 w-4" />
+              <span>{data.personalInfo.phone}</span>
+            </div>
+          )}
+          {data.personalInfo.location && (
+            <div className="flex items-center gap-1">
+              <MapPin className="h-4 w-4" />
+              <span>{data.personalInfo.location}</span>
             </div>
           )}
           {data.personalInfo.website && (
             <div className="flex items-center gap-1">
-              <Globe className="w-4 h-4" style={{ color: colors.primaryColor }} />
-              <span>{data.personalInfo.website}</span>
+              <Globe className="h-4 w-4" />
+              <a href={`https://${data.personalInfo.website}`} target="_blank" rel="noopener noreferrer">
+                {data.personalInfo.website}
+              </a>
+            </div>
+          )}
+          {data.personalInfo.linkedin && (
+            <div className="flex items-center gap-1">
+              <Linkedin className="h-4 w-4" />
+              <a href={`https://${data.personalInfo.linkedin}`} target="_blank" rel="noopener noreferrer">
+                {data.personalInfo.linkedin}
+              </a>
             </div>
           )}
           {data.personalInfo.github && (
             <div className="flex items-center gap-1">
-              <Code className="w-4 h-4" style={{ color: colors.primaryColor }} />
-              <span>{data.personalInfo.github}</span>
+              <Github className="h-4 w-4" />
+              <a href={`https://${data.personalInfo.github}`} target="_blank" rel="noopener noreferrer">
+                {data.personalInfo.github}
+              </a>
             </div>
           )}
         </div>
       </header>
 
-      {/* Summary */}
-      <section className="mb-8">
-        <h3 className="text-xl font-bold mb-3 pb-1 border-b" style={{ borderColor: colors.primaryColor }}>
-          Resumen Profesional
-        </h3>
-        <p className="text-sm">{data.summary}</p>
-      </section>
+      {data.summary && (
+        <section className="mb-8">
+          <h3 className={cn("text-xl font-bold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+            Resumen Profesional
+          </h3>
+          <p className="text-sm leading-relaxed">{data.summary}</p>
+        </section>
+      )}
 
-      {/* Experience */}
-      <section className="mb-8">
-        <h3 className="text-xl font-bold mb-3 pb-1 border-b" style={{ borderColor: colors.primaryColor }}>
-          Experiencia Laboral
-        </h3>
-        <div className="space-y-4">
+      {data.experience.length > 0 && (
+        <section className="mb-8">
+          <h3 className={cn("text-xl font-bold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+            Experiencia Laboral
+          </h3>
           {data.experience.map((exp) => (
-            <div key={exp.id}>
-              <div className="flex justify-between items-baseline mb-1">
-                <h4 className="font-semibold text-base">{exp.position}</h4>
-                <span className="text-xs text-gray-600">{exp.period}</span>
-              </div>
-              <p className="text-sm font-medium mb-2" style={{ color: colors.primaryColor }}>
-                {exp.company}
+            <div key={exp.id} className="mb-6 last:mb-0">
+              <h4 className="text-lg font-semibold">{exp.position}</h4>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {exp.company} | {exp.period}
               </p>
-              <ul className="list-disc list-inside text-sm space-y-1">
-                {exp.achievements.map((achievement, i) => (
-                  <li key={i}>{achievement}</li>
+              <ul className="list-disc list-inside text-sm mt-2 space-y-1">
+                {exp.achievements.map((achievement, index) => (
+                  <li key={index}>{achievement}</li>
                 ))}
               </ul>
-              {exp.keywords && exp.keywords.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {exp.keywords.map((keyword, i) => (
-                    <span
-                      key={i}
-                      className={`px-2 py-0.5 rounded-full text-xs`}
-                      style={getTagStyle(true)} // Keywords use primary tag style
-                    >
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {data.education.length > 0 && (
+        <section className="mb-8">
+          <h3 className={cn("text-xl font-bold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+            Educación
+          </h3>
+          {data.education.map((edu) => (
+            <div key={edu.id} className="mb-4 last:mb-0">
+              <h4 className="text-lg font-semibold">{edu.degree}</h4>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {edu.institution} | {edu.period}
+              </p>
+              {edu.details && <p className="text-sm mt-1">{edu.details}</p>}
+              {edu.gpa && <p className="text-sm mt-1">GPA: {edu.gpa}</p>}
+            </div>
+          ))}
+        </section>
+      )}
+
+      {data.technicalSkills.length > 0 && (
+        <section className="mb-8">
+          <h3 className={cn("text-xl font-bold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+            Habilidades Técnicas
+          </h3>
+          <p className="text-sm">{data.technicalSkills.join(", ")}</p>
+        </section>
+      )}
+
+      {data.softSkills.length > 0 && (
+        <section className="mb-8">
+          <h3 className={cn("text-xl font-bold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+            Habilidades Blandas
+          </h3>
+          <p className="text-sm">{data.softSkills.join(", ")}</p>
+        </section>
+      )}
+
+      {data.languages.length > 0 && (
+        <section className="mb-8">
+          <h3 className={cn("text-xl font-bold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+            Idiomas
+          </h3>
+          <ul className="list-disc list-inside text-sm space-y-1">
+            {data.languages.map((lang) => (
+              <li key={lang.id}>
+                {lang.language} ({lang.level})
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {data.projects.length > 0 && (
+        <section className="mb-8">
+          <h3 className={cn("text-xl font-bold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+            Proyectos Destacados
+          </h3>
+          {data.projects.map((project) => (
+            <div key={project.id} className="mb-4 last:mb-0">
+              <h4 className="text-lg font-semibold">{project.name}</h4>
+              {project.description && (
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{project.description}</p>
+              )}
+              {project.technologies.length > 0 && (
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  **Tecnologías:** {project.technologies.join(", ")}
+                </p>
+              )}
+              {project.link && (
+                <p className="text-sm mt-1">
+                  **Enlace:**{" "}
+                  <a
+                    href={`https://${project.link}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn("underline", currentTheme.text)}
+                  >
+                    {project.link}
+                  </a>
+                </p>
               )}
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Education */}
-      <section className="mb-8">
-        <h3 className="text-xl font-bold mb-3 pb-1 border-b" style={{ borderColor: colors.primaryColor }}>
-          Educación
-        </h3>
-        <div className="space-y-4">
-          {data.education.map((edu) => (
-            <div key={edu.id}>
-              <div className="flex justify-between items-baseline mb-1">
-                <h4 className="font-semibold text-base">{edu.degree}</h4>
-                <span className="text-xs text-gray-600">{edu.period}</span>
-              </div>
-              <p className="text-sm font-medium mb-1" style={{ color: colors.primaryColor }}>
-                {edu.institution}
-              </p>
-              <p className="text-sm">{edu.details}</p>
-              {edu.gpa && <p className="text-sm">GPA: {edu.gpa}</p>}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Skills */}
-      <section className="mb-8">
-        <h3 className="text-xl font-bold mb-3 pb-1 border-b" style={{ borderColor: colors.primaryColor }}>
-          Habilidades
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <h4 className="font-semibold mb-2">Habilidades Técnicas</h4>
-            <div className="flex flex-wrap gap-2">
-              {data.technicalSkills.map((skill) => (
-                <span key={skill} className={`px-3 py-1 rounded-full text-sm font-medium`} style={getTagStyle(true)}>
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-2">Habilidades Interpersonales</h4>
-            <div className="flex flex-wrap gap-2">
-              {data.softSkills.map((skill) => (
-                <span key={skill} className={`px-3 py-1 rounded-full text-sm font-medium`} style={getTagStyle(false)}>
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Languages and Certifications */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <section>
-          <h3 className="text-xl font-bold mb-3 pb-1 border-b" style={{ borderColor: colors.primaryColor }}>
-            Idiomas
-          </h3>
-          <div className="space-y-2">
-            {data.languages.map((lang) => (
-              <div key={lang.id} className="flex justify-between text-sm">
-                <span className="font-medium">{lang.language}</span>
-                <span>{lang.level}</span>
-              </div>
-            ))}
-          </div>
         </section>
-        <section>
-          <h3 className="text-xl font-bold mb-3 pb-1 border-b" style={{ borderColor: colors.primaryColor }}>
+      )}
+
+      {data.certifications.length > 0 && (
+        <section className="mb-8">
+          <h3 className={cn("text-xl font-bold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
             Certificaciones
           </h3>
-          <div className="flex flex-wrap gap-2">
-            {data.certifications.map((cert) => (
-              <span
-                key={cert}
-                className={`px-3 py-1 rounded-full text-sm font-medium`}
-                style={getTagStyle(true)} // Certifications use primary tag style
-              >
-                {cert}
-              </span>
+          <ul className="list-disc list-inside text-sm space-y-1">
+            {data.certifications.map((cert, index) => (
+              <li key={index}>{cert}</li>
             ))}
-          </div>
+          </ul>
         </section>
-      </div>
+      )}
 
-      {/* Projects */}
-      <section className="mb-8">
-        <h3 className="text-xl font-bold mb-3 pb-1 border-b" style={{ borderColor: colors.primaryColor }}>
-          Proyectos Destacados
-        </h3>
-        <div className="space-y-4">
-          {data.projects.length > 0
-            ? data.projects.map((project) => (
-                <div key={project.id} className="mb-4">
-                  <h4 className="font-semibold text-base">{project.name}</h4>
-                  <p className="text-sm mb-1">{project.description}</p>
-                  {project.link && (
-                    <p className="text-sm" style={{ color: colors.primaryColor }}>
-                      Link:{" "}
-                      <a href={project.link} target="_blank" rel="noopener noreferrer">
-                        {project.link}
-                      </a>
-                    </p>
-                  )}
-                  {project.technologies.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {project.technologies.map((tech, i) => (
-                        <span
-                          key={i}
-                          className={`px-2 py-0.5 rounded-full text-xs`}
-                          style={getTagStyle(true)} // Technologies use primary tag style
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))
-            : Array.from({ length: 2 }).map((_, i) => (
-                <div key={`placeholder-proj-${i}`} className="mb-4">
-                  <h4 className="font-semibold text-base">[Nombre del Proyecto {i + 1}]</h4>
-                  <p className="text-sm mb-1">[Descripción del proyecto {i + 1}]</p>
-                  <p className="text-sm" style={{ color: colors.primaryColor }}>
-                    Link: [Enlace del proyecto {i + 1}]
-                  </p>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    <span className={`px-2 py-0.5 rounded-full text-xs`} style={getTagStyle(true)}>
-                      Tecnología 1
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs`} style={getTagStyle(true)}>
-                      Tecnología 2
-                    </span>
-                  </div>
-                </div>
-              ))}
-        </div>
-      </section>
-
-      {/* Interests */}
-      <section className="mb-8">
-        <h3 className="text-xl font-bold mb-3 pb-1 border-b" style={{ borderColor: colors.primaryColor }}>
-          Intereses
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {data.interests.map((interest) => (
-            <span
-              key={interest}
-              className={`px-3 py-1 rounded-full text-sm font-medium`}
-              style={getTagStyle(false)} // Interests use secondary tag style
-            >
-              {interest}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      {/* QR Code Section */}
-      <section className="text-center mt-8">
-        <h3 className="text-xl font-bold mb-2" style={{ color: finalTextColor }}>
-          {data.personalInfo.portfolioTitle}
-        </h3>
-        <p className="text-sm mb-2">{data.personalInfo.portfolioDescription}</p>
-        {data.personalInfo.qrCodeImage && (
-          <div className="inline-block p-2 border-2 rounded-lg" style={{ borderColor: colors.primaryColor }}>
-            <img
-              src={data.personalInfo.qrCodeImage || "/placeholder.svg"}
-              alt="Código QR del Portfolio"
-              className="w-24 h-24 object-contain"
-            />
-          </div>
-        )}
-        <p className="text-sm mt-2" style={{ color: colors.primaryColor }}>
-          {data.personalInfo.portfolioWebsite}
-        </p>
-      </section>
+      {data.interests.length > 0 && (
+        <section className="mb-8">
+          <h3 className={cn("text-xl font-bold mb-4 pb-2 border-b", currentTheme.border, sectionTitleColorClass)}>
+            Intereses
+          </h3>
+          <p className="text-sm">{data.interests.join(", ")}</p>
+        </section>
+      )}
     </div>
   )
 }
