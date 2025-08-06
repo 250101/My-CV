@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -72,6 +72,9 @@ export function CurriculumEditor({
   const [editingExperience, setEditingExperience] = useState<string | null>(null)
   const [editingEducation, setEditingEducation] = useState<string | null>(null)
   const [editingProject, setEditingProject] = useState<string | null>(null)
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const projectImageInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
 
   const templates = [
     { id: "socialMedia", name: "Social Media", description: "Diseño moderno inspirado en redes sociales" },
@@ -195,6 +198,36 @@ export function CurriculumEditor({
     })
   }
 
+  const handleProjectImageUpload = (projectId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result as string
+        onDataChange({
+          ...data,
+          projects: data.projects.map((project) =>
+            project.id === projectId 
+              ? { ...project, imageUrls: [...(project.imageUrls || []), result] }
+              : project
+          ),
+        })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeProjectImage = (projectId: string, imageUrlToRemove: string) => {
+    onDataChange({
+      ...data,
+      projects: data.projects.map((project) =>
+        project.id === projectId
+          ? { ...project, imageUrls: (project.imageUrls || []).filter((url: string) => url !== imageUrlToRemove) }
+          : project
+      ),
+    })
+  }
+
   const addArrayItem = (array: string[], setArray: (items: string[]) => void) => {
     setArray([...array, ""])
   }
@@ -232,11 +265,12 @@ export function CurriculumEditor({
 
       {/* Tabs principales */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="personal">Personal</TabsTrigger>
           <TabsTrigger value="experience">Experiencia</TabsTrigger>
           <TabsTrigger value="education">Educación</TabsTrigger>
           <TabsTrigger value="skills">Habilidades</TabsTrigger>
+          <TabsTrigger value="projects">Proyectos</TabsTrigger>
           <TabsTrigger value="appearance">Apariencia</TabsTrigger>
         </TabsList>
 
@@ -342,6 +376,19 @@ export function CurriculumEditor({
                   placeholder="Describe tu experiencia profesional, objetivos y lo que te hace único..."
                   rows={4}
                 />
+              </div>
+
+              {/* QR Code Section */}
+              <div>
+                <Label>URL para Código QR</Label>
+                <Input
+                  value={data.personalInfo.qrCodeImage || ""}
+                  onChange={(e) => updatePersonalInfo("qrCodeImage", e.target.value)}
+                  placeholder="https://tu-portfolio.com o https://linkedin.com/in/tu-perfil"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Esta URL se convertirá en un código QR que aparecerá al final de tu CV
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -865,6 +912,157 @@ export function CurriculumEditor({
           </Card>
         </TabsContent>
 
+        {/* Tab: Proyectos Destacados */}
+        <TabsContent value="projects" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Code className="h-5 w-5" />
+                Proyectos Destacados
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {data.projects.map((project) => (
+                  <Accordion key={project.id} type="single" collapsible>
+                    <AccordionItem value={project.id}>
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center justify-between w-full">
+                          <span className="font-medium">
+                            {project.name || "Nuevo Proyecto"}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              removeProject(project.id)
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label>Nombre del Proyecto</Label>
+                            <Input
+                              value={project.name}
+                              onChange={(e) => updateProject(project.id, "name", e.target.value)}
+                              placeholder="Ej: E-commerce Platform"
+                            />
+                          </div>
+                          <div>
+                            <Label>Enlace del Proyecto</Label>
+                            <Input
+                              value={project.link || ""}
+                              onChange={(e) => updateProject(project.id, "link", e.target.value)}
+                              placeholder="https://github.com/usuario/proyecto"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Descripción</Label>
+                          <Textarea
+                            value={project.description}
+                            onChange={(e) => updateProject(project.id, "description", e.target.value)}
+                            placeholder="Describe tu proyecto, tecnologías utilizadas y resultados obtenidos..."
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <Label>Tecnologías Utilizadas</Label>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {project.technologies.map((tech, index) => (
+                              <Badge key={index} variant="secondary">
+                                <Input
+                                  value={tech}
+                                  onChange={(e) => {
+                                    const newTechnologies = [...project.technologies]
+                                    newTechnologies[index] = e.target.value
+                                    updateProject(project.id, "technologies", newTechnologies)
+                                  }}
+                                  className="w-20 h-6 text-xs"
+                                  placeholder="..."
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newTechnologies = project.technologies.filter((_, i) => i !== index)
+                                    updateProject(project.id, "technologies", newTechnologies)
+                                  }}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </Badge>
+                            ))}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newTechnologies = [...project.technologies, ""]
+                                updateProject(project.id, "technologies", newTechnologies)
+                              }}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Imágenes del Proyecto</Label>
+                          <div className="grid grid-cols-3 gap-4 mt-2">
+                            {(project.imageUrls || []).map((imageUrl, index) => (
+                              <div key={index} className="relative group">
+                                <img
+                                  src={imageUrl}
+                                  alt={`Project ${index + 1}`}
+                                  className="w-full h-24 object-cover rounded-lg border"
+                                />
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => removeProjectImage(project.id, imageUrl)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                            <div 
+                              className="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center h-24 cursor-pointer hover:border-gray-400 transition-colors"
+                              onClick={() => projectImageInputRefs.current[project.id]?.click()}
+                            >
+                              <div className="text-center">
+                                <Plus className="h-6 w-6 mx-auto mb-1 text-gray-400" />
+                                <span className="text-xs text-gray-500">Agregar Imagen</span>
+                              </div>
+                              <input
+                                ref={(el) => {
+                                  projectImageInputRefs.current[project.id] = el
+                                }}
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleProjectImageUpload(project.id, e)}
+                                className="hidden"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                ))}
+                <Button onClick={addProject} className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar Proyecto
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Tab: Apariencia */}
         <TabsContent value="appearance" className="space-y-4">
           <Card>
@@ -954,6 +1152,66 @@ export function CurriculumEditor({
                     onChange={(e) => onCustomTextColorChange(e.target.value)}
                     className="w-full h-10"
                   />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Advanced Color Customization */}
+              <div>
+                <Label className="text-base font-medium mb-3">Personalización Avanzada de Colores</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Color Primario (Títulos y Acentos)</Label>
+                    <Input
+                      type="color"
+                      value={customTagPrimaryColor}
+                      onChange={(e) => onCustomTagPrimaryColorChange(e.target.value)}
+                      className="w-full h-10"
+                    />
+                  </div>
+                  <div>
+                    <Label>Color Secundario (Tags y Elementos)</Label>
+                    <Input
+                      type="color"
+                      value={customTagSecondaryColor}
+                      onChange={(e) => onCustomTagSecondaryColorChange(e.target.value)}
+                      className="w-full h-10"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Font Customization */}
+              <div>
+                <Label className="text-base font-medium mb-3">Personalización de Tipografía</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Tamaño de Fuente Principal</Label>
+                    <select 
+                      className="w-full p-2 border rounded-md"
+                      defaultValue="11pt"
+                    >
+                      <option value="10pt">10pt - Pequeño</option>
+                      <option value="11pt">11pt - Normal</option>
+                      <option value="12pt">12pt - Grande</option>
+                      <option value="14pt">14pt - Muy Grande</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label>Familia de Fuente</Label>
+                    <select 
+                      className="w-full p-2 border rounded-md"
+                      defaultValue="Arial"
+                    >
+                      <option value="Arial">Arial - Profesional</option>
+                      <option value="Times New Roman">Times New Roman - Clásico</option>
+                      <option value="Calibri">Calibri - Moderno</option>
+                      <option value="Georgia">Georgia - Elegante</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </CardContent>
