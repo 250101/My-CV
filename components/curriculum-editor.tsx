@@ -24,6 +24,7 @@ import {
   RotateCcw
 } from "lucide-react"
 import { CurriculumData, SectionType } from "@/lib/types"
+import { CV_TEMPLATES, getTemplateById, type TemplateConfig } from "@/lib/templates"
 
 interface CurriculumEditorProps {
   data: CurriculumData
@@ -1072,20 +1073,41 @@ export function CurriculumEditor({
             <CardContent className="space-y-6">
               {/* Template Selection */}
               <div>
-                <Label>Plantilla</Label>
-                <div className="grid grid-cols-1 gap-2 mt-2">
-                  {templates.map((template) => (
+                <Label className="text-base font-medium mb-3">Diseño del CV</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  {CV_TEMPLATES.map((template) => (
                     <div
                       key={template.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                         selectedTemplate === template.id
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => onTemplateChange(template.id)}
                     >
-                      <div className="font-medium">{template.name}</div>
-                      <div className="text-sm text-gray-600">{template.description}</div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">{template.name}</h4>
+                        {selectedTemplate === template.id && (
+                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600">{template.description}</p>
+                      <div className="flex gap-1 mt-2">
+                        <div 
+                          className="w-4 h-4 rounded" 
+                          style={{ backgroundColor: template.colors.primary }}
+                        ></div>
+                        <div 
+                          className="w-4 h-4 rounded" 
+                          style={{ backgroundColor: template.colors.secondary }}
+                        ></div>
+                        <div 
+                          className="w-4 h-4 rounded" 
+                          style={{ backgroundColor: template.colors.accent }}
+                        ></div>
+                      </div>
                     </div>
                   ))}
                 </div>

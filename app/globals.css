@@ -216,3 +216,88 @@
     display: none !important;
   }
 }
+
+/* Template Styles */
+.template-professional {
+  --primary-color: #2563eb;
+  --secondary-color: #1e40af;
+  --background-color: #ffffff;
+  --text-color: #1f2937;
+  --accent-color: #3b82f6;
+  
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.template-professional h1, .template-professional h2, .template-professional h3 {
+  color: var(--primary-color);
+}
+
+.template-professional .skill-tag {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.template-modern {
+  --primary-color: #7c3aed;
+  --secondary-color: #5b21b6;
+  --background-color: #f8fafc;
+  --text-color: #334155;
+  --accent-color: #8b5cf6;
+  
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.template-modern h1, .template-modern h2, .template-modern h3 {
+  color: var(--primary-color);
+}
+
+.template-modern .skill-tag {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.template-minimal {
+  --primary-color: #374151;
+  --secondary-color: #1f2937;
+  --background-color: #ffffff;
+  --text-color: #111827;
+  --accent-color: #6b7280;
+  
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.template-minimal h1, .template-minimal h2, .template-minimal h3 {
+  color: var(--primary-color);
+}
+
+.template-minimal .skill-tag {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.template-creative {
+  --primary-color: #f59e0b;
+  --secondary-color: #d97706;
+  --background-color: #fefefe;
+  --text-color: #1f2937;
+  --accent-color: #fbbf24;
+  
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.template-creative h1, .template-creative h2, .template-creative h3 {
+  color: var(--primary-color);
+}
+
+.template-creative .skill-tag {
+  background-color: var(--accent-color);
+  color: var(--text-color);
+}

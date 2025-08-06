@@ -1,12 +1,13 @@
 "use client"
 
-import type { RefObject } from "react"
-import SocialMediaInspiredTemplate from "./templates/social-media-inspired-template"
-import ATSTemplate from "./templates/ats-template"
+import React from "react"
+import { CurriculumData, TemplateProps } from "@/lib/types"
+import { getTemplateById } from "@/lib/templates"
 import CorporateTemplate from "./templates/corporate-template"
 import CreativeTemplate from "./templates/creative-template"
 import MinimalTemplate from "./templates/minimal-template"
-import { CurriculumData, SectionType } from "@/lib/types"
+import ATSTemplate from "./templates/ats-template"
+import SocialMediaInspiredTemplate from "./templates/social-media-inspired-template"
 
 interface CurriculumPreviewProps {
   data: CurriculumData
@@ -18,15 +19,12 @@ interface CurriculumPreviewProps {
   customTagPrimaryColor: string
   customTagSecondaryColor: string
   profilePhotoBackgroundColor?: string
-  onDownloadStart?: () => void
-  onDownloadEnd?: () => void
-  isDownloading?: boolean
-  previewRef: RefObject<HTMLDivElement> // Add previewRef prop
-  enabledSections?: SectionType[]
-  sectionOrder?: SectionType[]
+  previewRef?: React.RefObject<HTMLDivElement>
+  enabledSections?: string[]
+  sectionOrder?: string[]
 }
 
-export default function CurriculumPreview({
+export function CurriculumPreview({
   data,
   selectedTemplate,
   selectedTheme,
@@ -36,100 +34,45 @@ export default function CurriculumPreview({
   customTagPrimaryColor,
   customTagSecondaryColor,
   profilePhotoBackgroundColor,
-  previewRef, // Destructure previewRef
+  previewRef,
   enabledSections,
   sectionOrder,
 }: CurriculumPreviewProps) {
-  const renderTemplate = () => {
-    switch (selectedTemplate) {
-      case "socialMedia":
-        return (
-          <SocialMediaInspiredTemplate
-            data={data}
-            selectedTheme={selectedTheme}
-            isDarkMode={isDarkMode}
-            customBackgroundColor={customBackgroundColor}
-            customTextColor={customTextColor}
-            customTagPrimaryColor={customTagPrimaryColor}
-            customTagSecondaryColor={customTagSecondaryColor}
-            profilePhotoBackgroundColor={profilePhotoBackgroundColor}
-            previewRef={previewRef} // Pass previewRef
-          />
-        )
-      case "ats":
-        return (
-          <ATSTemplate
-            data={data}
-            selectedTheme={selectedTheme}
-            isDarkMode={isDarkMode}
-            customBackgroundColor={customBackgroundColor}
-            customTextColor={customTextColor}
-            customTagPrimaryColor={customTagPrimaryColor}
-            customTagSecondaryColor={customTagSecondaryColor}
-            profilePhotoBackgroundColor={profilePhotoBackgroundColor}
-            previewRef={previewRef} // Pass previewRef
-            enabledSections={enabledSections}
-            sectionOrder={sectionOrder}
-          />
-        )
-      case "corporate":
-        return (
-          <CorporateTemplate
-            data={data}
-            selectedTheme={selectedTheme}
-            isDarkMode={isDarkMode}
-            customBackgroundColor={customBackgroundColor}
-            customTextColor={customTextColor}
-            customTagPrimaryColor={customTagPrimaryColor}
-            customTagSecondaryColor={customTagSecondaryColor}
-            profilePhotoBackgroundColor={profilePhotoBackgroundColor}
-            previewRef={previewRef} // Pass previewRef
-          />
-        )
-      case "creative":
-        return (
-          <CreativeTemplate
-            data={data}
-            selectedTheme={selectedTheme}
-            isDarkMode={isDarkMode}
-            customBackgroundColor={customBackgroundColor}
-            customTextColor={customTextColor}
-            customTagPrimaryColor={customTagPrimaryColor}
-            customTagSecondaryColor={customTagSecondaryColor}
-            profilePhotoBackgroundColor={profilePhotoBackgroundColor}
-            previewRef={previewRef} // Pass previewRef
-          />
-        )
-      case "minimal":
-        return (
-          <MinimalTemplate
-            data={data}
-            selectedTheme={selectedTheme}
-            isDarkMode={isDarkMode}
-            customBackgroundColor={customBackgroundColor}
-            customTextColor={customTextColor}
-            customTagPrimaryColor={customTagPrimaryColor}
-            customTagSecondaryColor={customTagSecondaryColor}
-            profilePhotoBackgroundColor={profilePhotoBackgroundColor}
-            previewRef={previewRef} // Pass previewRef
-          />
-        )
-      default:
-        return (
-          <SocialMediaInspiredTemplate
-            data={data}
-            selectedTheme={selectedTheme}
-            isDarkMode={isDarkMode}
-            customBackgroundColor={customBackgroundColor}
-            customTextColor={customTextColor}
-            customTagPrimaryColor={customTagPrimaryColor}
-            customTagSecondaryColor={customTagSecondaryColor}
-            profilePhotoBackgroundColor={profilePhotoBackgroundColor}
-            previewRef={previewRef} // Pass previewRef
-          />
-        )
-    }
+  const template = getTemplateById(selectedTemplate)
+  const templateClassName = template?.className || 'template-professional'
+
+  const templateProps: TemplateProps = {
+    data,
+    selectedTheme,
+    isDarkMode,
+    customBackgroundColor,
+    customTextColor,
+    customTagPrimaryColor,
+    customTagSecondaryColor,
+    profilePhotoBackgroundColor,
+    previewRef,
+    enabledSections: enabledSections as any,
+    sectionOrder: sectionOrder as any,
   }
 
-  return <div className="w-full h-full" data-preview="true">{renderTemplate()}</div>
+  return (
+    <div 
+      ref={previewRef}
+      data-preview="true"
+      className={`${templateClassName} min-h-screen p-8 transition-all duration-300`}
+      style={{
+        backgroundColor: customBackgroundColor || undefined,
+        color: customTextColor || undefined,
+      }}
+    >
+      {/* Render template based on selection */}
+      {selectedTemplate === "corporate" && <CorporateTemplate {...templateProps} />}
+      {selectedTemplate === "creative" && <CreativeTemplate {...templateProps} />}
+      {selectedTemplate === "minimal" && <MinimalTemplate {...templateProps} />}
+      {selectedTemplate === "ats" && <ATSTemplate {...templateProps} />}
+      {selectedTemplate === "socialMedia" && <SocialMediaInspiredTemplate {...templateProps} />}
+      {/* Default to professional template */}
+      {(!selectedTemplate || selectedTemplate === "professional") && <CorporateTemplate {...templateProps} />}
+    </div>
+  )
 }

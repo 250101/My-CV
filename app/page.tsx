@@ -14,6 +14,8 @@ import {
 import { CurriculumData, ProfessionalProfile, SectionType, ProfileConfig } from "@/lib/types"
 import { PROFESSIONAL_PROFILES } from "@/lib/professional-profiles"
 import CVExporter from "@/lib/export-utils"
+import { useToast } from "@/components/ui/use-toast"
+import { CV_TEMPLATES, getDefaultTemplate, type TemplateConfig } from "@/lib/templates"
 
 // Professional profile configurations and data management
 
@@ -203,8 +205,9 @@ const colorThemes = {
 
 const Page = () => {
   const [data, setData] = useState<CurriculumData>(initialData)
-  const [selectedTemplate, setSelectedTemplate] = useState("socialMedia")
-  const [selectedTheme, setSelectedTheme] = useState("orange")
+  const [selectedProfile, setSelectedProfile] = useState<ProfessionalProfile>(ProfessionalProfile.ADMINISTRATIVE)
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("professional")
+  const [selectedTheme, setSelectedTheme] = useState<string>("blue")
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [customBackgroundColor, setCustomBackgroundColor] = useState("")
   const [customTextColor, setCustomTextColor] = useState("black")
@@ -212,7 +215,6 @@ const Page = () => {
   const [customTagSecondaryColor, setCustomTagSecondaryColor] = useState("")
   // profilePhotoBackgroundColor is now part of data.personalInfo
   const [isDownloading, setIsDownloading] = useState(false)
-  const [selectedProfile, setSelectedProfile] = useState<ProfessionalProfile | null>(null)
   const [enabledSections, setEnabledSections] = useState<SectionType[]>(Object.values(SectionType))
   const [sectionOrder, setSectionOrder] = useState<SectionType[]>([
     SectionType.PERSONAL_INFO,
@@ -228,6 +230,8 @@ const Page = () => {
   ])
 
   const previewRef = useRef<HTMLDivElement>(null)
+  const { toast } = useToast()
+  const [exporting, setExporting] = useState(false)
 
   // Professional profile handling
   const handleProfileChange = (profile: ProfessionalProfile) => {
@@ -330,53 +334,40 @@ const Page = () => {
   }
 
   // Enhanced export functions
-  const handleExport = async (format: 'pdf' | 'docx' | 'txt') => {
-    console.log(`Iniciando exportación ${format.toUpperCase()}...`)
-    
-    if (!previewRef.current && format === 'pdf') {
-      console.error('No se encontró el elemento de preview')
-      alert('Error: No se puede generar el PDF. Asegúrate de que la vista previa esté cargada.')
+  const handleExport = async () => {
+    if (!previewRef.current) {
+      toast({
+        title: "Error",
+        description: "No se pudo encontrar el contenido del CV para exportar.",
+        variant: "destructive",
+      })
       return
     }
-    
-    setIsDownloading(true)
-    const filename = data.personalInfo.name || "curriculum"
-    
+
     try {
-      console.log(`Exportando como ${format.toUpperCase()}...`)
+      setExporting(true)
       
-      switch (format) {
-        case 'pdf':
-          if (!previewRef.current) {
-            throw new Error('Elemento de preview no encontrado')
-          }
-          await CVExporter.exportToPDF(previewRef.current, filename)
-          break
-        case 'docx':
-          await CVExporter.exportToWord(data, filename)
-          break
-        case 'txt':
-          await CVExporter.exportToTXT(data, filename)
-          break
-        default:
-          throw new Error(`Formato no soportado: ${format}`)
-      }
+      // Generar nombre del archivo
+      const filename = data.personalInfo.name 
+        ? `${data.personalInfo.name.replace(/\s+/g, '_')}_CV`
+        : 'Mi_CV'
+
+      // Exportar solo PDF
+      await CVExporter.exportToPDF(previewRef.current, filename)
       
-      console.log(`Exportación ${format.toUpperCase()} completada exitosamente`)
+      toast({
+        title: "¡Éxito!",
+        description: "Tu CV ha sido exportado como PDF correctamente.",
+      })
     } catch (error) {
-      console.error(`Error exportando ${format.toUpperCase()}:`, error)
-      
-      let errorMessage = `Hubo un error al exportar el archivo ${format.toUpperCase()}. `
-      
-      if (error instanceof Error) {
-        errorMessage += error.message
-      } else {
-        errorMessage += 'Por favor, inténtalo de nuevo.'
-      }
-      
-      alert(errorMessage)
+      console.error('Error en exportación:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Hubo un error al exportar el CV.",
+        variant: "destructive",
+      })
     } finally {
-      setIsDownloading(false)
+      setExporting(false)
     }
   }
 
@@ -405,16 +396,14 @@ const Page = () => {
           onCustomTagPrimaryColorChange={setCustomTagPrimaryColor}
           customTagSecondaryColor={customTagSecondaryColor}
           onCustomTagSecondaryColorChange={setCustomTagSecondaryColor}
-          // Pass profilePhotoBackgroundColor from data.personalInfo
           profilePhotoBackgroundColor={data.personalInfo.profilePhotoBackgroundColor}
-          // Update personalInfo directly for profilePhotoBackgroundColor
           onProfilePhotoBackgroundColorChange={(color) =>
-            setData((prev) => ({
-              ...prev,
-              personalInfo: { ...prev.personalInfo, profilePhotoBackgroundColor: color },
-            }))
+            setData({
+              ...data,
+              personalInfo: { ...data.personalInfo, profilePhotoBackgroundColor: color },
+            })
           }
-          initialData={emptyCurriculumData} // Pass empty data for reset functionality
+          initialData={initialData}
         />
       </div>
 
@@ -444,33 +433,15 @@ const Page = () => {
             </DropdownMenu>
 
             {/* Export Options */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button disabled={isDownloading}>
-                  {isDownloading ? (
-                    "Exportando..."
-                  ) : (
-                    <>
-                      <Download className="h-4 w-4 mr-2" /> Exportar
-                    </>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('pdf')}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Exportar como PDF
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('docx')}>
-                  <FilePlus className="h-4 w-4 mr-2" />
-                  Exportar como Word
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Exportar como TXT
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button disabled={exporting} onClick={handleExport}>
+              {exporting ? (
+                "Exportando..."
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" /> Exportar
+                </>
+              )}
+            </Button>
           </div>
         </div>
         {/* Removed overflow-hidden from this div */}
