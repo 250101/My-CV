@@ -131,5 +131,5 @@ export default function CurriculumPreview({
     }
   }
 
-  return <div className="w-full h-full">{renderTemplate()}</div>
+  return <div className="w-full h-full" data-preview="true">{renderTemplate()}</div>
 }

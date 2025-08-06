@@ -10,14 +10,34 @@ export class CVExporter {
     options: ExportOptions = { format: 'pdf' }
   ): Promise<void> {
     try {
+      console.log('Iniciando exportación PDF...')
+      console.log('Elemento:', element)
+      
+      // Verificar que el elemento existe y es visible
+      if (!element || !element.offsetParent) {
+        throw new Error('El elemento no está visible o no existe')
+      }
+
+      // Configuración mejorada de html2canvas
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 2, // Mejor calidad
         useCORS: true,
         allowTaint: true,
-        backgroundColor: options.colorMode === 'blackwhite' ? '#ffffff' : null,
+        backgroundColor: options.colorMode === 'blackwhite' ? '#ffffff' : '#ffffff',
         width: element.scrollWidth,
         height: element.scrollHeight,
+        logging: true, // Para debug
+        onclone: (clonedDoc) => {
+          // Asegurar que el clon tenga el estilo correcto
+          const clonedElement = clonedDoc.querySelector('[data-preview]') as HTMLElement
+          if (clonedElement) {
+            clonedElement.style.transform = 'none'
+            clonedElement.style.position = 'static'
+          }
+        }
       })
+
+      console.log('Canvas generado:', canvas.width, 'x', canvas.height)
 
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF('p', 'mm', 'a4')
@@ -39,15 +59,18 @@ export class CVExporter {
         heightLeft -= pageHeight
       }
 
+      console.log('Guardando PDF...')
       pdf.save(`${filename}.pdf`)
+      console.log('PDF guardado exitosamente')
     } catch (error) {
-      console.error('Error generating PDF:', error)
-      throw new Error('Error al generar el PDF. Por favor, inténtalo de nuevo.')
+      console.error('Error detallado en exportToPDF:', error)
+      throw new Error(`Error al generar el PDF: ${error instanceof Error ? error.message : 'Error desconocido'}`)
     }
   }
 
   static async exportToWord(data: CurriculumData, filename: string): Promise<void> {
     try {
+      console.log('Iniciando exportación Word...')
       const docContent = this.generateWordContent(data)
       const blob = new Blob([docContent], { 
         type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
@@ -61,14 +84,16 @@ export class CVExporter {
       a.click()
       document.body.removeChild(a)
       window.URL.revokeObjectURL(url)
+      console.log('Word exportado exitosamente')
     } catch (error) {
-      console.error('Error generating Word document:', error)
+      console.error('Error en exportToWord:', error)
       throw new Error('Error al generar el documento Word. Por favor, inténtalo de nuevo.')
     }
   }
 
   static async exportToTXT(data: CurriculumData, filename: string): Promise<void> {
     try {
+      console.log('Iniciando exportación TXT...')
       const txtContent = this.generateTextContent(data)
       const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' })
       
@@ -80,8 +105,9 @@ export class CVExporter {
       a.click()
       document.body.removeChild(a)
       window.URL.revokeObjectURL(url)
+      console.log('TXT exportado exitosamente')
     } catch (error) {
-      console.error('Error generating TXT file:', error)
+      console.error('Error en exportToTXT:', error)
       throw new Error('Error al generar el archivo TXT. Por favor, inténtalo de nuevo.')
     }
   }

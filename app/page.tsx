@@ -11,7 +11,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
-import { CurriculumData, ProfessionalProfile, SectionType } from "@/lib/types"
+import { CurriculumData, ProfessionalProfile, SectionType, ProfileConfig } from "@/lib/types"
 import { PROFESSIONAL_PROFILES } from "@/lib/professional-profiles"
 import CVExporter from "@/lib/export-utils"
 
@@ -231,23 +231,126 @@ const Page = () => {
 
   // Professional profile handling
   const handleProfileChange = (profile: ProfessionalProfile) => {
+    console.log('Cambiando perfil a:', profile)
     setSelectedProfile(profile)
     const profileConfig = PROFESSIONAL_PROFILES[profile]
+    
+    // Actualizar secciones habilitadas y orden
     setEnabledSections([...profileConfig.requiredSections, ...profileConfig.optionalSections])
     setSectionOrder(profileConfig.sectionOrder)
+    
+    // Actualizar el contenido del CV basado en el perfil
+    updateContentForProfile(profile, profileConfig)
+  }
+
+  // Función para actualizar el contenido basado en el perfil
+  const updateContentForProfile = (profile: ProfessionalProfile, config: ProfileConfig) => {
+    setData(prevData => {
+      const updatedData = { ...prevData }
+      
+      // Actualizar el resumen basado en el perfil
+      if (config.contentPrompts?.summary) {
+        updatedData.summary = generateProfileBasedSummary(profile, config)
+      }
+      
+      // Actualizar habilidades técnicas basadas en el perfil
+      if (config.keySkillsFocus) {
+        updatedData.technicalSkills = [...config.keySkillsFocus]
+      }
+      
+      // Actualizar habilidades blandas basadas en el perfil
+      if (profile === ProfessionalProfile.CUSTOMER_SERVICE) {
+        updatedData.softSkills = [
+          "Comunicación efectiva",
+          "Empatía y paciencia",
+          "Resolución de conflictos",
+          "Trabajo bajo presión",
+          "Atención al detalle",
+          "Orientación al cliente"
+        ]
+      } else if (profile === ProfessionalProfile.ADMINISTRATIVE) {
+        updatedData.softSkills = [
+          "Organización y planificación",
+          "Atención al detalle",
+          "Gestión de tiempo",
+          "Comunicación profesional",
+          "Trabajo en equipo",
+          "Iniciativa y proactividad"
+        ]
+      } else if (profile === ProfessionalProfile.CULINARY) {
+        updatedData.softSkills = [
+          "Liderazgo de equipo",
+          "Creatividad culinaria",
+          "Gestión de cocina",
+          "Trabajo bajo presión",
+          "Control de calidad",
+          "Innovación gastronómica"
+        ]
+      } else if (profile === ProfessionalProfile.TEAM_TRAINER) {
+        updatedData.softSkills = [
+          "Capacitación y desarrollo",
+          "Comunicación efectiva",
+          "Liderazgo",
+          "Evaluación de desempeño",
+          "Diseño instruccional",
+          "Gestión del talento"
+        ]
+      } else if (profile === ProfessionalProfile.CUSTOMER_EXPERIENCE) {
+        updatedData.softSkills = [
+          "Liderazgo estratégico",
+          "Análisis de datos",
+          "Gestión de equipos",
+          "Comunicación estratégica",
+          "Mejora continua",
+          "Design thinking"
+        ]
+      }
+      
+      return updatedData
+    })
+  }
+
+  // Función para generar resumen basado en el perfil
+  const generateProfileBasedSummary = (profile: ProfessionalProfile, config: ProfileConfig): string => {
+    const baseSummary = data.summary || ""
+    
+    if (profile === ProfessionalProfile.ADMINISTRATIVE) {
+      return "Profesional administrativo con sólida experiencia en gestión de procesos, organización de eventos y soporte ejecutivo. Especializado en optimización de flujos de trabajo, gestión de documentación y coordinación de equipos. Busco oportunidades para aplicar mis habilidades organizacionales y de gestión en entornos que valoren la eficiencia operativa y la atención al detalle."
+    } else if (profile === ProfessionalProfile.CUSTOMER_SERVICE) {
+      return "Profesional especializado en atención al cliente con amplia experiencia en resolución de consultas, gestión de reclamos y mejora de la satisfacción del cliente. Capacidad demostrada para trabajar bajo presión, comunicar efectivamente y generar soluciones creativas. Busco oportunidades para aplicar mis habilidades de servicio al cliente en entornos que prioricen la experiencia del usuario."
+    } else if (profile === ProfessionalProfile.CULINARY) {
+      return "Chef profesional con experiencia en alta cocina y gestión de equipos culinarios. Especializado en creación de menús innovadores, control de costos y organización de eventos gastronómicos. Busco oportunidades para aplicar mi creatividad culinaria y habilidades de liderazgo en entornos que valoren la excelencia gastronómica y la innovación."
+    } else if (profile === ProfessionalProfile.TEAM_TRAINER) {
+      return "Capacitador profesional con experiencia en diseño e implementación de programas de desarrollo de talento. Especializado en evaluación de competencias, diseño instruccional y facilitación de procesos de aprendizaje. Busco oportunidades para aplicar mis habilidades de formación en entornos que prioricen el desarrollo profesional y la mejora continua."
+    } else if (profile === ProfessionalProfile.CUSTOMER_EXPERIENCE) {
+      return "Líder especializado en experiencia del cliente con amplia experiencia en gestión de equipos y mejora de procesos. Especializado en análisis de métricas, implementación de estrategias CX y desarrollo de equipos de alto rendimiento. Busco oportunidades para aplicar mis habilidades de liderazgo en entornos que valoren la innovación en experiencia del cliente."
+    }
+    
+    return baseSummary
   }
 
   // Enhanced export functions
   const handleExport = async (format: 'pdf' | 'docx' | 'txt') => {
-    if (!previewRef.current && format === 'pdf') return
+    console.log(`Iniciando exportación ${format.toUpperCase()}...`)
+    
+    if (!previewRef.current && format === 'pdf') {
+      console.error('No se encontró el elemento de preview')
+      alert('Error: No se puede generar el PDF. Asegúrate de que la vista previa esté cargada.')
+      return
+    }
     
     setIsDownloading(true)
     const filename = data.personalInfo.name || "curriculum"
     
     try {
+      console.log(`Exportando como ${format.toUpperCase()}...`)
+      
       switch (format) {
         case 'pdf':
-          await CVExporter.exportToPDF(previewRef.current!, filename)
+          if (!previewRef.current) {
+            throw new Error('Elemento de preview no encontrado')
+          }
+          await CVExporter.exportToPDF(previewRef.current, filename)
           break
         case 'docx':
           await CVExporter.exportToWord(data, filename)
@@ -255,10 +358,23 @@ const Page = () => {
         case 'txt':
           await CVExporter.exportToTXT(data, filename)
           break
+        default:
+          throw new Error(`Formato no soportado: ${format}`)
       }
+      
+      console.log(`Exportación ${format.toUpperCase()} completada exitosamente`)
     } catch (error) {
-      console.error(`Error exporting ${format.toUpperCase()}:`, error)
-      alert(`Hubo un error al exportar el archivo ${format.toUpperCase()}. Por favor, inténtalo de nuevo.`)
+      console.error(`Error exportando ${format.toUpperCase()}:`, error)
+      
+      let errorMessage = `Hubo un error al exportar el archivo ${format.toUpperCase()}. `
+      
+      if (error instanceof Error) {
+        errorMessage += error.message
+      } else {
+        errorMessage += 'Por favor, inténtalo de nuevo.'
+      }
+      
+      alert(errorMessage)
     } finally {
       setIsDownloading(false)
     }
@@ -369,7 +485,7 @@ const Page = () => {
             customTagPrimaryColor={customTagPrimaryColor}
             customTagSecondaryColor={customTagSecondaryColor}
             profilePhotoBackgroundColor={data.personalInfo.profilePhotoBackgroundColor} // Use from data
-            previewRef={previewRef} // Pass the ref to the preview component
+            previewRef={previewRef as React.RefObject<HTMLDivElement>} // Pass the ref to the preview component
             enabledSections={enabledSections}
             sectionOrder={sectionOrder}
           />
