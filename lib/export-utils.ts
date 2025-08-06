@@ -18,21 +18,92 @@ export class CVExporter {
         throw new Error('El elemento no está visible o no existe')
       }
 
+      // Crear un clon del elemento para modificar estilos sin afectar el original
+      const clonedElement = element.cloneNode(true) as HTMLElement
+      
+      // Aplicar estilos compatibles con html2canvas
+      const style = document.createElement('style')
+      style.textContent = `
+        * {
+          color: #000000 !important;
+          background-color: #ffffff !important;
+          border-color: #cccccc !important;
+        }
+        .bg-gradient-to-br { background: linear-gradient(to bottom right, #ffffff, #f9fafb) !important; }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important; }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important; }
+        .rounded-lg { border-radius: 0.5rem !important; }
+        .rounded-md { border-radius: 0.375rem !important; }
+        .rounded-full { border-radius: 9999px !important; }
+        .border { border: 1px solid #e5e7eb !important; }
+        .border-2 { border: 2px solid #e5e7eb !important; }
+        .border-4 { border: 4px solid #e5e7eb !important; }
+        .border-gray-100 { border-color: #f3f4f6 !important; }
+        .border-gray-200 { border-color: #e5e7eb !important; }
+        .border-gray-300 { border-color: #d1d5db !important; }
+        .bg-white { background-color: #ffffff !important; }
+        .bg-gray-50 { background-color: #f9fafb !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
+        .bg-gray-200 { background-color: #e5e7eb !important; }
+        .bg-gray-500 { background-color: #6b7280 !important; }
+        .bg-gray-600 { background-color: #4b5563 !important; }
+        .bg-gray-700 { background-color: #374151 !important; }
+        .bg-gray-800 { background-color: #1f2937 !important; }
+        .bg-gray-900 { background-color: #111827 !important; }
+        .bg-blue-50 { background-color: #eff6ff !important; }
+        .bg-blue-100 { background-color: #dbeafe !important; }
+        .bg-blue-500 { background-color: #3b82f6 !important; }
+        .bg-blue-600 { background-color: #2563eb !important; }
+        .bg-green-50 { background-color: #f0fdf4 !important; }
+        .bg-green-100 { background-color: #dcfce7 !important; }
+        .bg-green-500 { background-color: #22c55e !important; }
+        .bg-green-600 { background-color: #16a34a !important; }
+        .bg-orange-50 { background-color: #fff7ed !important; }
+        .bg-orange-100 { background-color: #ffedd5 !important; }
+        .bg-orange-500 { background-color: #f97316 !important; }
+        .bg-orange-600 { background-color: #ea580c !important; }
+        .bg-purple-50 { background-color: #faf5ff !important; }
+        .bg-purple-100 { background-color: #f3e8ff !important; }
+        .bg-purple-500 { background-color: #a855f7 !important; }
+        .bg-purple-600 { background-color: #9333ea !important; }
+        .bg-teal-50 { background-color: #f0fdfa !important; }
+        .bg-teal-100 { background-color: #ccfbf1 !important; }
+        .bg-teal-500 { background-color: #14b8a6 !important; }
+        .bg-teal-600 { background-color: #0d9488 !important; }
+        .text-white { color: #ffffff !important; }
+        .text-gray-500 { color: #6b7280 !important; }
+        .text-gray-600 { color: #4b5563 !important; }
+        .text-gray-700 { color: #374151 !important; }
+        .text-gray-800 { color: #1f2937 !important; }
+        .text-gray-900 { color: #111827 !important; }
+        .text-blue-600 { color: #2563eb !important; }
+        .text-green-600 { color: #16a34a !important; }
+        .text-orange-600 { color: #ea580c !important; }
+        .text-purple-600 { color: #9333ea !important; }
+        .text-teal-600 { color: #0d9488 !important; }
+        .border-blue-600 { border-color: #2563eb !important; }
+        .border-green-600 { border-color: #16a34a !important; }
+        .border-orange-600 { border-color: #ea580c !important; }
+        .border-purple-600 { border-color: #9333ea !important; }
+        .border-teal-600 { border-color: #0d9488 !important; }
+      `
+      clonedElement.appendChild(style)
+
       // Configuración mejorada de html2canvas
-      const canvas = await html2canvas(element, {
+      const canvas = await html2canvas(clonedElement, {
         scale: 2, // Mejor calidad
         useCORS: true,
         allowTaint: true,
-        backgroundColor: options.colorMode === 'blackwhite' ? '#ffffff' : '#ffffff',
+        backgroundColor: '#ffffff',
         width: element.scrollWidth,
         height: element.scrollHeight,
         logging: true, // Para debug
         onclone: (clonedDoc) => {
           // Asegurar que el clon tenga el estilo correcto
-          const clonedElement = clonedDoc.querySelector('[data-preview]') as HTMLElement
-          if (clonedElement) {
-            clonedElement.style.transform = 'none'
-            clonedElement.style.position = 'static'
+          const clonedPreviewElement = clonedDoc.querySelector('[data-preview]') as HTMLElement
+          if (clonedPreviewElement) {
+            clonedPreviewElement.style.transform = 'none'
+            clonedPreviewElement.style.position = 'static'
           }
         }
       })
