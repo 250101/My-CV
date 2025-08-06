@@ -3,171 +3,139 @@
 import { useState, useRef } from "react"
 import CurriculumPreview from "@/components/curriculum-preview"
 import { CurriculumEditor } from "@/components/curriculum-editor"
-import { Download } from "lucide-react"
-import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
+import { Download, FileText, FilePlus, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu"
+import { CurriculumData, ProfessionalProfile, SectionType } from "@/lib/types"
+import { PROFESSIONAL_PROFILES } from "@/lib/professional-profiles"
+import CVExporter from "@/lib/export-utils"
 
-// Define las interfaces para la estructura de los datos del currículum
-interface PersonalInfo {
-  name: string
-  title: string
-  email: string
-  phone: string
-  location: string
-  website: string
-  linkedin: string
-  github: string
-  profilePhoto: string
-  profilePhotoBackgroundColor?: string
-  portfolioTitle: string
-  portfolioDescription: string
-  portfolioWebsite: string
-  qrCodeImage?: string
-}
-
-interface Experience {
-  id: string
-  position: string
-  company: string
-  period: string
-  achievements: string[]
-  keywords: string[]
-}
-
-interface Education {
-  id: string
-  degree: string
-  institution: string
-  period: string
-  details: string
-  gpa?: string
-}
-
-interface Project {
-  id: string
-  name: string
-  description: string
-  technologies: string[]
-  link?: string
-  imageUrls?: string[]
-}
-
-interface CurriculumData {
-  personalInfo: PersonalInfo
-  summary: string
-  experience: Experience[]
-  education: Education[]
-  technicalSkills: string[]
-  softSkills: string[]
-  languages: { id: string; language: string; level: string }[]
-  projects: Project[]
-  certifications: string[]
-  interests: string[]
-  keywords: string[]
-}
+// Professional profile configurations and data management
 
 // Datos iniciales de ejemplo para el currículum
 const initialData: CurriculumData = {
   personalInfo: {
-    name: "Martín Moore",
+    name: "Juan Carlos Mendoza",
     title: "Cocinero Profesional & Analista de Procesos",
-    email: "martin.alejandro.moore@gmail.com",
-    phone: "+34 607 156 015",
-    location: "Barcelona, España",
-    website: "https://www.tu-web-personal.com",
-    linkedin: "linkedin.com/in/martin-moore",
-    github: "github.com/martin-moore",
-    profilePhoto: "",
-    profilePhotoBackgroundColor: "",
-    portfolioTitle: "Portfolio y Más",
-    portfolioDescription: "Escanea para ver mi portfolio completo y blog culinario",
-    portfolioWebsite: "tu-web-portfolio.com",
-    qrCodeImage: "",
+    email: "juan.mendoza@email.com",
+    phone: "+54 11 1234-5678",
+    location: "Buenos Aires, Argentina",
+    website: "www.juanmendoza.com",
+    linkedin: "linkedin.com/in/juanmendoza",
+    github: "github.com/juanmendoza",
+    profilePhoto: "/api/placeholder/150/150",
+    profilePhotoBackgroundColor: "#f3f4f6",
+    portfolioTitle: "Portfolio Culinario",
+    portfolioDescription: "Especialista en alta cocina y gestión de procesos operativos",
+    portfolioWebsite: "www.portfoliojuan.com",
+    qrCodeImage: "/api/placeholder/100/100",
   },
   summary:
-    "Apasionado de la cocina con experiencia práctica en cocina de bar y organización de eventos gastronómicos para grupos grandes. Profesional administrativo con sólida trayectoria en gestión de procesos, automatización y capacitación de equipos. Busco integrar mi creatividad culinaria con mis habilidades analíticas y de gestión para aportar valor en entornos dinámicos.",
+    "Profesional gastronómico con más de 8 años de experiencia en alta cocina y gestión de eventos gastronómicos para grupos grandes. Profesional administrativo con sólida trayectoria en gestión de procesos, automatización y capacitación de equipos. Busco integrar mi creatividad culinaria con mis habilidades analíticas y de gestión para aportar valor en organizaciones que valoren la innovación y la excelencia operativa.",
   experience: [
     {
       id: "1",
-      position: "Analista de Procesos y Formador",
-      company: "Conexión Salud",
-      period: "Septiembre 2021 – Marzo 2025",
+      position: "Cocinero y Organizador de Eventos Gastronómicos",
+      company: "Restaurante Gourmet Plaza",
+      period: "2019 - Presente",
       achievements: [
-        "Gestión administrativa y atención a afiliados, optimizando procesos mediante automatización con Python y Power BI",
-        "Lideré proyectos clave de digitalización como desarrollo de chatbot y creación de dashboards en tiempo real",
-        "Capacité equipos comerciales y otros departamentos, impulsando el uso de nuevas herramientas",
+        "Diseñé y ejecuté menús para eventos corporativos de hasta 500 personas, aumentando la satisfacción del cliente en un 35%",
+        "Implementé un sistema de gestión de inventarios que redujo el desperdicio de alimentos en un 25%",
+        "Capacité a un equipo de 12 cocineros en técnicas de alta cocina y estándares de calidad",
+        "Desarrollé 15 nuevas recetas que se incorporaron al menú permanente del restaurante",
       ],
-      keywords: ["Python", "Power BI", "Automatización", "Chatbot", "Dashboards", "Capacitación", "Digitalización"],
+      keywords: ["Cocina profesional", "Eventos", "Gestión", "Logística", "Menús personalizados", "Calidad"],
     },
     {
       id: "2",
-      position: "Cocinero y Organizador de Eventos Gastronómicos",
-      company: "Freelance y Bar Runa Avellaneda",
-      period: "Junio 2021 – Sept 2021 (Bar) / Desde entonces (Eventos)",
+      position: "Analista de Procesos y Automatización",
+      company: "Corporación Administrativa SA",
+      period: "2016 - 2019",
       achievements: [
-        "Preparación y servicio de platos con atención a calidad y tiempos",
-        "Diseño y ejecución de menús personalizados para eventos privados, cocinando para grupos de hasta 31 personas",
-        "Gestión integral de logística y coordinación gastronómica",
+        "Automaticé 8 procesos administrativos críticos, reduciendo tiempos de ejecución en un 40%",
+        "Desarrollé dashboards en Power BI para el seguimiento de KPIs operativos",
+        "Capacité a 50+ empleados en herramientas de automatización y análisis de datos",
+        "Lideré la implementación de un chatbot interno que mejoró la comunicación interdepartamental",
       ],
-      keywords: ["Cocina profesional", "Eventos", "Gestión", "Logística", "Menús personalizados", "Calidad"],
+      keywords: ["Python", "Power BI", "Automatización", "Chatbot", "Dashboards", "Capacitación", "Digitalización"],
     },
   ],
   education: [
     {
-      id: "edu1",
-      degree: "Diploma de Educación Secundaria",
-      institution: "Instituto French — Buenos Aires, Argentina",
-      period: "2012 - 2018",
-      details: "Especialización en Economía",
+      id: "1",
+      degree: "Técnico Superior en Gastronomía",
+      institution: "Instituto Argentino de Gastronomía",
+      period: "2014 - 2016",
+      details: "Especialización en cocina internacional y gestión de restaurantes",
+      gpa: "8.9/10",
+    },
+    {
+      id: "2",
+      degree: "Analista en Sistemas",
+      institution: "Universidad Tecnológica Nacional",
+      period: "2012 - 2015",
+      details: "Enfoque en desarrollo de software y análisis de datos",
+      gpa: "8.2/10",
     },
   ],
   technicalSkills: [
     "Python",
     "Power BI",
     "Excel Avanzado",
-    "Chatbots",
-    "Automatización",
-    "Análisis de Datos",
-    "SQL",
-    "JavaScript",
+    "Técnicas culinarias",
+    "Gestión de inventarios",
+    "Planificación de menús",
+    "Automatización de procesos",
+    "Análisis de datos",
   ],
   softSkills: [
-    "Liderazgo",
-    "Comunicación",
-    "Trabajo en equipo",
+    "Liderazgo de equipos",
+    "Comunicación efectiva",
+    "Gestión del tiempo",
+    "Creatividad",
+    "Trabajo bajo presión",
     "Resolución de problemas",
     "Adaptabilidad",
-    "Creatividad",
+    "Orientación al cliente",
   ],
   languages: [
-    { id: "lang1", language: "Español", level: "Nativo" },
-    { id: "lang2", language: "Inglés", level: "Conversacional" },
+    { id: "1", language: "Español", level: "Nativo" },
+    { id: "2", language: "Inglés", level: "Intermedio-Alto" },
+    { id: "3", language: "Portugués", level: "Básico" },
   ],
   projects: [
     {
-      id: "proj1",
-      name: "Sistema de Gestión de Eventos",
-      description: "Desarrollo de aplicación web para gestión integral de eventos gastronómicos",
-      technologies: ["React", "Node.js", "MongoDB"],
-      link: "github.com/martin-moore/event-management",
-      imageUrls: ["/placeholder.svg?height=100&width=100&text=Project+Image+1"],
+      id: "1",
+      name: "Sistema de Gestión de Eventos Gastronómicos",
+      description: "Plataforma web para la gestión integral de eventos, desde la planificación del menú hasta el control de costos",
+      technologies: ["React", "Node.js", "MongoDB", "Excel"],
+      link: "github.com/juanmendoza/eventos-gastronomicos",
+      imageUrls: ["/api/placeholder/400/300"],
     },
     {
-      id: "proj2",
-      name: "Dashboard de Ventas Interactivo",
-      description: "Creación de un dashboard interactivo para visualizar métricas de ventas en tiempo real.",
-      technologies: ["Power BI", "SQL", "Excel"],
-      link: "",
-      imageUrls: ["/placeholder.svg?height=100&width=100&text=Project+Image+2"],
+      id: "2",
+      name: "Dashboard de Control de Inventarios",
+      description: "Sistema de seguimiento en tiempo real de inventarios de cocina con alertas automáticas",
+      technologies: ["Power BI", "Python", "SQL"],
+      link: "portfolio.juanmendoza.com/inventarios",
+      imageUrls: ["/api/placeholder/400/300"],
     },
   ],
-  certifications: ["Certificación en Power BI", "Curso de Python Avanzado", "Manipulador de Alimentos"],
+  certifications: [
+    "Certificación en Manipulación de Alimentos",
+    "Google Analytics Certified",
+    "Scrum Master Certification",
+    "Certificación en Power BI",
+  ],
   interests: ["Gastronomía Creativa", "Desarrollo Web", "Proyectos Culinarios", "Tecnología", "Automatización"],
   keywords: ["Python", "Power BI", "Automatización", "Cocina", "Eventos", "Análisis", "Gestión", "Digitalización"],
 }
 
-// Datos de currículum completamente vacíos para la función de "borrar todo"
 const emptyCurriculumData: CurriculumData = {
   personalInfo: {
     name: "",
@@ -179,11 +147,9 @@ const emptyCurriculumData: CurriculumData = {
     linkedin: "",
     github: "",
     profilePhoto: "",
-    profilePhotoBackgroundColor: "",
     portfolioTitle: "",
     portfolioDescription: "",
     portfolioWebsite: "",
-    qrCodeImage: "",
   },
   summary: "",
   experience: [],
@@ -246,58 +212,55 @@ const Page = () => {
   const [customTagSecondaryColor, setCustomTagSecondaryColor] = useState("")
   // profilePhotoBackgroundColor is now part of data.personalInfo
   const [isDownloading, setIsDownloading] = useState(false)
+  const [selectedProfile, setSelectedProfile] = useState<ProfessionalProfile | null>(null)
+  const [enabledSections, setEnabledSections] = useState<SectionType[]>(Object.values(SectionType))
+  const [sectionOrder, setSectionOrder] = useState<SectionType[]>([
+    SectionType.PERSONAL_INFO,
+    SectionType.SUMMARY,
+    SectionType.TECHNICAL_SKILLS,
+    SectionType.SOFT_SKILLS,
+    SectionType.EXPERIENCE,
+    SectionType.EDUCATION,
+    SectionType.CERTIFICATIONS,
+    SectionType.PROJECTS,
+    SectionType.LANGUAGES,
+    SectionType.INTERESTS,
+  ])
 
   const previewRef = useRef<HTMLDivElement>(null)
 
-  const handleDownloadPdf = async () => {
-    if (previewRef.current) {
-      setIsDownloading(true)
-      // Give a small delay to ensure all content is rendered before capture
-      await new Promise((resolve) => setTimeout(resolve, 100))
-      try {
-        // Add a temporary class to the body for print styles if dark mode is active
-        if (isDarkMode && selectedTemplate !== "corporate") {
-          document.body.classList.add("dark-mode-print")
-        }
+  // Professional profile handling
+  const handleProfileChange = (profile: ProfessionalProfile) => {
+    setSelectedProfile(profile)
+    const profileConfig = PROFESSIONAL_PROFILES[profile]
+    setEnabledSections([...profileConfig.requiredSections, ...profileConfig.optionalSections])
+    setSectionOrder(profileConfig.sectionOrder)
+  }
 
-        const canvas = await html2canvas(previewRef.current, {
-          scale: 2, // Increase scale for better quality
-          useCORS: true, // Enable CORS for images if any
-          logging: true,
-          windowWidth: previewRef.current.scrollWidth,
-          windowHeight: previewRef.current.scrollHeight,
-          backgroundColor: "#ffffff", // Explicitly set background to white for PDF
-        })
-        const imgData = canvas.toDataURL("image/png")
-        const pdf = new jsPDF("p", "mm", "a4") // Portrait, millimeters, A4 size
-        const imgWidth = 210 // A4 width in mm
-        const pageHeight = 297 // A4 height in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width
-
-        let heightLeft = imgHeight
-        let position = 0
-
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
-
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight
-          pdf.addPage()
-          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight)
-          heightLeft -= pageHeight
-        }
-
-        pdf.save(`${data.personalInfo.name || "curriculum"}.pdf`)
-      } catch (error) {
-        console.error("Error generating PDF:", error)
-        alert("Hubo un error al generar el PDF. Por favor, inténtalo de nuevo.")
-      } finally {
-        setIsDownloading(false)
-        // Remove the temporary class after printing
-        if (isDarkMode && selectedTemplate !== "corporate") {
-          document.body.classList.remove("dark-mode-print")
-        }
+  // Enhanced export functions
+  const handleExport = async (format: 'pdf' | 'docx' | 'txt') => {
+    if (!previewRef.current && format === 'pdf') return
+    
+    setIsDownloading(true)
+    const filename = data.personalInfo.name || "curriculum"
+    
+    try {
+      switch (format) {
+        case 'pdf':
+          await CVExporter.exportToPDF(previewRef.current!, filename)
+          break
+        case 'docx':
+          await CVExporter.exportToWord(data, filename)
+          break
+        case 'txt':
+          await CVExporter.exportToTXT(data, filename)
+          break
       }
+    } catch (error) {
+      console.error(`Error exporting ${format.toUpperCase()}:`, error)
+      alert(`Hubo un error al exportar el archivo ${format.toUpperCase()}. Por favor, inténtalo de nuevo.`)
+    } finally {
+      setIsDownloading(false)
     }
   }
 
@@ -343,15 +306,56 @@ const Page = () => {
       <div className="w-1/2 p-4 overflow-y-auto relative">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Vista Previa</h2>
-          <Button onClick={handleDownloadPdf} disabled={isDownloading}>
-            {isDownloading ? (
-              "Descargando..."
-            ) : (
-              <>
-                <Download className="h-4 w-4 mr-2" /> Descargar PDF
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            {/* Professional Profile Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Eye className="h-4 w-4 mr-2" />
+                  {selectedProfile ? PROFESSIONAL_PROFILES[selectedProfile].name : "Seleccionar Perfil"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {Object.entries(PROFESSIONAL_PROFILES).map(([key, profile]) => (
+                  <DropdownMenuItem
+                    key={key}
+                    onClick={() => handleProfileChange(key as ProfessionalProfile)}
+                  >
+                    {profile.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Export Options */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button disabled={isDownloading}>
+                  {isDownloading ? (
+                    "Exportando..."
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" /> Exportar
+                    </>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Exportar como PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('docx')}>
+                  <FilePlus className="h-4 w-4 mr-2" />
+                  Exportar como Word
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Exportar como TXT
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         {/* Removed overflow-hidden from this div */}
         <div className="border rounded-lg bg-white">
@@ -366,6 +370,8 @@ const Page = () => {
             customTagSecondaryColor={customTagSecondaryColor}
             profilePhotoBackgroundColor={data.personalInfo.profilePhotoBackgroundColor} // Use from data
             previewRef={previewRef} // Pass the ref to the preview component
+            enabledSections={enabledSections}
+            sectionOrder={sectionOrder}
           />
         </div>
       </div>
