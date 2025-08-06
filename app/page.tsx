@@ -3,69 +3,19 @@
 import { useState, useRef } from "react"
 import CurriculumPreview from "@/components/curriculum-preview"
 import { CurriculumEditor } from "@/components/curriculum-editor"
-import { Download } from "lucide-react"
-import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
+import { Download, FileText, FilePlus, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu"
+import { CurriculumData, ProfessionalProfile, SectionType } from "@/lib/types"
+import { PROFESSIONAL_PROFILES } from "@/lib/professional-profiles"
+import CVExporter from "@/lib/export-utils"
 
-// Define las interfaces para la estructura de los datos del currículum
-interface PersonalInfo {
-  name: string
-  title: string
-  email: string
-  phone: string
-  location: string
-  website: string
-  linkedin: string
-  github: string
-  profilePhoto: string
-  profilePhotoBackgroundColor?: string
-  portfolioTitle: string
-  portfolioDescription: string
-  portfolioWebsite: string
-  qrCodeImage?: string
-}
-
-interface Experience {
-  id: string
-  position: string
-  company: string
-  period: string
-  achievements: string[]
-  keywords: string[]
-}
-
-interface Education {
-  id: string
-  degree: string
-  institution: string
-  period: string
-  details: string
-  gpa?: string
-}
-
-interface Project {
-  id: string
-  name: string
-  description: string
-  technologies: string[]
-  link?: string
-  imageUrls?: string[]
-}
-
-interface CurriculumData {
-  personalInfo: PersonalInfo
-  summary: string
-  experience: Experience[]
-  education: Education[]
-  technicalSkills: string[]
-  softSkills: string[]
-  languages: { id: string; language: string; level: string }[]
-  projects: Project[]
-  certifications: string[]
-  interests: string[]
-  keywords: string[]
-}
+// Professional profile configurations and data management
 
 // Datos iniciales de ejemplo para el currículum
 const initialData: CurriculumData = {
@@ -246,58 +196,55 @@ const Page = () => {
   const [customTagSecondaryColor, setCustomTagSecondaryColor] = useState("")
   // profilePhotoBackgroundColor is now part of data.personalInfo
   const [isDownloading, setIsDownloading] = useState(false)
+  const [selectedProfile, setSelectedProfile] = useState<ProfessionalProfile | null>(null)
+  const [enabledSections, setEnabledSections] = useState<SectionType[]>(Object.values(SectionType))
+  const [sectionOrder, setSectionOrder] = useState<SectionType[]>([
+    SectionType.PERSONAL_INFO,
+    SectionType.SUMMARY,
+    SectionType.TECHNICAL_SKILLS,
+    SectionType.SOFT_SKILLS,
+    SectionType.EXPERIENCE,
+    SectionType.EDUCATION,
+    SectionType.CERTIFICATIONS,
+    SectionType.PROJECTS,
+    SectionType.LANGUAGES,
+    SectionType.INTERESTS,
+  ])
 
   const previewRef = useRef<HTMLDivElement>(null)
 
-  const handleDownloadPdf = async () => {
-    if (previewRef.current) {
-      setIsDownloading(true)
-      // Give a small delay to ensure all content is rendered before capture
-      await new Promise((resolve) => setTimeout(resolve, 100))
-      try {
-        // Add a temporary class to the body for print styles if dark mode is active
-        if (isDarkMode && selectedTemplate !== "corporate") {
-          document.body.classList.add("dark-mode-print")
-        }
+  // Professional profile handling
+  const handleProfileChange = (profile: ProfessionalProfile) => {
+    setSelectedProfile(profile)
+    const profileConfig = PROFESSIONAL_PROFILES[profile]
+    setEnabledSections([...profileConfig.requiredSections, ...profileConfig.optionalSections])
+    setSectionOrder(profileConfig.sectionOrder)
+  }
 
-        const canvas = await html2canvas(previewRef.current, {
-          scale: 2, // Increase scale for better quality
-          useCORS: true, // Enable CORS for images if any
-          logging: true,
-          windowWidth: previewRef.current.scrollWidth,
-          windowHeight: previewRef.current.scrollHeight,
-          backgroundColor: "#ffffff", // Explicitly set background to white for PDF
-        })
-        const imgData = canvas.toDataURL("image/png")
-        const pdf = new jsPDF("p", "mm", "a4") // Portrait, millimeters, A4 size
-        const imgWidth = 210 // A4 width in mm
-        const pageHeight = 297 // A4 height in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width
-
-        let heightLeft = imgHeight
-        let position = 0
-
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
-
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight
-          pdf.addPage()
-          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight)
-          heightLeft -= pageHeight
-        }
-
-        pdf.save(`${data.personalInfo.name || "curriculum"}.pdf`)
-      } catch (error) {
-        console.error("Error generating PDF:", error)
-        alert("Hubo un error al generar el PDF. Por favor, inténtalo de nuevo.")
-      } finally {
-        setIsDownloading(false)
-        // Remove the temporary class after printing
-        if (isDarkMode && selectedTemplate !== "corporate") {
-          document.body.classList.remove("dark-mode-print")
-        }
+  // Enhanced export functions
+  const handleExport = async (format: 'pdf' | 'docx' | 'txt') => {
+    if (!previewRef.current && format === 'pdf') return
+    
+    setIsDownloading(true)
+    const filename = data.personalInfo.name || "curriculum"
+    
+    try {
+      switch (format) {
+        case 'pdf':
+          await CVExporter.exportToPDF(previewRef.current!, filename)
+          break
+        case 'docx':
+          await CVExporter.exportToWord(data, filename)
+          break
+        case 'txt':
+          await CVExporter.exportToTXT(data, filename)
+          break
       }
+    } catch (error) {
+      console.error(`Error exporting ${format.toUpperCase()}:`, error)
+      alert(`Hubo un error al exportar el archivo ${format.toUpperCase()}. Por favor, inténtalo de nuevo.`)
+    } finally {
+      setIsDownloading(false)
     }
   }
 
@@ -343,15 +290,56 @@ const Page = () => {
       <div className="w-1/2 p-4 overflow-y-auto relative">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Vista Previa</h2>
-          <Button onClick={handleDownloadPdf} disabled={isDownloading}>
-            {isDownloading ? (
-              "Descargando..."
-            ) : (
-              <>
-                <Download className="h-4 w-4 mr-2" /> Descargar PDF
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            {/* Professional Profile Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Eye className="h-4 w-4 mr-2" />
+                  {selectedProfile ? PROFESSIONAL_PROFILES[selectedProfile].name : "Seleccionar Perfil"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {Object.entries(PROFESSIONAL_PROFILES).map(([key, profile]) => (
+                  <DropdownMenuItem
+                    key={key}
+                    onClick={() => handleProfileChange(key as ProfessionalProfile)}
+                  >
+                    {profile.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Export Options */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button disabled={isDownloading}>
+                  {isDownloading ? (
+                    "Exportando..."
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" /> Exportar
+                    </>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Exportar como PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('docx')}>
+                  <FilePlus className="h-4 w-4 mr-2" />
+                  Exportar como Word
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Exportar como TXT
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         {/* Removed overflow-hidden from this div */}
         <div className="border rounded-lg bg-white">
@@ -366,6 +354,8 @@ const Page = () => {
             customTagSecondaryColor={customTagSecondaryColor}
             profilePhotoBackgroundColor={data.personalInfo.profilePhotoBackgroundColor} // Use from data
             previewRef={previewRef} // Pass the ref to the preview component
+            enabledSections={enabledSections}
+            sectionOrder={sectionOrder}
           />
         </div>
       </div>
